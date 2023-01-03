@@ -26,7 +26,7 @@ class UsulanController extends Controller
       foreach(json_decode($kdKom, true) as $key => $value) {
         $kodeKomponenAdmin = $kodeKomponenAdmin.$value['unitOrganisasi'].'%';
       }
-      if ($idAppRoleUser === 1 || $idAppRoleUser === 2 || $idAppRoleUser === 3) {
+      if ($idAppRoleUser === 1) {
         $daftarPegawai_ = DB::table('v_pegawai')->get(['id']);
       } else {
         $daftarPegawai_ = DB::table('v_pegawai')->where([

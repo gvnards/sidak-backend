@@ -23,7 +23,7 @@ class ListPegawaiController extends Controller
     foreach(json_decode($kdKom, true) as $key => $value) {
       $kodeKomponenAdmin = $kodeKomponenAdmin.$value['unitOrganisasi'].'%';
     }
-    if ($idAppRoleUser === 1 || $idAppRoleUser === 2 || $idAppRoleUser === 3) {
+    if ($idAppRoleUser === 1) {
       $data = DB::table('v_short_brief')->groupBy('id')->get([
         'id as id',
         'nama as nama',
