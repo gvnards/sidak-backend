@@ -25,12 +25,9 @@ class JabatanUnitOrganisasiController extends Controller
     } else {
       if (substr($kodeKomponen, -1) == ".") {
         $data = DB::table('m_unit_organisasi')->where([
-          ['kodeKomponen', 'LIKE', $kodeKomponen.'_']
-        ])->orWhere([
-          ['kodeKomponen', 'LIKE', $kodeKomponen.'__']
-        ])->orWhere([
-          ['kodeKomponen', 'LIKE', $kodeKomponen.'___']
-        ])->orderBy('kodeKomponen', 'asc')->get([
+          ['kodeKomponen', 'LIKE', $kodeKomponen.'%'],
+          // ["LOCATE('.',kodeKomponen,LENGTH($kodeKomponen)+1)", '=', 0],
+        ])->whereRaw(DB::raw("LOCATE('.',kodeKomponen,LENGTH('$kodeKomponen')+1) = 0"))->orderBy('kodeKomponen', 'asc')->get([
           'id',
           'nama',
           'kodeKomponen'

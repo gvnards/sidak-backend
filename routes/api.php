@@ -55,6 +55,7 @@ Route::put('uang-kinerja/{id}', 'JabatanUnitOrganisasiController@updateUangKiner
 Route::put('kelas-jabatan/{id}', 'JabatanUnitOrganisasiController@updateKelasJabatan');
 Route::put('jabatan/{id}', 'JabatanUnitOrganisasiController@updateJabatan');
 Route::put('usulan/{id}', 'UsulanController@updateUsulan');
+Route::put('change-password', 'LoginController@changePassword');
 
 Route::get('main-menu', 'MenuController@getMainMenu');
 Route::get('pegawai-menu', 'MenuController@getPegawaiMenu');
