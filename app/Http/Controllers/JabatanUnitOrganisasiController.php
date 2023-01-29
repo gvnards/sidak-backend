@@ -305,24 +305,26 @@ class JabatanUnitOrganisasiController extends Controller
       'status' => $authenticated === true ? 1 : 0
     ]));
     if($kodeKomponen == NULL) {
-      $data = DB::table('m_jabatan')->join('m_kelas_jabatan', 'm_jabatan.idKelasJabatan', '=', 'm_kelas_jabatan.id')->join('m_uang_kinerja', 'm_kelas_jabatan.idUangKinerja', '=', 'm_uang_kinerja.id')->get([
-        'm_jabatan.id as id',
-        'm_jabatan.nama as jabatan',
-        'm_jabatan.kebutuhan as kebutuhan',
-        'm_jabatan.target as target',
-        'm_jabatan.kodeKomponen as kodeKomponen',
+      $data = DB::table('v_m_daftar_jabatan')->join('m_kelas_jabatan', 'v_m_daftar_jabatan.idKelasJabatan', '=', 'm_kelas_jabatan.id')->join('m_uang_kinerja', 'm_kelas_jabatan.idUangKinerja', '=', 'm_uang_kinerja.id')->get([
+        'v_m_daftar_jabatan.id as id',
+        'v_m_daftar_jabatan.nama as jabatan',
+        'v_m_daftar_jabatan.kebutuhan as kebutuhan',
+        'v_m_daftar_jabatan.target as target',
+        'v_m_daftar_jabatan.kodeKomponen as kodeKomponen',
+        'v_m_daftar_jabatan.terisi as jabatanTerisi',
         'm_kelas_jabatan.nama as kelasJabatan',
         'm_uang_kinerja.nominal as uangKinerja'
       ]);
     } else {
-      $data = DB::table('m_jabatan')->join('m_kelas_jabatan', 'm_jabatan.idKelasJabatan', '=', 'm_kelas_jabatan.id')->join('m_uang_kinerja', 'm_kelas_jabatan.idUangKinerja', '=', 'm_uang_kinerja.id')->where([
-        ['m_jabatan.kodeKomponen', 'LIKE', $kodeKomponen]
+      $data = DB::table('v_m_daftar_jabatan')->join('m_kelas_jabatan', 'v_m_daftar_jabatan.idKelasJabatan', '=', 'm_kelas_jabatan.id')->join('m_uang_kinerja', 'm_kelas_jabatan.idUangKinerja', '=', 'm_uang_kinerja.id')->where([
+        ['v_m_daftar_jabatan.kodeKomponen', 'LIKE', $kodeKomponen]
       ])->get([
-        'm_jabatan.id as id',
-        'm_jabatan.nama as jabatan',
-        'm_jabatan.kebutuhan as kebutuhan',
-        'm_jabatan.target as target',
-        'm_jabatan.kodeKomponen as kodeKomponen',
+        'v_m_daftar_jabatan.id as id',
+        'v_m_daftar_jabatan.nama as jabatan',
+        'v_m_daftar_jabatan.kebutuhan as kebutuhan',
+        'v_m_daftar_jabatan.target as target',
+        'v_m_daftar_jabatan.kodeKomponen as kodeKomponen',
+        'v_m_daftar_jabatan.terisi as jabatanTerisi',
         'm_kelas_jabatan.nama as kelasJabatan',
         'm_uang_kinerja.nominal as uangKinerja'
       ]);
