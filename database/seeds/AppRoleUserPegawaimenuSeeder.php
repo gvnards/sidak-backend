@@ -16,8 +16,9 @@ class AppRoleUserPegawaimenuSeeder extends Seeder
     $data = [];
     $id = 1;
     for($i=1; $i<=4; $i++) {
-      for($j=1; $j<=9; $j++) {
+      for($j=1; $j<=10; $j++) {
         if($i!=1 && $i!=4 && $j==1) {}
+        else if($i==4 && $j==10) {}
         else {
           array_push($data, [
             'id' => $id,

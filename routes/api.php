@@ -47,6 +47,8 @@ ROute::post('unit-organisasi', 'JabatanUnitOrganisasiController@insertUnitOrgani
 Route::post('uang-kinerja', 'JabatanUnitOrganisasiController@insertUangKinerja');
 Route::post('kelas-jabatan', 'JabatanUnitOrganisasiController@insertKelasJabatan');
 Route::post('jabatan', 'JabatanUnitOrganisasiController@insertJabatan');
+Route::post('data-status-kepegawaian', 'DataStatusKepegawaianController@insertDataStatusKepegawaian');
+Route::post('data-atasan', 'DataAtasanController@insertDataAtasan');
 
 Route::put('data-pribadi/{id}', 'DataPribadiController@updateDataPribadi');
 Route::put('data-cpns-pns/{id}', 'DataCpnsPnsController@updateDataCpnsPns');
@@ -108,7 +110,12 @@ Route::get('usulan/{idUsulanStatus}/{idPegawai}', 'UsulanController@getUsulan');
 Route::get('usulan-detail/{idUsulan}/{usulanKriteria}', 'UsulanController@getUsulanDetail');
 Route::get('has-sub-organisasi/{kodeKomponen}', 'JabatanUnitOrganisasiController@getHasSubOrganisasi');
 Route::get('pendidikan/{idTingkatPendidikan}', 'DataPendidikanController@getDaftarPendidikan');
+Route::get('daftar-status-kepegawaian', 'DataStatusKepegawaianController@getDaftarStatusKepegawaian');
+Route::get('data-status-kepegawaian/{idPegawai}', 'DataStatusKepegawaianController@getDataStatusKepegawaian');
+Route::get('daftar-atasan', 'DataAtasanController@getDaftarAtasan');
+Route::get('data-atasan/{idPegawai}', 'DataAtasanController@getDataAtasan');
+Route::get('data-bawahan/{idAtasan}', 'DataAtasanController@getDataBawahan');
 
 Route::get('list-pegawai', 'ListPegawaiController@getListPegawai');
 Route::get('total-pegawai', 'ListPegawaiController@getTotalPegawai');
-Route::get('nama-unit-organisasi', 'ListPegawaiController@getNamUnitOrganisasi');
+Route::get('nama-unit-organisasi', 'ListPegawaiController@getDaftarStatusKepegawaian');

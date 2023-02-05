@@ -22,6 +22,7 @@ class AppPegawaimenuSeeder extends Seeder
       ['id' => 7,'nama' => 'Data SKP', 'illustration' => 'IllustrationDataSkp'],
       ['id' => 8,'nama' => 'Data Diklat/Kursus', 'illustration' => 'IllustrationDataDiklatKursus'],
       ['id' => 9,'nama' => 'Data Hukuman Disiplin', 'illustration' => 'IllustrationDataHukumanDisiplin'],
+      ['id' => 10,'nama' => 'Data Status Kepegawaian', 'illustration' => 'IllustrationDataStatusKepegawaian'],
     ];
     foreach($data as $key => $value) {
       DB::table('m_app_pegawaimenu')->insert([

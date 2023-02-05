@@ -54,5 +54,8 @@ class DatabaseSeeder extends Seeder
     $this->call(MDataCpnsPnsSeeder::class);
     $this->call(MJenisPeraturanKinerjaSeeder::class);
     $this->call(MStatusPejabatAtasanPenilaiSeeder::class);
+    $this->call(MDataAtasanSeeder::class);
+    $this->call(MDaftarStatusKepegawaianSeeder::class);
+    $this->call(MDataStatusKepegawaianSeeder::class);
   }
 }
