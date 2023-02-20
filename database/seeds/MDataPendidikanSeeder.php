@@ -46,7 +46,7 @@ class MDataPendidikanSeeder extends Seeder
         'tahunLulus' => '2018',
         'nomorDokumen' => 'XXXX/XXXX',
         'tanggalDokumen' => '2018-03-10',
-        'idDokumen' => 2,
+        'idDokumen' => NULL,
         'idPegawai' => 5324,
         'idUsulan' => 1,
         'idUsulanStatus' => 4,

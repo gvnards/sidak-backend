@@ -55,12 +55,12 @@ class DataGolonganPangkatController extends Controller
         'm_daftar_pangkat.pangkat'
       ]);
     } else {
-      $data = DB::table('m_pegawai')->join('m_data_pangkat', 'm_pegawai.id', '=', 'm_data_pangkat.idPegawai')->leftJoin('m_dokumen', 'm_data_pangkat.idDokumen', '=', 'm_dokumen.id')->where([
+      $data = json_decode(DB::table('m_pegawai')->join('m_data_pangkat', 'm_pegawai.id', '=', 'm_data_pangkat.idPegawai')->where([
         ['m_data_pangkat.id', '=', $idDataGolPang],
       ])->get([
-        'm_data_pangkat.*',
-        'm_dokumen.dokumen'
-      ]);
+        'm_data_pangkat.*'
+      ]), true);
+      $data[0]['dokumen'] = $this->getBlobDokumen($data[0]['idDokumen'], 'pangkat', 'pdf');
     }
     $callback = [
       'message' => $data,
@@ -81,24 +81,13 @@ class DataGolonganPangkatController extends Controller
     foreach ($nip_ as $key => $value) {
       $nip = $value->nip;
     }
-    // jika dokumen sama, maka gunakan yang lama, jika tidak, insert baru
-    $dokumenSearch = json_decode(DB::table('m_dokumen')->where([
-      ['dokumen', '=', $message['dokumen']],
-      ['nama', '=', "DOK_SK_PANGKAT_$nip"]
-      ])->get(), true);
-    if (count($dokumenSearch) === 0) {
-      $dokumen = DB::table('m_dokumen')->insertGetId([
-        'id' => NULL,
-        'nama' => "DOK_SK_PANGKAT_$nip",
-        'dokumen' => $message['dokumen'],
-        'created_at' => Carbon::now()->format('Y-m-d H:i:s'),
-        'updated_at' => Carbon::now()->format('Y-m-d H:i:s')
-      ]);
-    } else {
-      foreach ($dokumenSearch as $key => $value) {
-        $dokumen = $value['id'];
-      }
-    }
+    $dokumen = DB::table('m_dokumen')->insertGetId([
+      'id' => NULL,
+      'nama' => "DOK_SK_PANGKAT_".$nip."_".$message['date'],
+      'created_at' => Carbon::now()->format('Y-m-d H:i:s'),
+      'updated_at' => Carbon::now()->format('Y-m-d H:i:s')
+    ]);
+    $this->uploadDokumen("DOK_SK_PANGKAT_".$nip."_".$message['date'],$message['dokumen'], 'pdf', 'pangkat');
 
     $data = DB::table('m_data_pangkat')->insert([
       'id' => NULL,

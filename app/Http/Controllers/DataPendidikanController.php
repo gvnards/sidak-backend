@@ -72,12 +72,12 @@ class DataPendidikanController extends Controller
         'm_tingkat_pendidikan.nama as tingkatPendidikan'
       ]);
     } else {
-      $data = DB::table('m_pegawai')->join('m_data_pendidikan', 'm_pegawai.id', '=', 'm_data_pendidikan.idPegawai')->leftJoin('m_dokumen', 'm_data_pendidikan.idDokumen', '=', 'm_dokumen.id')->where([
+      $data = json_decode(DB::table('m_pegawai')->join('m_data_pendidikan', 'm_pegawai.id', '=', 'm_data_pendidikan.idPegawai')->where([
         ['m_data_pendidikan.id', '=', $idDataPendidikan],
       ])->get([
-        'm_data_pendidikan.*',
-        'm_dokumen.dokumen'
-      ]);
+        'm_data_pendidikan.*'
+      ]), true);
+      $data[0]['dokumen'] = $this->getBlobDokumen($data[0]['idDokumen'], 'pendidikan', 'pdf');
     }
     $callback = [
       'message' => $data,
@@ -98,24 +98,31 @@ class DataPendidikanController extends Controller
     foreach ($nip_ as $key => $value) {
       $nip = $value->nip;
     }
-    // jika dokumen sama, maka gunakan yang lama, jika tidak, insert baru
-    $dokumenSearch = json_decode(DB::table('m_dokumen')->where([
-      ['dokumen', '=', $message['dokumen']],
-      ['nama', '=', "DOK_IJAZAH_$nip"]
-      ])->get(), true);
-    if (count($dokumenSearch) === 0) {
-      $dokumen = DB::table('m_dokumen')->insertGetId([
-        'id' => NULL,
-        'nama' => "DOK_IJAZAH_$nip",
-        'dokumen' => $message['dokumen'],
-        'created_at' => Carbon::now()->format('Y-m-d H:i:s'),
-        'updated_at' => Carbon::now()->format('Y-m-d H:i:s')
-      ]);
-    } else {
-      foreach ($dokumenSearch as $key => $value) {
-        $dokumen = $value['id'];
-      }
-    }
+    // // jika dokumen sama, maka gunakan yang lama, jika tidak, insert baru
+    // $dokumenSearch = json_decode(DB::table('m_dokumen')->where([
+    //   ['dokumen', '=', $message['dokumen']],
+    //   ['nama', '=', "DOK_IJAZAH_$nip"]
+    //   ])->get(), true);
+    // if (count($dokumenSearch) === 0) {
+    //   $dokumen = DB::table('m_dokumen')->insertGetId([
+    //     'id' => NULL,
+    //     'nama' => "DOK_IJAZAH_$nip",
+    //     'dokumen' => $message['dokumen'],
+    //     'created_at' => Carbon::now()->format('Y-m-d H:i:s'),
+    //     'updated_at' => Carbon::now()->format('Y-m-d H:i:s')
+    //   ]);
+    // } else {
+    //   foreach ($dokumenSearch as $key => $value) {
+    //     $dokumen = $value['id'];
+    //   }
+    // }
+    $dokumen = DB::table('m_dokumen')->insertGetId([
+      'id' => NULL,
+      'nama' => "DOK_IJAZAH_".$nip."_".$message['date'],
+      'created_at' => Carbon::now()->format('Y-m-d H:i:s'),
+      'updated_at' => Carbon::now()->format('Y-m-d H:i:s')
+    ]);
+    $this->uploadDokumen("DOK_IJAZAH_".$nip."_".$message['date'],$message['dokumen'], 'pdf', 'pendidikan');
 
     $data = DB::table('m_data_pendidikan')->insert([
       'id' => NULL,

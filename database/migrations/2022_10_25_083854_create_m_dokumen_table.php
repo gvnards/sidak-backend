@@ -16,7 +16,6 @@ class CreateMDokumenTable extends Migration
     Schema::create('m_dokumen', function (Blueprint $table) {
       $table->id()->autoIncrement()->index();
       $table->string('nama', 255)->index();
-      $table->mediumText('dokumen');
       $table->timestamps();
     });
   }

@@ -8,6 +8,7 @@ use Illuminate\Foundation\Validation\ValidatesRequests;
 use Illuminate\Routing\Controller as BaseController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 
 class Controller extends BaseController
 {
@@ -46,6 +47,38 @@ class Controller extends BaseController
     $callback = $this->encrypt($username, json_encode($callback));
     return $callback;
   }
+
+  function getBlobDokumen($idDokumen, $folderDokumen, $ekstensiDokumen) {
+    if ($idDokumen == NULL) {
+      $blob = '';
+    } else {
+      $dokumen = json_decode(DB::table('m_dokumen')->where([
+        ['id', '=', $idDokumen]
+      ])->get(), true)[0];
+      $filename = $dokumen['nama'];
+      $path = storage_path('app/dokumen/'.$folderDokumen.'/'.$filename.".".$ekstensiDokumen);
+      $mimeType = mime_content_type($path);
+      $getPdfFromServerFolder = base64_encode(file_get_contents($path));
+      $blob = 'data:'.$mimeType.';base64,'.$getPdfFromServerFolder;
+    }
+    return $blob;
+  }
+
+  function deleteDokumen($idDokumen, $folderDokumen, $ekstensiDokumen) {
+    $dokumen = json_decode(DB::table('m_dokumen')->where([
+      ['id', '=', $idDokumen]
+    ])->get(), true)[0];
+    Storage::delete('dokumen/'.$folderDokumen.'/'.$dokumen['nama'].'.'.$ekstensiDokumen);
+    DB::table('m_dokumen')->delete($idDokumen);
+    DB::table('m_dokumen')->where([
+      ['id', '=', $idDokumen]
+    ])->delete();
+  }
+
+  function uploadDokumen($namaDokumen, $blobDokumen, $ekstensiDokumen, $folderDokumen) {
+    Storage::putFileAs('dokumen', $blobDokumen, $folderDokumen.'/'.$namaDokumen.'.'.$ekstensiDokumen);
+  }
+
   /**
    * Decrypt data from a CryptoJS json encoding string
    *

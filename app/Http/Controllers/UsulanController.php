@@ -213,45 +213,44 @@ class UsulanController extends Controller
     $message = json_decode($this->decrypt($username, $request->message), true);
     switch ($usulanKriteria) {
       case 'Data Anak':
-        $data = DB::table('m_data_anak')->join('m_data_pasangan', 'm_data_anak.idOrangTua', '=', 'm_data_pasangan.id')->join('m_status_anak', 'm_data_anak.idStatusAnak', '=', 'm_status_anak.id')->leftJoin('m_dokumen', 'm_data_anak.idDokumen', '=', 'm_dokumen.id')->where([
+        $data = json_decode(DB::table('m_data_anak')->join('m_data_pasangan', 'm_data_anak.idOrangTua', '=', 'm_data_pasangan.id')->join('m_status_anak', 'm_data_anak.idStatusAnak', '=', 'm_status_anak.id')->where([
           ['m_data_anak.id', '=', $idUsulan]
         ])->get([
           'm_data_anak.*',
           'm_data_pasangan.nama as namaOrangTua',
-          'm_status_anak.nama as statusAnak',
-          'm_dokumen.dokumen as dokumen'
-        ]);
+          'm_status_anak.nama as statusAnak'
+        ]), true);
+        $data[0]['dokumen'] = $this->getBlobDokumen($data[0]['idDokumen'], $data[0]['idDokumen'] == 1 ? '' :  'anak', 'pdf');
         break;
       case 'Data Pasangan':
-        $data = DB::table('m_data_pasangan')->join('m_status_perkawinan', 'm_data_pasangan.idStatusPerkawinan', '=', 'm_status_perkawinan.id')->leftJoin('m_dokumen', 'm_data_pasangan.idDokumen', '=', 'm_dokumen.id')->where([
+        $data = json_decode(DB::table('m_data_pasangan')->join('m_status_perkawinan', 'm_data_pasangan.idStatusPerkawinan', '=', 'm_status_perkawinan.id')->where([
           ['m_data_pasangan.id', '=', $idUsulan]
         ])->get([
           'm_data_pasangan.*',
-          'm_status_perkawinan.nama as statusPerkawinan',
-          'm_dokumen.dokumen as dokumen'
-        ]);
+          'm_status_perkawinan.nama as statusPerkawinan'
+        ]), true);
+        $data[0]['dokumen'] = $this->getBlobDokumen($data[0]['idDokumen'], $data[0]['idDokumen'] == 1 ? '' :  'pasangan', 'pdf');
         break;
       case 'Data Pendidikan':
-        $data = DB::table('m_data_pendidikan')->join('m_jenis_pendidikan', 'm_data_pendidikan.idJenisPendidikan', '=', 'm_jenis_pendidikan.id')->join('m_tingkat_pendidikan', 'm_data_pendidikan.idTingkatPendidikan', '=', 'm_tingkat_pendidikan.id')->join('m_daftar_pendidikan', 'm_data_pendidikan.idDaftarPendidikan', '=', 'm_daftar_pendidikan.id')->leftJoin('m_dokumen', 'm_data_pendidikan.idDokumen', '=', 'm_dokumen.id')->where([
+        $data = json_decode(DB::table('m_data_pendidikan')->join('m_jenis_pendidikan', 'm_data_pendidikan.idJenisPendidikan', '=', 'm_jenis_pendidikan.id')->join('m_tingkat_pendidikan', 'm_data_pendidikan.idTingkatPendidikan', '=', 'm_tingkat_pendidikan.id')->join('m_daftar_pendidikan', 'm_data_pendidikan.idDaftarPendidikan', '=', 'm_daftar_pendidikan.id')->where([
           ['m_data_pendidikan.id', '=', $idUsulan]
         ])->get([
           'm_data_pendidikan.*',
           'm_jenis_pendidikan.nama as jenisPendidikan',
           'm_tingkat_pendidikan.nama as tingkatPendidikan',
-          'm_daftar_pendidikan.nama as pendidikan',
-          'm_dokumen.dokumen as dokumen'
-        ]);
+          'm_daftar_pendidikan.nama as pendidikan'
+        ]), true);
+        $data[0]['dokumen'] = $this->getBlobDokumen($data[0]['idDokumen'], $data[0]['idDokumen'] == 1 ? '' :  'pendidikan', 'pdf');
         break;
       case 'Data Jabatan':
         $unitOrganisasi = [];
         $kodeKomponen = [];
-        $data_ = DB::table('m_data_jabatan')->join('m_jabatan', 'm_data_jabatan.idJabatan', '=', 'm_jabatan.id')->leftJoin('m_dokumen', 'm_data_jabatan.idDokumen', '=', 'm_dokumen.id')->where([
+        $data_ = DB::table('m_data_jabatan')->join('m_jabatan', 'm_data_jabatan.idJabatan', '=', 'm_jabatan.id')->where([
           ['m_data_jabatan.id', '=', $idUsulan]
         ])->get([
           'm_data_jabatan.*',
           'm_jabatan.kodeKomponen as kodeKomponen',
-          'm_jabatan.nama as jabatan',
-          'm_dokumen.dokumen as dokumen'
+          'm_jabatan.nama as jabatan'
         ]);
         foreach(json_decode($data_, true) as $key => $value) {
           $kodeKomponen = explode(".",$value['kodeKomponen']);
@@ -268,40 +267,41 @@ class UsulanController extends Controller
           $val['unitOrganisasi'] = $unitOrganisasi;
           array_push($data, $val);
         }
+        $data[0]['dokumen'] = $this->getBlobDokumen($data[0]['idDokumen'], $data[0]['idDokumen'] == 1 ? '' : 'jabatan', 'pdf');
         break;
       case 'Data Pangkat':
-        $data = DB::table('m_data_pangkat')->join('m_jenis_pangkat', 'm_data_pangkat.idJenisPangkat', '=', 'm_jenis_pangkat.id')->join('m_daftar_pangkat', 'm_data_pangkat.idDaftarPangkat', '=', 'm_daftar_pangkat.id')->leftJoin('m_dokumen', 'm_data_pangkat.idDokumen', '=', 'm_dokumen.id')->where([
+        $data = json_decode(DB::table('m_data_pangkat')->join('m_jenis_pangkat', 'm_data_pangkat.idJenisPangkat', '=', 'm_jenis_pangkat.id')->join('m_daftar_pangkat', 'm_data_pangkat.idDaftarPangkat', '=', 'm_daftar_pangkat.id')->where([
           ['m_data_pangkat.id', '=', $idUsulan]
         ])->get([
           'm_data_pangkat.*',
           'm_jenis_pangkat.nama as jenisPangkat',
           'm_daftar_pangkat.golongan as golongan',
-          'm_daftar_pangkat.pangkat as pangkat',
-          'm_dokumen.dokumen as dokumen'
-        ]);
+          'm_daftar_pangkat.pangkat as pangkat'
+        ]), true);
+        $data[0]['dokumen'] = $this->getBlobDokumen($data[0]['idDokumen'], $data[0]['idDokumen'] == 1 ? '' : 'pangkat', 'pdf');
         break;
       case 'Data Diklat':
-        $data = DB::table('m_data_diklat')->join('m_jenis_diklat', 'm_data_diklat.idJenisDiklat', '=', 'm_jenis_diklat.id')->join('m_daftar_diklat', 'm_data_diklat.idDaftarDiklat', '=', 'm_daftar_diklat.id')->join('m_daftar_instansi_diklat', 'm_data_diklat.idDaftarInstansiDiklat', '=', 'm_daftar_instansi_diklat.id')->leftJoin('m_dokumen', 'm_data_diklat.idDokumen', '=', 'm_dokumen.id')->where([
+        $data = json_decode(DB::table('m_data_diklat')->join('m_jenis_diklat', 'm_data_diklat.idJenisDiklat', '=', 'm_jenis_diklat.id')->join('m_daftar_diklat', 'm_data_diklat.idDaftarDiklat', '=', 'm_daftar_diklat.id')->join('m_daftar_instansi_diklat', 'm_data_diklat.idDaftarInstansiDiklat', '=', 'm_daftar_instansi_diklat.id')->where([
           ['m_data_diklat.id', '=', $idUsulan]
         ])->get([
           'm_data_diklat.*',
           'm_daftar_instansi_diklat.nama as instansi',
           'm_jenis_diklat.nama as jenisDiklat',
           'm_daftar_diklat.nama as diklat',
-          'm_dokumen.dokumen as dokumen'
-        ]);
+        ]), true);
+        $data[0]['dokumen'] = $this->getBlobDokumen($data[0]['idDokumen'], $data[0]['idDokumen'] == 1 ? '' : 'diklat', 'pdf');
         break;
       case 'Data SKP':
-        $data = DB::table('m_data_skp')->join('m_jenis_jabatan', 'm_data_skp.idJenisJabatan', '=', 'm_jenis_jabatan.id')->join('m_jenis_peraturan_kinerja', 'm_data_skp.idJenisPeraturanKinerja', '=', 'm_jenis_peraturan_kinerja.id')->join('m_status_pejabat_atasan_penilai as status_pejabat_penilai', 'm_data_skp.idStatusPejabatPenilai', '=', 'status_pejabat_penilai.id')->join('m_status_pejabat_atasan_penilai as status_atasan_pejabat_penilai', 'm_data_skp.idStatusAtasanPejabatPenilai', '=', 'status_atasan_pejabat_penilai.id')->leftJoin('m_dokumen', 'm_data_skp.idDokumen', '=', 'm_dokumen.id')->where([
+        $data = json_decode(DB::table('m_data_skp')->join('m_jenis_jabatan', 'm_data_skp.idJenisJabatan', '=', 'm_jenis_jabatan.id')->join('m_jenis_peraturan_kinerja', 'm_data_skp.idJenisPeraturanKinerja', '=', 'm_jenis_peraturan_kinerja.id')->join('m_status_pejabat_atasan_penilai as status_pejabat_penilai', 'm_data_skp.idStatusPejabatPenilai', '=', 'status_pejabat_penilai.id')->join('m_status_pejabat_atasan_penilai as status_atasan_pejabat_penilai', 'm_data_skp.idStatusAtasanPejabatPenilai', '=', 'status_atasan_pejabat_penilai.id')->where([
           ['m_data_skp.id', '=', $idUsulan]
         ])->get([
           'm_data_skp.*',
           'm_jenis_jabatan.nama as jenisJabatan',
           'm_jenis_peraturan_kinerja.nama as peraturanKinerja',
           'status_pejabat_penilai.nama as statusPejabatPenilai',
-          'status_atasan_pejabat_penilai.nama as statusAtasanPejabatPenilai',
-          'm_dokumen.dokumen as dokumen'
-        ]);
+          'status_atasan_pejabat_penilai.nama as statusAtasanPejabatPenilai'
+        ]), true);
+        $data[0]['dokumen'] = $this->getBlobDokumen($data[0]['idDokumen'], $data[0]['idDokumen'] == 1 ? '' :  'jabatan', 'pdf');
         break;
       default:
         return $this->encrypt($username, json_encode([
@@ -333,21 +333,35 @@ class UsulanController extends Controller
           'idUsulanHasil' => $message['idUsulanHasil'],
           'keteranganUsulan' => $message['keteranganUsulan'],
         ]);
-        if ($message['idUpdate'] != null && $message['idUsulanHasil'] == 1) {
-          $newData = json_decode(DB::table('m_data_anak')->where('id', '=', $idUsulan)->get(), true);
-          /// kurang delete dokumen yang tidak terpakai
-          foreach ($newData as $key => $value) {
-            $data = DB::table('m_data_anak')->where('id', '=', $message['idUpdate'])->update([
-              'nama' => $value['nama'],
-              'tempatLahir' => $value['tempatLahir'],
-              'tanggalLahir' => $value['tanggalLahir'],
-              'nomorDokumen' => $value['nomorDokumen'],
-              'tanggalDokumen' => $value['tanggalDokumen'],
-              'idOrangTua' => $value['idOrangTua'],
-              'idStatusAnak' => $value['idStatusAnak'],
-              'idDokumen' => $value['idDokumen'],
-              'updated_at' => $value['updated_at'],
+        if ($message['idUpdate'] != null) {
+          if ($message['idUsulanHasil'] == 1) {
+            $newData = json_decode(DB::table('m_data_anak')->where('id', '=', $idUsulan)->get(), true);
+            $oldData = json_decode(DB::table('m_data_anak')->where('id', '=', $message['idUpdate'])->get(), true)[0];
+            foreach ($newData as $key => $value) {
+              $data = DB::table('m_data_anak')->where('id', '=', $message['idUpdate'])->update([
+                'nama' => $value['nama'],
+                'tempatLahir' => $value['tempatLahir'],
+                'tanggalLahir' => $value['tanggalLahir'],
+                'nomorDokumen' => $value['nomorDokumen'],
+                'tanggalDokumen' => $value['tanggalDokumen'],
+                'idOrangTua' => $value['idOrangTua'],
+                'idStatusAnak' => $value['idStatusAnak'],
+                'idDokumen' => $value['idDokumen'],
+                'updated_at' => $value['updated_at'],
+              ]);
+            }
+            DB::table('m_data_anak')->where('id', '=', $idUsulan)->update([
+              'idDokumen' => 1
             ]);
+            $this->deleteDokumen($oldData['idDokumen'], 'anak', 'pdf');
+          } else {
+            $getData = json_decode(DB::table('m_data_anak')->where([
+              ['id', '=', $idUsulan]
+            ])->get(), true)[0];
+            DB::table('m_data_anak')->where('id', '=', $idUsulan)->update([
+              'idDokumen' => 1
+            ]);
+            $this->deleteDokumen($getData['idDokumen'], 'anak', 'pdf');
           }
         }
         break;
@@ -357,21 +371,35 @@ class UsulanController extends Controller
           'idUsulanHasil' => $message['idUsulanHasil'],
           'keteranganUsulan' => $message['keteranganUsulan'],
         ]);
-        if ($message['idUpdate'] != null && $message['idUsulanHasil'] == 1) {
-          $newData = json_decode(DB::table('m_data_diklat')->where('id', '=', $idUsulan)->get(), true);
-          /// kurang delete dokumen yang tidak terpakai
-          foreach ($newData as $key => $value) {
-            $data = DB::table('m_data_diklat')->where('id', '=', $message['idUpdate'])->update([
-              'idJenisDiklat' => $value['idJenisDiklat'],
-              'idDaftarDiklat' => $value['idDaftarDiklat'],
-              'namaDiklat' => $value['namaDiklat'],
-              'lamaDiklat' => $value['lamaDiklat'],
-              'tanggalDiklat' => $value['tanggalDiklat'],
-              'idDaftarInstansiDiklat' => $value['idDaftarInstansiDiklat'],
-              'institusiPenyelenggara' => $value['institusiPenyelenggara'],
-              'idDokumen' => $value['idDokumen'],
-              'updated_at' => $value['updated_at'],
+        if ($message['idUpdate'] != null) {
+          if ($message['idUsulanHasil'] == 1) {
+            $newData = json_decode(DB::table('m_data_diklat')->where('id', '=', $idUsulan)->get(), true);
+            $oldData = json_decode(DB::table('m_data_diklat')->where('id', '=', $message['idUpdate'])->get(), true)[0];
+            foreach ($newData as $key => $value) {
+              $data = DB::table('m_data_diklat')->where('id', '=', $message['idUpdate'])->update([
+                'idJenisDiklat' => $value['idJenisDiklat'],
+                'idDaftarDiklat' => $value['idDaftarDiklat'],
+                'namaDiklat' => $value['namaDiklat'],
+                'lamaDiklat' => $value['lamaDiklat'],
+                'tanggalDiklat' => $value['tanggalDiklat'],
+                'idDaftarInstansiDiklat' => $value['idDaftarInstansiDiklat'],
+                'institusiPenyelenggara' => $value['institusiPenyelenggara'],
+                'idDokumen' => $value['idDokumen'],
+                'updated_at' => $value['updated_at'],
+              ]);
+            }
+            DB::table('m_data_diklat')->where('id', '=', $idUsulan)->update([
+              'idDokumen' => 1
             ]);
+            $this->deleteDokumen($oldData['idDokumen'], 'diklat', 'pdf');
+          } else {
+            $getData = json_decode(DB::table('m_data_diklat')->where([
+              ['id', '=', $idUsulan]
+            ])->get(), true)[0];
+            DB::table('m_data_diklat')->where('id', '=', $idUsulan)->update([
+              'idDokumen' => 1
+            ]);
+            $this->deleteDokumen($getData['idDokumen'], 'diklat', 'pdf');
           }
         }
         break;
@@ -381,23 +409,37 @@ class UsulanController extends Controller
           'idUsulanHasil' => $message['idUsulanHasil'],
           'keteranganUsulan' => $message['keteranganUsulan'],
         ]);
-        if ($message['idUpdate'] != null && $message['idUsulanHasil'] == 1) {
-          $newData = json_decode(DB::table('m_data_pangkat')->where('id', '=', $idUsulan)->get(), true);
-          /// kurang delete dokumen yang tidak terpakai
-          foreach ($newData as $key => $value) {
-            $data = DB::table('m_data_pangkat')->where('id', '=', $message['idUpdate'])->update([
-              'idJenisPangkat' => $value['idJenisPangkat'],
-              'idDaftarPangkat' => $value['idDaftarPangkat'],
-              'masaKerjaTahun' => $value['masaKerjaTahun'],
-              'masaKerjaBulan' => $value['masaKerjaBulan'],
-              'nomorDokumen' => $value['nomorDokumen'],
-              'tanggalDokumen' => $value['tanggalDokumen'],
-              'tmt' => $value['tmt'],
-              'nomorBkn' => $value['nomorBkn'],
-              'tanggalBkn' => $value['tanggalBkn'],
-              'idDokumen' => $value['idDokumen'],
-              'updated_at' => $value['updated_at'],
+        if ($message['idUpdate'] != null) {
+          if ($message['idUsulanHasil'] == 1) {
+            $newData = json_decode(DB::table('m_data_pangkat')->where('id', '=', $idUsulan)->get(), true);
+            $oldData = json_decode(DB::table('m_data_pangkat')->where('id', '=', $message['idUpdate'])->get(), true)[0];
+            foreach ($newData as $key => $value) {
+              $data = DB::table('m_data_pangkat')->where('id', '=', $message['idUpdate'])->update([
+                'idJenisPangkat' => $value['idJenisPangkat'],
+                'idDaftarPangkat' => $value['idDaftarPangkat'],
+                'masaKerjaTahun' => $value['masaKerjaTahun'],
+                'masaKerjaBulan' => $value['masaKerjaBulan'],
+                'nomorDokumen' => $value['nomorDokumen'],
+                'tanggalDokumen' => $value['tanggalDokumen'],
+                'tmt' => $value['tmt'],
+                'nomorBkn' => $value['nomorBkn'],
+                'tanggalBkn' => $value['tanggalBkn'],
+                'idDokumen' => $value['idDokumen'],
+                'updated_at' => $value['updated_at'],
+              ]);
+            }
+            DB::table('m_data_pangkat')->where('id', '=', $idUsulan)->update([
+              'idDokumen' => 1
             ]);
+            $this->deleteDokumen($oldData['idDokumen'], 'pangkat', 'pdf');
+          } else {
+            $getData = json_decode(DB::table('m_data_pangkat')->where([
+              ['id', '=', $idUsulan]
+            ])->get(), true)[0];
+            DB::table('m_data_pangkat')->where('id', '=', $idUsulan)->update([
+              'idDokumen' => 1
+            ]);
+            $this->deleteDokumen($getData['idDokumen'], 'pangkat', 'pdf');
           }
         }
         break;
@@ -407,21 +449,35 @@ class UsulanController extends Controller
           'idUsulanHasil' => $message['idUsulanHasil'],
           'keteranganUsulan' => $message['keteranganUsulan'],
         ]);
-        if ($message['idUpdate'] != null && $message['idUsulanHasil'] == 1) {
-          $newData = json_decode(DB::table('m_data_pasangan')->where('id', '=', $idUsulan)->get(), true);
-          /// kurang delete dokumen yang tidak terpakai
-          foreach ($newData as $key => $value) {
-            $data = DB::table('m_data_pasangan')->where('id', '=', $message['idUpdate'])->update([
-              'nama' => $value['nama'],
-              'tempatLahir' => $value['tempatLahir'],
-              'tanggalLahir' => $value['tanggalLahir'],
-              'tanggalStatusPerkawinan' => $value['tanggalStatusPerkawinan'],
-              'nomorDokumen' => $value['nomorDokumen'],
-              'tanggalDokumen' => $value['tanggalDokumen'],
-              'idStatusPerkawinan' => $value['idStatusPerkawinan'],
-              'idDokumen' => $value['idDokumen'],
-              'updated_at' => $value['updated_at'],
+        if ($message['idUpdate'] != null) {
+          if ($message['idUsulanHasil'] == 1) {
+            $newData = json_decode(DB::table('m_data_pasangan')->where('id', '=', $idUsulan)->get(), true);
+            $oldData = json_decode(DB::table('m_data_pasangan')->where('id', '=', $message['idUpdate'])->get(), true)[0];
+            foreach ($newData as $key => $value) {
+              $data = DB::table('m_data_pasangan')->where('id', '=', $message['idUpdate'])->update([
+                'nama' => $value['nama'],
+                'tempatLahir' => $value['tempatLahir'],
+                'tanggalLahir' => $value['tanggalLahir'],
+                'tanggalStatusPerkawinan' => $value['tanggalStatusPerkawinan'],
+                'nomorDokumen' => $value['nomorDokumen'],
+                'tanggalDokumen' => $value['tanggalDokumen'],
+                'idStatusPerkawinan' => $value['idStatusPerkawinan'],
+                'idDokumen' => $value['idDokumen'],
+                'updated_at' => $value['updated_at'],
+              ]);
+            }
+            DB::table('m_data_pasangan')->where('id', '=', $idUsulan)->update([
+              'idDokumen' => 1
             ]);
+            $this->deleteDokumen($oldData['idDokumen'], 'pasangan', 'pdf');
+          } else {
+            $getData = json_decode(DB::table('m_data_pasangan')->where([
+              ['id', '=', $idUsulan]
+            ])->get(), true)[0];
+            DB::table('m_data_pasangan')->where('id', '=', $idUsulan)->update([
+              'idDokumen' => 1
+            ]);
+            $this->deleteDokumen($getData['idDokumen'], 'pasangan', 'pdf');
           }
         }
         break;
@@ -432,24 +488,38 @@ class UsulanController extends Controller
           'keteranganUsulan' => $message['keteranganUsulan'],
           'idDataPendidikanUpdate' => null,
         ]);
-        if ($message['idUpdate'] != null && $message['idUsulanHasil'] == 1) {
-          $newData = json_decode(DB::table('m_data_pendidikan')->where('id', '=', $idUsulan)->get(), true);
-          /// kurang delete dokumen yang tidak terpakai
-          foreach ($newData as $key => $value) {
-            $data = DB::table('m_data_pendidikan')->where('id', '=', $message['idUpdate'])->update([
-              'idJenisPendidikan' => $value['idJenisPendidikan'],
-              'idTingkatPendidikan' => $value['idTingkatPendidikan'],
-              'idDaftarPendidikan' => $value['idDaftarPendidikan'],
-              'namaSekolah' => $value['namaSekolah'],
-              'gelarDepan' => $value['gelarDepan'],
-              'gelarBelakang' => $value['gelarBelakang'],
-              'tanggalLulus' => $value['tanggalLulus'],
-              'tahunLulus' => $value['tahunLulus'],
-              'nomorDokumen' => $value['nomorDokumen'],
-              'tanggalDokumen' => $value['tanggalDokumen'],
-              'idDokumen' => $value['idDokumen'],
-              'updated_at' => $value['updated_at'],
+        if ($message['idUpdate'] != null) {
+          if ($message['idUsulanHasil'] == 1) {
+            $newData = json_decode(DB::table('m_data_pendidikan')->where('id', '=', $idUsulan)->get(), true);
+            $oldData = json_decode(DB::table('m_data_pendidikan')->where('id', '=', $message['idUpdate'])->get(), true)[0];
+            foreach ($newData as $key => $value) {
+              $data = DB::table('m_data_pendidikan')->where('id', '=', $message['idUpdate'])->update([
+                'idJenisPendidikan' => $value['idJenisPendidikan'],
+                'idTingkatPendidikan' => $value['idTingkatPendidikan'],
+                'idDaftarPendidikan' => $value['idDaftarPendidikan'],
+                'namaSekolah' => $value['namaSekolah'],
+                'gelarDepan' => $value['gelarDepan'],
+                'gelarBelakang' => $value['gelarBelakang'],
+                'tanggalLulus' => $value['tanggalLulus'],
+                'tahunLulus' => $value['tahunLulus'],
+                'nomorDokumen' => $value['nomorDokumen'],
+                'tanggalDokumen' => $value['tanggalDokumen'],
+                'idDokumen' => $value['idDokumen'],
+                'updated_at' => $value['updated_at'],
+              ]);
+            }
+            DB::table('m_data_pendidikan')->where('id', '=', $idUsulan)->update([
+              'idDokumen' => 1
             ]);
+            $this->deleteDokumen($oldData['idDokumen'], 'pendidikan', 'pdf');
+          } else {
+            $getData = json_decode(DB::table('m_data_pendidikan')->where([
+              ['id', '=', $idUsulan]
+            ])->get(), true)[0];
+            DB::table('m_data_pendidikan')->where('id', '=', $idUsulan)->update([
+              'idDokumen' => 1
+            ]);
+            $this->deleteDokumen($getData['idDokumen'], 'pendidikan', 'pdf');
           }
         }
         break;
@@ -459,41 +529,55 @@ class UsulanController extends Controller
           'idUsulanHasil' => $message['idUsulanHasil'],
           'keteranganUsulan' => $message['keteranganUsulan'],
         ]);
-        if ($message['idUpdate'] != null && $message['idUsulanHasil'] == 1) {
-          $newData = json_decode(DB::table('m_data_skp')->where('id', '=', $idUsulan)->get(), true);
-          /// kurang delete dokumen yang tidak terpakai
-          foreach ($newData as $key => $value) {
-            $data = DB::table('m_data_skp')->where('id', '=', $message['idUpdate'])->update([
-              'idJenisJabatan' => $value['idJenisJabatan'],
-              'tahun' => $value['tahun'],
-              'idJenisPeraturanKinerja' => $value['idJenisPeraturanKinerja'],
-              'nilaiSkp' => $value['nilaiSkp'],
-              'orientasiPelayanan' => $value['orientasiPelayanan'],
-              'integritas' => $value['integritas'],
-              'komitmen' => $value['komitmen'],
-              'disiplin' => $value['disiplin'],
-              'kerjaSama' => $value['kerjaSama'],
-              'kepemimpinan' => $value['kepemimpinan'],
-              'nilaiPrestasiKerja' => $value['nilaiPrestasiKerja'],
-              'nilaiKonversi' => $value['nilaiKonversi'],
-              'nilaiIntegrasi' => $value['nilaiIntegrasi'],
-              'idStatusPejabatPenilai' => $value['idStatusPejabatPenilai'],
-              'nipNrpPejabatPenilai' => $value['nipNrpPejabatPenilai'],
-              'namaPejabatPenilai' => $value['namaPejabatPenilai'],
-              'jabatanPejabatPenilai' => $value['jabatanPejabatPenilai'],
-              'unitOrganisasiPejabatPenilai' => $value['unitOrganisasiPejabatPenilai'],
-              'golonganPejabatPenilai' => $value['golonganPejabatPenilai'],
-              'tmtGolonganPejabatPenilai' => $value['tmtGolonganPejabatPenilai'],
-              'idStatusAtasanPejabatPenilai' => $value['idStatusAtasanPejabatPenilai'],
-              'nipNrpAtasanPejabatPenilai' => $value['nipNrpAtasanPejabatPenilai'],
-              'namaAtasanPejabatPenilai' => $value['namaAtasanPejabatPenilai'],
-              'jabatanAtasanPejabatPenilai' => $value['jabatanAtasanPejabatPenilai'],
-              'unitOrganisasiAtasanPejabatPenilai' => $value['unitOrganisasiAtasanPejabatPenilai'],
-              'golonganAtasanPejabatPenilai' => $value['golonganAtasanPejabatPenilai'],
-              'tmtGolonganAtasanPejabatPenilai' => $value['tmtGolonganAtasanPejabatPenilai'],
-              'idDokumen' => $value['idDokumen'],
-              'updated_at' => $value['updated_at'],
+        if ($message['idUpdate'] != null) {
+          if ($message['idUsulanHasil'] == 1) {
+            $newData = json_decode(DB::table('m_data_skp')->where('id', '=', $idUsulan)->get(), true);
+            $oldData = json_decode(DB::table('m_data_skp')->where('id', '=', $message['idUpdate'])->get(), true)[0];
+            foreach ($newData as $key => $value) {
+              $data = DB::table('m_data_skp')->where('id', '=', $message['idUpdate'])->update([
+                'idJenisJabatan' => $value['idJenisJabatan'],
+                'tahun' => $value['tahun'],
+                'idJenisPeraturanKinerja' => $value['idJenisPeraturanKinerja'],
+                'nilaiSkp' => $value['nilaiSkp'],
+                'orientasiPelayanan' => $value['orientasiPelayanan'],
+                'integritas' => $value['integritas'],
+                'komitmen' => $value['komitmen'],
+                'disiplin' => $value['disiplin'],
+                'kerjaSama' => $value['kerjaSama'],
+                'kepemimpinan' => $value['kepemimpinan'],
+                'nilaiPrestasiKerja' => $value['nilaiPrestasiKerja'],
+                'nilaiKonversi' => $value['nilaiKonversi'],
+                'nilaiIntegrasi' => $value['nilaiIntegrasi'],
+                'idStatusPejabatPenilai' => $value['idStatusPejabatPenilai'],
+                'nipNrpPejabatPenilai' => $value['nipNrpPejabatPenilai'],
+                'namaPejabatPenilai' => $value['namaPejabatPenilai'],
+                'jabatanPejabatPenilai' => $value['jabatanPejabatPenilai'],
+                'unitOrganisasiPejabatPenilai' => $value['unitOrganisasiPejabatPenilai'],
+                'golonganPejabatPenilai' => $value['golonganPejabatPenilai'],
+                'tmtGolonganPejabatPenilai' => $value['tmtGolonganPejabatPenilai'],
+                'idStatusAtasanPejabatPenilai' => $value['idStatusAtasanPejabatPenilai'],
+                'nipNrpAtasanPejabatPenilai' => $value['nipNrpAtasanPejabatPenilai'],
+                'namaAtasanPejabatPenilai' => $value['namaAtasanPejabatPenilai'],
+                'jabatanAtasanPejabatPenilai' => $value['jabatanAtasanPejabatPenilai'],
+                'unitOrganisasiAtasanPejabatPenilai' => $value['unitOrganisasiAtasanPejabatPenilai'],
+                'golonganAtasanPejabatPenilai' => $value['golonganAtasanPejabatPenilai'],
+                'tmtGolonganAtasanPejabatPenilai' => $value['tmtGolonganAtasanPejabatPenilai'],
+                'idDokumen' => $value['idDokumen'],
+                'updated_at' => $value['updated_at'],
+              ]);
+            }
+            DB::table('m_data_skp')->where('id', '=', $idUsulan)->update([
+              'idDokumen' => 1
             ]);
+            $this->deleteDokumen($oldData['idDokumen'], 'skp', 'pdf');
+          } else {
+            $getData = json_decode(DB::table('m_data_skp')->where([
+              ['id', '=', $idUsulan]
+            ])->get(), true)[0];
+            DB::table('m_data_skp')->where('id', '=', $idUsulan)->update([
+              'idDokumen' => 1
+            ]);
+            $this->deleteDokumen($getData['idDokumen'], 'skp', 'pdf');
           }
         }
         break;
@@ -504,20 +588,34 @@ class UsulanController extends Controller
           'keteranganUsulan' => $message['keteranganUsulan'],
           'idDataJabatanUpdate' => null,
         ]);
-        if ($message['idUpdate'] != null && $message['idUsulanHasil'] == 1) {
-          $newData = json_decode(DB::table('m_data_jabatan')->where('id', '=', $idUsulan)->get(), true);
-          /// kurang delete dokumen yang tidak terpakai
-          foreach ($newData as $key => $value) {
-            $data = DB::table('m_data_jabatan')->where('id', '=', $message['idUpdate'])->update([
-              'idJabatan' => $value['idJabatan'],
-              'isPltPlh' => $value['isPltPlh'],
-              'tmt' => $value['tmt'],
-              'spmt' => $value['spmt'],
-              'tanggalDokumen' => $value['tanggalDokumen'],
-              'nomorDokumen' => $value['nomorDokumen'],
-              'idDokumen' => $value['idDokumen'],
-              'updated_at' => $value['updated_at'],
+        if ($message['idUpdate'] != null) {
+          if ($message['idUsulanHasil'] == 1) {
+            $newData = json_decode(DB::table('m_data_jabatan')->where('id', '=', $idUsulan)->get(), true);
+            $oldData = json_decode(DB::table('m_data_jabatan')->where('id', '=', $message['idUpdate'])->get(), true)[0];
+            foreach ($newData as $key => $value) {
+              $data = DB::table('m_data_jabatan')->where('id', '=', $message['idUpdate'])->update([
+                'idJabatan' => $value['idJabatan'],
+                'isPltPlh' => $value['isPltPlh'],
+                'tmt' => $value['tmt'],
+                'spmt' => $value['spmt'],
+                'tanggalDokumen' => $value['tanggalDokumen'],
+                'nomorDokumen' => $value['nomorDokumen'],
+                'idDokumen' => $value['idDokumen'],
+                'updated_at' => $value['updated_at'],
+              ]);
+            }
+            DB::table('m_data_jabatan')->where('id', '=', $idUsulan)->update([
+              'idDokumen' => 1
             ]);
+            $this->deleteDokumen($oldData['idDokumen'], 'jabatan', 'pdf');
+          } else {
+            $getData = json_decode(DB::table('m_data_jabatan')->where([
+              ['id', '=', $idUsulan]
+            ])->get(), true)[0];
+            DB::table('m_data_jabatan')->where('id', '=', $idUsulan)->update([
+              'idDokumen' => 1
+            ]);
+            $this->deleteDokumen($getData['idDokumen'], 'jabatan', 'pdf');
           }
         }
         break;

@@ -23,7 +23,7 @@ class MDataDiklatSeeder extends Seeder
         'tanggalDiklat' => '2023-06-01',
         'idDaftarInstansiDiklat' => 1,
         'institusiPenyelenggara' => 'Pemerintah Kabupaten Situbondo',
-        'idDokumen' => 2,
+        'idDokumen' => NULL,
         'idPegawai' => 5324,
         'idUsulan' => 1,
         'idUsulanStatus' => 4,

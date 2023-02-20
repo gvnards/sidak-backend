@@ -71,12 +71,12 @@ class DataDiklatController extends Controller
         'm_daftar_diklat.nama as daftarDiklat'
       ]);
     } else {
-      $data = DB::table('m_pegawai')->join('m_data_diklat', 'm_pegawai.id', '=', 'm_data_diklat.idPegawai')->leftJoin('m_dokumen', 'm_data_diklat.idDokumen', '=', 'm_dokumen.id')->where([
+      $data = json_decode(DB::table('m_pegawai')->join('m_data_diklat', 'm_pegawai.id', '=', 'm_data_diklat.idPegawai')->where([
         ['m_data_diklat.id', '=', $idDataDiklat],
       ])->get([
-        'm_data_diklat.*',
-        'm_dokumen.dokumen'
-      ]);
+        'm_data_diklat.*'
+      ]), true);
+      $data[0]['dokumen'] = $this->getBlobDokumen($data[0]['idDokumen'], 'diklat', 'pdf');
     }
     $callback = [
       'message' => $data,
@@ -97,24 +97,13 @@ class DataDiklatController extends Controller
     foreach ($nip_ as $key => $value) {
       $nip = $value->nip;
     }
-    // jika dokumen sama, maka gunakan yang lama, jika tidak, insert baru
-    $dokumenSearch = json_decode(DB::table('m_dokumen')->where([
-      ['dokumen', '=', $message['dokumen']],
-      ['nama', '=', "DOK_SERTIFIKAT_DIKLAT_$nip"]
-      ])->get(), true);
-    if (count($dokumenSearch) === 0) {
-      $dokumen = DB::table('m_dokumen')->insertGetId([
-        'id' => NULL,
-        'nama' => "DOK_SERTIFIKAT_DIKLAT_$nip",
-        'dokumen' => $message['dokumen'],
-        'created_at' => Carbon::now()->format('Y-m-d H:i:s'),
-        'updated_at' => Carbon::now()->format('Y-m-d H:i:s')
-      ]);
-    } else {
-      foreach ($dokumenSearch as $key => $value) {
-        $dokumen = $value['id'];
-      }
-    }
+    $dokumen = DB::table('m_dokumen')->insertGetId([
+      'id' => NULL,
+      'nama' => "DOK_SERTIFIKAT_DIKLAT_".$nip."_".$message['date'],
+      'created_at' => Carbon::now()->format('Y-m-d H:i:s'),
+      'updated_at' => Carbon::now()->format('Y-m-d H:i:s')
+    ]);
+    $this->uploadDokumen("DOK_SERTIFIKAT_DIKLAT_".$nip."_".$message['date'],$message['dokumen'], 'pdf', 'diklat');
 
     $data = DB::table('m_data_diklat')->insert([
       'id' => NULL,

@@ -26,12 +26,12 @@ class DataPasanganController extends Controller
         'm_status_perkawinan.nama as statusPerkawinan'
       ]);
     } else {
-      $data = DB::table('m_pegawai')->join('m_data_pasangan', 'm_pegawai.id', '=', 'm_data_pasangan.idPegawai')->leftJoin('m_dokumen', 'm_data_pasangan.idDokumen', '=', 'm_dokumen.id')->where([
+      $data = json_decode(DB::table('m_pegawai')->join('m_data_pasangan', 'm_pegawai.id', '=', 'm_data_pasangan.idPegawai')->where([
         ['m_data_pasangan.id', '=', $idDataPasangan],
       ])->get([
-        'm_data_pasangan.*',
-        'm_dokumen.dokumen'
-      ]);
+        'm_data_pasangan.*'
+      ]), true);
+      $data[0]['dokumen'] = $this->getBlobDokumen($data[0]['idDokumen'], 'pasangan', 'pdf');
     }
     $callback = [
       'message' => $data,
@@ -67,24 +67,31 @@ class DataPasanganController extends Controller
     foreach ($nip_ as $key => $value) {
       $nip = $value->nip;
     }
-    // jika dokumen sama, maka gunakan yang lama, jika tidak, insert baru
-    $dokumenSearch = json_decode(DB::table('m_dokumen')->where([
-      ['dokumen', '=', $message['dokumen']],
-      ['nama', '=', "DOK_AKTA_PERKAWINAN_$nip"]
-      ])->get(), true);
-    if (count($dokumenSearch) === 0) {
-      $dokumen = DB::table('m_dokumen')->insertGetId([
-        'id' => NULL,
-        'nama' => "DOK_AKTA_PERKAWINAN_$nip",
-        'dokumen' => $message['dokumen'],
-        'created_at' => Carbon::now()->format('Y-m-d H:i:s'),
-        'updated_at' => Carbon::now()->format('Y-m-d H:i:s')
-      ]);
-    } else {
-      foreach ($dokumenSearch as $key => $value) {
-        $dokumen = $value['id'];
-      }
-    }
+    // // jika dokumen sama, maka gunakan yang lama, jika tidak, insert baru
+    // $dokumenSearch = json_decode(DB::table('m_dokumen')->where([
+    //   ['dokumen', '=', $message['dokumen']],
+    //   ['nama', '=', "DOK_AKTA_PERKAWINAN_$nip"]
+    //   ])->get(), true);
+    // if (count($dokumenSearch) === 0) {
+    //   $dokumen = DB::table('m_dokumen')->insertGetId([
+    //     'id' => NULL,
+    //     'nama' => "DOK_AKTA_PERKAWINAN_$nip",
+    //     'dokumen' => $message['dokumen'],
+    //     'created_at' => Carbon::now()->format('Y-m-d H:i:s'),
+    //     'updated_at' => Carbon::now()->format('Y-m-d H:i:s')
+    //   ]);
+    // } else {
+    //   foreach ($dokumenSearch as $key => $value) {
+    //     $dokumen = $value['id'];
+    //   }
+    // }
+    $dokumen = DB::table('m_dokumen')->insertGetId([
+      'id' => NULL,
+      'nama' => "DOK_AKTA_PERKAWINAN_".$nip."_".$message['date'],
+      'created_at' => Carbon::now()->format('Y-m-d H:i:s'),
+      'updated_at' => Carbon::now()->format('Y-m-d H:i:s')
+    ]);
+    $this->uploadDokumen("DOK_AKTA_PERKAWINAN_".$nip."_".$message['date'],$message['dokumen'], 'pdf', 'pasangan');
 
     $data = DB::table('m_data_pasangan')->insert([
       'id' => NULL,
