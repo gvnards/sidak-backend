@@ -15,13 +15,13 @@ class DataCpnsPnsController extends Controller
       'message' => $authenticated == true ? 'Authorized' : 'Not Authorized',
       'status' => $authenticated === true ? 1 : 0
     ]));
-    $data = DB::table('m_pegawai')->join('m_data_cpns_pns', 'm_pegawai.id', '=', 'm_data_cpns_pns.idPegawai')->leftJoin('m_dokumen as dokumenSkCpns', 'm_data_cpns_pns.idDokumenSkCpns', 'dokumenSkCpns.id')->leftJoin('m_dokumen as dokumenSkPns', 'm_data_cpns_pns.idDokumenSkPns', 'dokumenSkPns.id')->where([
+    $data = json_decode(DB::table('m_pegawai')->join('m_data_cpns_pns', 'm_pegawai.id', '=', 'm_data_cpns_pns.idPegawai')->where([
       ['m_pegawai.id', '=', $idPegawai]
     ])->get([
-      'm_data_cpns_pns.*',
-      'dokumenSkCpns.dokumen as dokumenSkCpns',
-      'dokumenSkPns.dokumen as dokumenSkPns',
-    ]);
+      'm_data_cpns_pns.*'
+    ]), true);
+    $data[0]['dokumenSkCpns'] = $this->getBlobDokumen($data[0]['idDokumenSkCpns'], 'cpns', 'pdf');
+    $data[0]['dokumenSkPns'] = $this->getBlobDokumen($data[0]['idDokumenSkPns'], 'pns', 'pdf');
     $callback = [
       'message' => count($data) == 1 ? $data : 'Data tidak ditemukan.',
       'status' => count($data) == 1 ? 1 : 0
@@ -45,47 +45,27 @@ class DataCpnsPnsController extends Controller
     $idDokumenSkPns = $message['idDokumenSkPns'];
     $skCpns_ = $message['dokumenSkCpns'];
     $skPns_ = $message['dokumenSkPns'];
-    $skCpns = DB::table('m_dokumen')->where([
-      ['id', '=', $idDokumenSkCpns],
-      ['dokumen', '=', $skCpns_]
-    ])->get();
-    $skPns = DB::table('m_dokumen')->where([
-      ['id', '=', $idDokumenSkPns],
-      ['dokumen', '=', $skPns_]
-    ])->get();
-    if (count($skCpns)==0 && $skCpns_!='' && $skCpns_!=null) {
+    if ($skCpns_ != '') {
       if ($idDokumenSkCpns == null) {
         $idDokumenSkCpns = DB::table('m_dokumen')->insertGetId([
           'id' => NULL,
           'nama' => "DOK_SK_CPNS_$nip",
-          'dokumen' => $message['dokumenSkCpns'],
           'created_at' => Carbon::now()->format('Y-m-d H:i:s'),
           'updated_at' => Carbon::now()->format('Y-m-d H:i:s')
         ]);
-      } else {
-        DB::table('m_dokumen')->where([
-          ['id', '=', $message['idDokumenSkCpns']]
-        ])->update([
-          'dokumen' => $skCpns_
-        ]);
       }
+      $this->uploadDokumen("DOK_SK_CPNS_".$nip, $skCpns_, 'pdf', 'cpns');
     }
-    if (count($skPns)==0 && $skPns_!='' && $skPns_!=null) {
+    if ($skPns_ != '') {
       if ($idDokumenSkPns == null) {
         $idDokumenSkPns = DB::table('m_dokumen')->insertGetId([
           'id' => NULL,
           'nama' => "DOK_SK_PNS_$nip",
-          'dokumen' => $message['dokumenSkPns'],
           'created_at' => Carbon::now()->format('Y-m-d H:i:s'),
           'updated_at' => Carbon::now()->format('Y-m-d H:i:s')
         ]);
-      } else {
-        DB::table('m_dokumen')->where([
-          ['id', '=', $message['idDokumenSkPns']]
-        ])->update([
-          'dokumen' => $skPns_
-        ]);
       }
+      $this->uploadDokumen("DOK_SK_PNS_".$nip, $skPns_, 'pdf', 'pns');
     }
     $data = DB::table('m_data_cpns_pns')->where([
       ['id', '=', $idPegawai]

@@ -26,12 +26,12 @@ class DataAnakController extends Controller
         'm_status_anak.nama as statusAnak'
       ]);
     } else {
-      $data = DB::table('m_pegawai')->join('m_data_anak', 'm_pegawai.id', '=', 'm_data_anak.idPegawai')->leftJoin('m_dokumen', 'm_data_anak.idDokumen', '=', 'm_dokumen.id')->where([
+      $data = json_decode(DB::table('m_pegawai')->join('m_data_anak', 'm_pegawai.id', '=', 'm_data_anak.idPegawai')->leftJoin('m_dokumen', 'm_data_anak.idDokumen', '=', 'm_dokumen.id')->where([
         ['m_data_anak.id', '=', $idDataAnak],
       ])->get([
-        'm_data_anak.*',
-        'm_dokumen.dokumen'
-      ]);
+        'm_data_anak.*'
+      ]), true);
+      $data[0]['dokumen'] = $this->getBlobDokumen($data[0]['idDokumen'], 'anak', 'pdf');
     }
     $callback = [
       'message' => $data,
@@ -90,24 +90,13 @@ class DataAnakController extends Controller
     foreach ($nip_ as $key => $value) {
       $nip = $value->nip;
     }
-    // jika dokumen sama, maka gunakan yang lama, jika tidak, insert baru
-    $dokumenSearch = json_decode(DB::table('m_dokumen')->where([
-      ['dokumen', '=', $message['dokumen']],
-      ['nama', '=', "DOK_AKTA_ANAK_$nip"]
-      ])->get(), true);
-    if (count($dokumenSearch) === 0) {
-      $dokumen = DB::table('m_dokumen')->insertGetId([
-        'id' => NULL,
-        'nama' => "DOK_AKTA_ANAK_$nip",
-        'dokumen' => $message['dokumen'],
-        'created_at' => Carbon::now()->format('Y-m-d H:i:s'),
-        'updated_at' => Carbon::now()->format('Y-m-d H:i:s')
-      ]);
-    } else {
-      foreach ($dokumenSearch as $key => $value) {
-        $dokumen = $value['id'];
-      }
-    }
+    $dokumen = DB::table('m_dokumen')->insertGetId([
+      'id' => NULL,
+      'nama' => "DOK_AKTA_ANAK_".$nip."_".$message['date'],
+      'created_at' => Carbon::now()->format('Y-m-d H:i:s'),
+      'updated_at' => Carbon::now()->format('Y-m-d H:i:s')
+    ]);
+    $this->uploadDokumen("DOK_AKTA_ANAK_".$nip."_".$message['date'],$message['dokumen'], 'pdf', 'anak');
 
     $data = DB::table('m_data_anak')->insert([
       'id' => NULL,

@@ -97,24 +97,6 @@ class DataSkpController extends Controller
     foreach ($nip_ as $key => $value) {
       $nip = $value->nip;
     }
-    // // jika dokumen sama, maka gunakan yang lama, jika tidak, insert baru
-    // $dokumenSearch = json_decode(DB::table('m_dokumen')->where([
-    //   ['dokumen', '=', $message['dokumen']],
-    //   ['nama', '=', "DOK_SKP_$nip"]
-    //   ])->get(), true);
-    // if (count($dokumenSearch) === 0) {
-    //   $dokumen = DB::table('m_dokumen')->insertGetId([
-    //     'id' => NULL,
-    //     'nama' => "DOK_SKP_$nip",
-    //     'dokumen' => $message['dokumen'],
-    //     'created_at' => Carbon::now()->format('Y-m-d H:i:s'),
-    //     'updated_at' => Carbon::now()->format('Y-m-d H:i:s')
-    //   ]);
-    // } else {
-    //   foreach ($dokumenSearch as $key => $value) {
-    //     $dokumen = $value['id'];
-    //   }
-    // }
     $dokumen = DB::table('m_dokumen')->insertGetId([
       'id' => NULL,
       'nama' => "DOK_SKP_".$nip."_".$message['date'],
