@@ -17,7 +17,11 @@ class JabatanUnitOrganisasiController extends Controller
       'status' => $authenticated === true ? 1 : 0
     ]));
     if($kodeKomponen == NULL) {
-      $data = DB::table('m_unit_organisasi')->orderBy('kodeKomponen', 'asc')->get([
+      $data = DB::table('m_unit_organisasi')->where([
+        ['kodeKomponen', 'NOT LIKE', '431.500.5__.8%'],
+        ['kodeKomponen', 'NOT LIKE', '431.500.5__.9%'],
+        ['kodeKomponen', 'NOT LIKE', '431.600%'],
+      ])->orderBy('kodeKomponen', 'asc')->get([
         'id',
         'nama',
         'kodeKomponen'
@@ -133,6 +137,21 @@ class JabatanUnitOrganisasiController extends Controller
     ]);
     $callback = [
       'message' => count($data) > 0 ? true : false,
+      'status' => 1
+    ];
+    return $this->encrypt($username, json_encode($callback));
+  }
+
+  public function getFilterOpd(Request $request) {
+    $authenticated = $this->isAuth($request)['authenticated'];
+    $username = $this->isAuth($request)['username'];
+    if(!$authenticated) return $this->encrypt($username, json_encode([
+      'message' => $authenticated == true ? 'Authorized' : 'Not Authorized',
+      'status' => $authenticated === true ? 1 : 0
+    ]));
+    $data = DB::table('v_filter_opd')->get();
+    $callback = [
+      'message' => $data,
       'status' => 1
     ];
     return $this->encrypt($username, json_encode($callback));

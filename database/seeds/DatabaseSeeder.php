@@ -57,5 +57,6 @@ class DatabaseSeeder extends Seeder
     $this->call(MDataAtasanSeeder::class);
     $this->call(MDaftarStatusKepegawaianSeeder::class);
     $this->call(MDataStatusKepegawaianSeeder::class);
+    $this->call(MDataJabatanSeeder::class);
   }
 }

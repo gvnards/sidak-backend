@@ -566,6 +566,8 @@ class MAdminSeeder extends Seeder
       ['id'=>NULL,'username'=>'admin-kecamatan-sumbermalang','password'=>password_hash('12344321', PASSWORD_DEFAULT),'unitOrganisasi'=>'431.500.515', 'idAppRoleUser'=>3],
       ['id'=>NULL,'username'=>'admin-kecamatan-banyuglugur','password'=>password_hash('12344321', PASSWORD_DEFAULT),'unitOrganisasi'=>'431.500.516', 'idAppRoleUser'=>3],
       ['id'=>NULL,'username'=>'admin-kecamatan-bungatan','password'=>password_hash('12344321', PASSWORD_DEFAULT),'unitOrganisasi'=>'431.500.517', 'idAppRoleUser'=>3],
+      ['id'=>NULL,'username'=>'rest-api-dispendikbud','password'=>password_hash('12344321', PASSWORD_DEFAULT),'unitOrganisasi'=>'431', 'idAppRoleUser'=>1],
+      ['id'=>NULL,'username'=>'rest-api-diskominfo','password'=>password_hash('12344321', PASSWORD_DEFAULT),'unitOrganisasi'=>'431', 'idAppRoleUser'=>1],
     ];
     foreach ($data as $key => $value) {
       DB::table('m_admin')->insert([

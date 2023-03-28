@@ -14,6 +14,60 @@ class Controller extends BaseController
 {
   use AuthorizesRequests, DispatchesJobs, ValidatesRequests;
 
+  function getPegawaiByDate($string_date) {
+    $query = "WITH jabatan_pegawai AS (
+      SELECT
+      *
+      FROM
+      v_m_jabatan
+      WHERE
+        idUsulanStatus IN (3, 4)
+        AND idUsulanHasil = 1
+        AND spmt <= '$string_date'
+      GROUP BY
+        idPegawai),
+    pangkat_pegawai AS (
+      SELECT
+      *
+      FROM
+      v_m_pangkat
+      WHERE
+        idUsulanStatus IN (3, 4)
+        AND idUsulanHasil = 1
+        AND tmt <= '$string_date'
+      GROUP BY
+        idPegawai)
+    SELECT
+      m_pegawai.id as id,
+      m_pegawai.nip as nip,
+      m_data_pribadi.nama as nama,
+      v_m_pendidikan_group.gelarDepan as gelarDepan,
+      v_m_pendidikan_group.gelarBelakang as gelarBelakang,
+      v_m_pendidikan_group.tingkatPendidikan as tingkatPendidikan,
+      v_m_pendidikan_group.namaSekolah as namaSekolah,
+      v_m_pendidikan_group.pendidikan as pendidikan,
+      pangkat_pegawai.golongan as golongan,
+      pangkat_pegawai.pangkat as pangkat,
+      pangkat_pegawai.tmt as tmtGolongan,
+      pangkat_pegawai.masaKerjaTahun as masaKerjaTahun,
+      pangkat_pegawai.masaKerjaBulan as masaKerjaBulan,
+      jabatan_pegawai.jabatan as jabatan,
+      jabatan_pegawai.jenisJabatan as jenisJabatan,
+      jabatan_pegawai.eselon as eselon,
+      jabatan_pegawai.tmt as tmtJabatan,
+      jabatan_pegawai.spmt as spmtJabatan,
+      jabatan_pegawai.kodeKomponen as kodeKomponen,
+      jabatan_pegawai.unitOrganisasi as unitOrganisasi
+    FROM
+      m_pegawai
+      INNER JOIN m_data_pribadi ON m_pegawai.id = m_data_pribadi.idPegawai
+      LEFT JOIN v_m_pendidikan_group ON m_pegawai.id = v_m_pendidikan_group.idPegawai
+      LEFT JOIN pangkat_pegawai ON m_pegawai.id = pangkat_pegawai.idPegawai
+      LEFT JOIN jabatan_pegawai ON m_pegawai.id = jabatan_pegawai.idPegawai;";
+    $pegawai = DB::select($query);
+    return collect($pegawai);
+  }
+
   function isAuth(Request $request) {
     $message = $this->decrypt('sidak.bkpsdmsitubondokab', $request->header('Authorization'));
     $message = json_decode($message, true);

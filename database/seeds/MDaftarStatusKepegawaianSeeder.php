@@ -31,6 +31,7 @@ class MDaftarStatusKepegawaianSeeder extends Seeder
       ['id'=>15,'nama'=>'PPPK Teknis'],
       ['id'=>16,'nama'=>'PPPK Kesehatan'],
       ['id'=>17,'nama'=>'PPPK Guru'],
+      ['id'=>18,'nama'=>'Indisipliner']
     ];
 
     foreach ($data as $key => $value) {

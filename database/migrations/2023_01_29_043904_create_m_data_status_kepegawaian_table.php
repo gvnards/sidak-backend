@@ -17,7 +17,7 @@ class CreateMDataStatusKepegawaianTable extends Migration
       $table->id()->autoIncrement()->index();
       $table->unsignedBigInteger('idPegawai');
       $table->unsignedBigInteger('idDaftarStatusKepegawaian');
-      $table->date('tmt');
+      $table->date('tmt')->nullable();
       $table->foreign('idPegawai')->references('id')->on('m_pegawai');
       $table->foreign('idDaftarStatusKepegawaian')->references('id')->on('m_daftar_status_kepegawaian');
       $table->timestamps();
