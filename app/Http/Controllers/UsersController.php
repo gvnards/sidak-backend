@@ -15,7 +15,7 @@ class UsersController extends Controller
       'message' => $authenticated == true ? 'Authorized' : 'Not Authorized',
       'status' => $authenticated === true ? 1 : 0
     ]));
-    $data = DB::table('m_pegawai')->get();
+    $data = DB::table('m_pegawai')->get(['id','nip as username']);
     $callback = [
       'message' => $data,
       'status' => 1
@@ -32,7 +32,7 @@ class UsersController extends Controller
     ]));
     $data = DB::table('m_admin')->where([
       ['username', 'LIKE', 'admin-%']
-    ])->get();
+    ])->get(['id','username']);
     $callback = [
       'message' => $data,
       'status' => 1
@@ -65,49 +65,33 @@ class UsersController extends Controller
       'status' => $authenticated === true ? 1 : 0
     ]));
     $message = json_decode($this->decrypt($username, $request->message), true);
-    $user = $message['user'];
-    $pwd = $message['pwd'];
+    $id = $message['id'];
+    $user = $message['username'];
+    $pwd = password_hash('12344321', PASSWORD_DEFAULT);
+    $affected = 0;
+
     if (str_contains($user, 'admin-') || str_contains($user, 'rest-api-')) {
-      $data_ = json_decode(DB::table('m_admin')->where([
-        ['username', '=', $user],
-        ['password', '=', $pwd]
-      ])->get(), true);
+      $affected = DB::table('m_admin')->where([
+        ['id', '=', $id]
+      ])->update([
+        'password' => $pwd
+      ]);
     } else {
-      $data_ = json_decode(DB::table('m_pegawai')->where([
-        ['username', '=', $user],
-        ['password', '=', $pwd]
-      ])->get(), true);
+      $affected = DB::table('m_pegawai')->where([
+        ['id', '=', $id]
+      ])->update([
+        'password' => $pwd
+      ]);
     }
+
     $callback = [
-      'message' => 'Password gagal direset.',
-      'status' => 0
+      'message' => $affected === 1 ? 'Password berhasil direset.' : 'Password gagal direset.',
+      'status' => $affected === 1 ? 2 : 3
     ];
-    if (count($data_) == 1) {
-      $pwd = password_hash('12344321', PASSWORD_DEFAULT);
-      if (str_contains($user, 'admin-') || str_contains($user, 'rest-api-')) {
-        $data_ = DB::table('m_admin')->where([
-          ['username', '=', $user],
-          ['password', '=', $pwd]
-        ])->update([
-          'password' => $pwd
-        ]);
-      } else {
-        $data_ = DB::table('m_pegawai')->where([
-          ['username', '=', $user],
-          ['password', '=', $pwd]
-        ])->update([
-          'password' => $pwd
-        ]);
-      }
-      $callback = [
-        'message' => 'Password berhasil direset.',
-        'status' => 1
-      ];
-    }
     return $this->encrypt($username, json_encode($callback));
   }
 
-  public function insertDataPegawai(Request $request) {
+  function insertUserAdmin(Request $request) {
     $authenticated = $this->isAuth($request)['authenticated'];
     $username = $this->isAuth($request)['username'];
     if(!$authenticated) return $this->encrypt($username, json_encode([
@@ -116,32 +100,18 @@ class UsersController extends Controller
     ]));
     $message = json_decode($this->decrypt($username, $request->message), true);
     $pwd = password_hash('12344321', PASSWORD_DEFAULT);
-    $idPegawai = DB::table('m_pegawai')->insertGetId([
+    $idAdmin = DB::table('m_admin')->insertGetId([
       'id' => NULL,
-      'nip' => $message['nip'],
+      'username' => $message['username'],
       'password' => $pwd,
-      'idAppRoleUser' => 4,
-      'created_at' => Carbon::now()->format('Y-m-d H:i:s'),
-      'updated_at' => Carbon::now()->format('Y-m-d H:i:s')
-    ]);
-    DB::table('m_data_pribadi')->insert([
-      'id' => NULL,
-      'nama' => $message['nama'],
-      'tempatLahir' => $message['tempatLahir'],
-      'tanggalLahir' => $message['tanggalLahir'],
-      'alamat' => $message['alamat'],
-      'ktp' => $message['nik'],
-      'nomorHp' => $message['nomorHp'],
-      'email' => $message['email'],
-      'npwp' => $message['npwp'],
-      'bpjs' => $message['bpjs'],
-      'idPegawai' => $idPegawai,
+      'unitOrganisasi' => $message['unitOrganisasi'],
+      'idAppRoleUser' => $message['idAppRoleUser'],
       'created_at' => Carbon::now()->format('Y-m-d H:i:s'),
       'updated_at' => Carbon::now()->format('Y-m-d H:i:s')
     ]);
     $callback = [
-      'message' => 'Data pegawai berhasil ditambahkan',
-      'status' => 1
+      'message' => $idAdmin > 0 ? 'User Admin berhasil ditambahkan.' : 'User Admin gagal ditambahkan.',
+      'status' => $idAdmin > 0 ? 2 : 3
     ];
     return $this->encrypt($username, json_encode($callback));
   }

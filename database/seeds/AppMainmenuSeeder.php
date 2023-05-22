@@ -19,8 +19,9 @@ class AppMainmenuSeeder extends Seeder
       ['id'=>3,'nama'=>'Jabatan','icon'=>'fa-solid fa-briefcase','order'=>3],
       ['id'=>4,'nama'=>'Unit Organisasi','icon'=>'fa-solid fa-building','order'=>4],
       ['id'=>5,'nama'=>'Usulan','icon'=>'fa-solid fa-envelope-open-text','order'=>5],
-      ['id'=>6,'nama'=>'Ubah Password','icon'=>'fa-solid fa-key','order'=>6],
-      ['id'=>7,'nama'=>'Logout','icon'=>'fa-solid fa-right-from-bracket','order'=>7],
+      ['id'=>6,'nama'=>'Ubah Password','icon'=>'fa-solid fa-key','order'=>7],
+      ['id'=>7,'nama'=>'Logout','icon'=>'fa-solid fa-right-from-bracket','order'=>8],
+      ['id'=>8,'nama'=>'Akun Pengguna','icon'=>'fa-solid fa-user-shield','order'=>6],
     ];
 
     foreach ($data as $key => $value) {

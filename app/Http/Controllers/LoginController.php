@@ -165,7 +165,7 @@ class LoginController extends Controller
             'idAppRoleUser' => $user->idAppRoleUser,
             'appRoleUser' => $user->appRoleUser,
             'message' => "Password telah berhasil diubah.",
-            'status' => 1
+            'status' => 2
           ];
         }
       }

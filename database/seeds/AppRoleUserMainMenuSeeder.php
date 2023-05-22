@@ -36,6 +36,7 @@ class AppRoleUserMainMenuSeeder extends Seeder
       ['id' => 20,'idAppRoleUser' => 4, 'idAppMainmenu' => 5],
       ['id' => 21,'idAppRoleUser' => 4, 'idAppMainmenu' => 6],
       ['id' => 22,'idAppRoleUser' => 4, 'idAppMainmenu' => 7],
+      ['id' => 23,'idAppRoleUser' => 1, 'idAppMainmenu' => 8],
     ];
     foreach($data as $key => $value) {
       DB::table('m_app_role_user_mainmenu')->insert([

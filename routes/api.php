@@ -49,7 +49,7 @@ Route::post('kelas-jabatan', 'JabatanUnitOrganisasiController@insertKelasJabatan
 Route::post('jabatan', 'JabatanUnitOrganisasiController@insertJabatan');
 Route::post('data-status-kepegawaian', 'DataStatusKepegawaianController@insertDataStatusKepegawaian');
 Route::post('data-atasan', 'DataAtasanController@insertDataAtasan');
-Route::post('user-pegawai', 'UsersController@insertDataPegawai');
+Route::post('user-pegawai', 'DataPegawaiController@insertDataPegawai');
 
 Route::put('data-pribadi/{id}', 'DataPribadiController@updateDataPribadi');
 Route::put('data-cpns-pns/{id}', 'DataCpnsPnsController@updateDataCpnsPns');
@@ -121,6 +121,12 @@ Route::get('data-bawahan/{idAtasan}', 'DataAtasanController@getDataBawahan');
 Route::get('list-pegawai', 'ListPegawaiController@getListPegawai');
 Route::get('total-pegawai', 'ListPegawaiController@getTotalPegawai');
 Route::get('nama-unit-organisasi', 'ListPegawaiController@getNamUnitOrganisasi');
+
+//Users Account
+Route::get('user-asn', 'UsersController@getAllUserPegawai');
+Route::get('user-admin', 'UsersController@getAllUserAdmin');
+Route::post('reset-password', 'UsersController@resetPassword');
+Route::post('user-admin', 'UsersController@insertUserAdmin');
 
 // Dashboard
 Route::get('pegawai-ultah/{numberofMonth}', 'DashboardController@getPegawaiUltah');

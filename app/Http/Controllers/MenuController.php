@@ -18,7 +18,7 @@ class MenuController extends Controller
     if(!str_contains($username, 'admin')) {
       $mainMenu = DB::table('m_pegawai')->join('m_app_role_user_mainmenu', 'm_pegawai.idAppRoleUser', '=', 'm_app_role_user_mainmenu.idAppRoleUser')->join('m_app_mainmenu', 'm_app_mainmenu.id', '=', 'm_app_role_user_mainmenu.idAppMainmenu')->where([
         ['m_pegawai.nip', '=', $username]
-      ])->get(
+      ])->orderBy('m_app_mainmenu.order', 'asc')->get(
         [
           'm_app_mainmenu.id',
           'm_app_mainmenu.nama',
@@ -28,7 +28,7 @@ class MenuController extends Controller
     } else {
       $mainMenu = DB::table('m_admin')->join('m_app_role_user_mainmenu', 'm_admin.idAppRoleUser', '=', 'm_app_role_user_mainmenu.idAppRoleUser')->join('m_app_mainmenu', 'm_app_mainmenu.id', '=', 'm_app_role_user_mainmenu.idAppMainmenu')->where([
         ['m_admin.username', '=', $username]
-      ])->get(
+      ])->orderBy('m_app_mainmenu.order', 'asc')->get(
         [
           'm_app_mainmenu.id as id',
           'm_app_mainmenu.nama as nama',
