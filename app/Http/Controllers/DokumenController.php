@@ -19,7 +19,7 @@ class DokumenController extends Controller
     ])->get();
     $callback = [
       'message' => $data,
-      'status' => count($data) === 1 ? 1 : 0
+      'status' => count($data) === 1 ? 2 : 3
     ];
     return $this->encrypt($username, json_encode($callback));
     // return $request;

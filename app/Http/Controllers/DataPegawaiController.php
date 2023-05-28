@@ -43,7 +43,7 @@ class DataPegawaiController extends Controller
     ]);
     $callback = [
       'message' => 'Data pegawai berhasil ditambahkan',
-      'status' => 1
+      'status' => 2
     ];
     return $this->encrypt($username, json_encode($callback));
   }

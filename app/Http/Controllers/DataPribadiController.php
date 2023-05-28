@@ -22,7 +22,7 @@ class DataPribadiController extends Controller
     ]);
     $callback = [
       'message' => count($data) == 1 ? $data : 'Data tidak ditemukan.',
-      'status' => count($data) == 1 ? 1 : 0
+      'status' => count($data) == 1 ? 2 : 3
     ];
     return $this->encrypt($username, json_encode($callback));
   }
@@ -46,7 +46,7 @@ class DataPribadiController extends Controller
     ]);
     $callback = [
       'message' => $data == 1 ? 'Data berhasil disimpan.' : 'Data gagal disimpan.',
-      'status' => $data
+      'status' => $data == 1 ? 2 : 3
     ];
     return $this->encrypt($username, json_encode($callback));
   }

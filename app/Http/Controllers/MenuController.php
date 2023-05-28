@@ -38,7 +38,7 @@ class MenuController extends Controller
     }
     $callback = [
       'message' => count($mainMenu) == 0 ? 'Data tidak ditemukan.' : $mainMenu,
-      'status' => count($mainMenu) == 0 ? 0 : 1
+      'status' => count($mainMenu) == 0 ? 3 : 2
     ];
     return $this->encrypt($username, json_encode($callback));
   }
@@ -70,7 +70,7 @@ class MenuController extends Controller
     }
     $callback = [
       'message' => count($pegawaiMenu) == 0 ? 'Data tidak ditemukan.' : $pegawaiMenu,
-      'status' => count($pegawaiMenu) == 0 ? 0 : 1
+      'status' => count($pegawaiMenu) == 0 ? 3 : 2
     ];
     return $this->encrypt($username, json_encode($callback));
   }

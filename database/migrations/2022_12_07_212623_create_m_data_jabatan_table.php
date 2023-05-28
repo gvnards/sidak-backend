@@ -18,6 +18,8 @@ class CreateMDataJabatanTable extends Migration
       $table->unsignedBigInteger('idJabatan');
       $table->foreign('idJabatan')->references('id')->on('m_jabatan');
       $table->boolean('isPltPlh');
+      $table->unsignedBigInteger('idJabatanTugasTambahan')->nullable();
+      $table->foreign('idJabatanTugasTambahan')->references('id')->on('m_jabatan_tugas_tambahan');
       $table->date('tmt');
       $table->date('spmt');
       $table->date('tanggalDokumen');

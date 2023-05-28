@@ -38,7 +38,7 @@ class LoginController extends Controller
     }
     $callback = [
       'message' => 'Username / password salah!',
-      'status' => 0
+      'status' => 3
     ];
     foreach ($users as $user) {
       if(password_verify($password, $user->password)) {
@@ -49,7 +49,7 @@ class LoginController extends Controller
           'idAppRoleUser' => $user->idAppRoleUser,
           'appRoleUser' => $user->appRoleUser,
           'message' => "Selamat datang $user->nama.",
-          'status' => 1
+          'status' => 2
         ];
       }
     }
@@ -72,7 +72,7 @@ class LoginController extends Controller
     ]);
     $callback = [
       'message' => 'NIP/NIK salah.',
-      'status' => 0
+      'status' => 3
     ];
     if(count($users) == 1) {
       $pwd = password_hash('12344321', PASSWORD_DEFAULT);
@@ -83,7 +83,7 @@ class LoginController extends Controller
       ]);
       $callback = [
         'message' => "Password telah berhasil direset.",
-        'status' => 1
+        'status' => 2
       ];
     }
     return $this->encrypt('sidak.bkpsdmsitubondokab', json_encode($callback));
@@ -101,7 +101,7 @@ class LoginController extends Controller
     $newPassword = $message['newPassword'];
     $callback = [
       'message' => 'Terjadi kesalahan server.',
-      'status' => 0
+      'status' => 3
     ];
     if (str_contains($username, 'admin')) {
       $users = DB::table('m_admin')->where([
@@ -132,7 +132,7 @@ class LoginController extends Controller
             'idAppRoleUser' => $user->idAppRoleUser,
             'appRoleUser' => $user->appRoleUser,
             'message' => "Password telah berhasil diubah.",
-            'status' => 1
+            'status' => 2
           ];
         }
       }

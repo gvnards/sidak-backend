@@ -48,7 +48,7 @@ class JabatanUnitOrganisasiController extends Controller
     }
     $callback = [
       'message' => $data,
-      'status' => 1
+      'status' => 2
     ];
     return $this->encrypt($username, json_encode($callback));
   }
@@ -72,7 +72,7 @@ class JabatanUnitOrganisasiController extends Controller
     $method = 'ditambahkan';
     $callback = [
       'message' => $data == 1 ? "Data berhasil $method." : "Data gagal $method.",
-      'status' => $data
+      'status' => $data == 1 ? 2 : 3
     ];
     return $this->encrypt($username, json_encode($callback));
   }
@@ -94,7 +94,7 @@ class JabatanUnitOrganisasiController extends Controller
     $method = 'diperbaharui';
     $callback = [
       'message' => $data == 1 ? "Data berhasil $method." : "Data gagal $method.",
-      'status' => $data
+      'status' => $data == 1 ? 2 : 3
     ];
     return $this->encrypt($username, json_encode($callback));
   }
@@ -112,7 +112,7 @@ class JabatanUnitOrganisasiController extends Controller
     $method = 'dihapus';
     $callback = [
       'message' => $data == 1 ? "Data berhasil $method." : "Data gagal $method.",
-      'status' => $data
+      'status' => $data == 1 ? 2 : 3
     ];
     return $this->encrypt($username, json_encode($callback));
   }
@@ -137,7 +137,7 @@ class JabatanUnitOrganisasiController extends Controller
     ]);
     $callback = [
       'message' => count($data) > 0 ? true : false,
-      'status' => 1
+      'status' => 2
     ];
     return $this->encrypt($username, json_encode($callback));
   }
@@ -152,7 +152,7 @@ class JabatanUnitOrganisasiController extends Controller
     $data = DB::table('v_filter_opd')->get();
     $callback = [
       'message' => $data,
-      'status' => 1
+      'status' => 2
     ];
     return $this->encrypt($username, json_encode($callback));
   }
@@ -168,7 +168,7 @@ class JabatanUnitOrganisasiController extends Controller
     $data = DB::table('m_uang_kinerja')->get();
     $callback = [
       'message' => $data,
-      'status' => 1
+      'status' => 2
     ];
     return $this->encrypt($username, json_encode($callback));
   }
@@ -189,7 +189,7 @@ class JabatanUnitOrganisasiController extends Controller
     $method = 'diperbaharui';
     $callback = [
       'message' => $data == 1 ? "Data berhasil $method." : "Data gagal $method.",
-      'status' => $data
+      'status' => $data == 1 ? 2 : 3
     ];
     return $this->encrypt($username, json_encode($callback));
   }
@@ -207,7 +207,7 @@ class JabatanUnitOrganisasiController extends Controller
     $method = 'dihapus';
     $callback = [
       'message' => $data == 1 ? "Data berhasil $method." : "Data gagal $method.",
-      'status' => $data
+      'status' => $data == 1 ? 2 : 3
     ];
     return $this->encrypt($username, json_encode($callback));
   }
@@ -229,7 +229,7 @@ class JabatanUnitOrganisasiController extends Controller
     $method = 'ditambahkan';
     $callback = [
       'message' => $data == 1 ? "Data berhasil $method." : "Data gagal $method.",
-      'status' => $data
+      'status' => $data == 1 ? 2 : 3
     ];
     return $this->encrypt($username, json_encode($callback));
   }
@@ -248,7 +248,7 @@ class JabatanUnitOrganisasiController extends Controller
     ]);
     $callback = [
       'message' => $data,
-      'status' => 1
+      'status' => 2
     ];
     return $this->encrypt($username, json_encode($callback));
   }
@@ -270,7 +270,7 @@ class JabatanUnitOrganisasiController extends Controller
     $method = 'diperbaharui';
     $callback = [
       'message' => $data == 1 ? "Data berhasil $method." : "Data gagal $method.",
-      'status' => $data
+      'status' => $data == 1 ? 2 : 3
     ];
     return $this->encrypt($username, json_encode($callback));
   }
@@ -288,7 +288,7 @@ class JabatanUnitOrganisasiController extends Controller
     $method = 'dihapus';
     $callback = [
       'message' => $data == 1 ? "Data berhasil $method." : "Data gagal $method.",
-      'status' => $data
+      'status' => $data == 1 ? 2 : 3
     ];
     return $this->encrypt($username, json_encode($callback));
   }
@@ -311,7 +311,7 @@ class JabatanUnitOrganisasiController extends Controller
     $method = 'ditambahkan';
     $callback = [
       'message' => $data == 1 ? "Data berhasil $method." : "Data gagal $method.",
-      'status' => $data
+      'status' => $data == 1 ? 2 : 3
     ];
     return $this->encrypt($username, json_encode($callback));
   }
@@ -350,7 +350,7 @@ class JabatanUnitOrganisasiController extends Controller
     }
     $callback = [
       'message' => $data,
-      'status' => 1
+      'status' => 2
     ];
     return $this->encrypt($username, json_encode($callback));
   }
@@ -375,7 +375,7 @@ class JabatanUnitOrganisasiController extends Controller
     $method = 'diperbaharui';
     $callback = [
       'message' => $data == 1 ? "Data berhasil $method." : "Data gagal $method.",
-      'status' => $data
+      'status' => $data == 1 ? 2 : 3
     ];
     return $this->encrypt($username, json_encode($callback));
   }
@@ -393,7 +393,7 @@ class JabatanUnitOrganisasiController extends Controller
     $method = 'dihapus';
     $callback = [
       'message' => $data == 1 ? "Data berhasil $method." : "Data gagal $method.",
-      'status' => $data
+      'status' => $data == 1 ? 2 : 3
     ];
     return $this->encrypt($username, json_encode($callback));
   }
@@ -419,7 +419,7 @@ class JabatanUnitOrganisasiController extends Controller
     $method = 'ditambahkan';
     $callback = [
       'message' => $data == 1 ? "Data berhasil $method." : "Data gagal $method.",
-      'status' => $data
+      'status' => $data == 1 ? 2 : 3
     ];
     return $this->encrypt($username, json_encode($callback));
   }

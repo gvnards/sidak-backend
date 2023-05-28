@@ -35,7 +35,7 @@ class DashboardController extends JabatanUnitOrganisasiController
     ]);
     $callback = [
       'message' => $data,
-      'status' => 1
+      'status' => 2
     ];
     return $this->encrypt($username, json_encode($callback));
   }

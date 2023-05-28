@@ -91,7 +91,7 @@ class DataCpnsPnsController extends Controller
     ]);
     $callback = [
       'message' => $data == 1 ? 'Data berhasil disimpan.' : 'Data gagal disimpan.',
-      'status' => $data
+      'status' => $data == 1 ? 2 : 3
     ];
     return $this->encrypt($username, json_encode($callback));
   }

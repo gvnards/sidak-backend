@@ -18,7 +18,7 @@ class UsersController extends Controller
     $data = DB::table('m_pegawai')->get(['id','nip as username']);
     $callback = [
       'message' => $data,
-      'status' => 1
+      'status' => 2
     ];
     return $this->encrypt($username, json_encode($callback));
   }
@@ -35,7 +35,22 @@ class UsersController extends Controller
     ])->get(['id','username']);
     $callback = [
       'message' => $data,
-      'status' => 1
+      'status' => 2
+    ];
+    return $this->encrypt($username, json_encode($callback));
+  }
+
+  function getAllUserRole(Request $request) {
+    $authenticated = $this->isAuth($request)['authenticated'];
+    $username = $this->isAuth($request)['username'];
+    if(!$authenticated) return $this->encrypt($username, json_encode([
+      'message' => $authenticated == true ? 'Authorized' : 'Not Authorized',
+      'status' => $authenticated === true ? 1 : 0
+    ]));
+    $data = DB::table('m_app_role_user')->get(['id', 'nama']);
+    $callback = [
+      'message' => $data,
+      'status' => 2
     ];
     return $this->encrypt($username, json_encode($callback));
   }
@@ -52,7 +67,7 @@ class UsersController extends Controller
     ])->get();
     $callback = [
       'message' => $data,
-      'status' => 1
+      'status' => 2
     ];
     return $this->encrypt($username, json_encode($callback));
   }

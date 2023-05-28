@@ -18,7 +18,7 @@ class DataStatusKepegawaianController extends Controller
     $data = DB::table('m_daftar_status_kepegawaian')->get();
     $callback = [
       'message' => $data,
-      'status' => 1
+      'status' => 2
     ];
     return $this->encrypt($username, json_encode($callback));
   }
@@ -32,7 +32,7 @@ class DataStatusKepegawaianController extends Controller
     $data = DB::table('m_data_status_kepegawaian')->where([['idPegawai', '=', $idPegawai]])->get();
     $callback = [
       'message' => $data,
-      'status' => 1
+      'status' => 2
     ];
     return $this->encrypt($username, json_encode($callback));
   }
@@ -63,7 +63,7 @@ class DataStatusKepegawaianController extends Controller
     }
     $callback = [
       'message' => 'Status kepegawaian berhasil disetting.',
-      'status' => 1
+      'status' => 2
     ];
     return $this->encrypt($username, json_encode($callback));
   }

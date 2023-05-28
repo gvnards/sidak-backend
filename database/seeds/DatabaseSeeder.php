@@ -50,6 +50,7 @@ class DatabaseSeeder extends Seeder
     $this->call(MJenisJabatanSeeder::class);
     $this->call(MEselonSeeder::class);
     $this->call(MJabatanSeeder::class);
+    $this->call(MJabatanTugasTambahanSeeder::class);
     $this->call(MPejabatPengangkatCpnsSeeder::class);
     $this->call(MDataCpnsPnsSeeder::class);
     $this->call(MJenisPeraturanKinerjaSeeder::class);

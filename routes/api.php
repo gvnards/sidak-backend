@@ -125,10 +125,11 @@ Route::get('nama-unit-organisasi', 'ListPegawaiController@getNamUnitOrganisasi')
 //Users Account
 Route::get('user-asn', 'UsersController@getAllUserPegawai');
 Route::get('user-admin', 'UsersController@getAllUserAdmin');
+Route::get('user-role', 'UsersController@getAllUserRole');
 Route::post('reset-password', 'UsersController@resetPassword');
 Route::post('user-admin', 'UsersController@insertUserAdmin');
 
 // Dashboard
 Route::get('pegawai-ultah/{numberofMonth}', 'DashboardController@getPegawaiUltah');
 
-// Route::get('coba/{date}', 'Controller@getPegawaiByDate');
+Route::get('bkn', 'RestApiController@cobaPost');

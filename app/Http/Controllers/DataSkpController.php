@@ -35,7 +35,7 @@ class DataSkpController extends Controller
     }
     $callback = [
       'message' => $data,
-      'status' => 1
+      'status' => 2
     ];
     return $this->encrypt($username, json_encode($callback));
   }
@@ -50,7 +50,7 @@ class DataSkpController extends Controller
     $data = DB::table('m_jenis_jabatan')->get();
     $callback = [
       'message' => $data,
-      'status' => 1
+      'status' => 2
     ];
     return $this->encrypt($username, json_encode($callback));
   }
@@ -65,7 +65,7 @@ class DataSkpController extends Controller
     $data = DB::table('m_jenis_peraturan_kinerja')->get();
     $callback = [
       'message' => $data,
-      'status' => 1
+      'status' => 2
     ];
     return $this->encrypt($username, json_encode($callback));
   }
@@ -80,7 +80,7 @@ class DataSkpController extends Controller
     $data = DB::table('m_status_pejabat_atasan_penilai')->get();
     $callback = [
       'message' => $data,
-      'status' => 1
+      'status' => 2
     ];
     return $this->encrypt($username, json_encode($callback));
   }
@@ -145,7 +145,7 @@ class DataSkpController extends Controller
     $method = $id == NULL ? 'ditambahkan' : 'diperbaharui';
     $callback = [
       'message' => $data == 1 ? "Data berhasil diusulkan untuk $method." : "Data gagal diusulkan untuk $method.",
-      'status' => $data
+      'status' => $data == 1 ? 2 : 3
     ];
     return $this->encrypt($username, json_encode($callback));
   }

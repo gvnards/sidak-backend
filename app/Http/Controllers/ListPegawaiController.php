@@ -46,7 +46,7 @@ class ListPegawaiController extends Controller
     }
     $callback = [
       'message' => $data,
-      'status' => 1
+      'status' => 2
     ];
     return $this->encrypt($username, json_encode($callback));
   }
@@ -77,7 +77,7 @@ class ListPegawaiController extends Controller
     }
     $callback = [
       'message' => count($data),
-      'status' => 1
+      'status' => 2
     ];
     return $this->encrypt($username, json_encode($callback));
   }
@@ -102,7 +102,7 @@ class ListPegawaiController extends Controller
     ]);
     $callback = [
       'message' => json_decode($data, true)[0]['namaUnitOrganisasi'],
-      'status' => 1
+      'status' => 2
     ];
     return $this->encrypt($username, json_encode($callback));
   }

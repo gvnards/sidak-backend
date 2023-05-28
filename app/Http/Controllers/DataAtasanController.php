@@ -24,7 +24,7 @@ class DataAtasanController extends Controller
     ]);
     $callback = [
       'message' => $data,
-      'status' => 1
+      'status' => 2
     ];
     return $this->encrypt($username, json_encode($callback));
   }
@@ -40,7 +40,7 @@ class DataAtasanController extends Controller
     ])->get();
     $callback = [
       'message' => $data,
-      'status' => 1
+      'status' => 2
     ];
     return $this->encrypt($username, json_encode($callback));
   }
@@ -57,7 +57,7 @@ class DataAtasanController extends Controller
     ])->get();
     $callback = [
       'message' => $data,
-      'status' => 1
+      'status' => 2
     ];
     return $this->encrypt($username, json_encode($callback));
   }
@@ -86,7 +86,7 @@ class DataAtasanController extends Controller
     }
     $callback = [
       'message' => 'Atasan berhasil disetting.',
-      'status' => 1
+      'status' => 2
     ];
     return $this->encrypt($username, json_encode($callback));
   }
