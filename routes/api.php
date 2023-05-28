@@ -84,6 +84,7 @@ Route::get('uang-kinerja', 'JabatanUnitOrganisasiController@getUangKinerja');
 Route::get('kelas-jabatan', 'JabatanUnitOrganisasiController@getKelasJabatan');
 Route::get('jabatan', 'JabatanUnitOrganisasiController@getJabatan');
 Route::get('jabatan/{kodeKomponen}', 'JabatanUnitOrganisasiController@getJabatan');
+Route::get('tugas-tambahan', 'JabatanUnitOrganisasiController@getTugasTambahan');
 Route::get('jenis-golpang', 'DataGolonganPangkatController@getJenisGolPang');
 Route::get('daftar-golpang', 'DataGolonganPangkatController@getDaftarGolPang');
 Route::get('data-golpang/{idPegawai}', 'DataGolonganPangkatController@getDataGolPang');

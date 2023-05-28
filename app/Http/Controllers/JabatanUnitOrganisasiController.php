@@ -355,6 +355,21 @@ class JabatanUnitOrganisasiController extends Controller
     return $this->encrypt($username, json_encode($callback));
   }
 
+  public function getTugasTambahan(Request $request) {
+    $authenticated = $this->isAuth($request)['authenticated'];
+    $username = $this->isAuth($request)['username'];
+    if(!$authenticated) return $this->encrypt($username, json_encode([
+      'message' => $authenticated == true ? 'Authorized' : 'Not Authorized',
+      'status' => $authenticated === true ? 1 : 0
+    ]));
+    $data = DB::table('m_jabatan_tugas_tambahan')->get();
+    $callback = [
+      'message' => $data,
+      'status' => 2
+    ];
+    return $this->encrypt($username, json_encode($callback));
+  }
+
   public function updateJabatan($id, Request $request) {
     $authenticated = $this->isAuth($request)['authenticated'];
     $username = $this->isAuth($request)['username'];

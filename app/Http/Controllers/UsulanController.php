@@ -245,12 +245,13 @@ class UsulanController extends Controller
       case 'Data Jabatan':
         $unitOrganisasi = [];
         $kodeKomponen = [];
-        $data_ = DB::table('m_data_jabatan')->join('m_jabatan', 'm_data_jabatan.idJabatan', '=', 'm_jabatan.id')->where([
+        $data_ = DB::table('m_data_jabatan')->join('m_jabatan', 'm_data_jabatan.idJabatan', '=', 'm_jabatan.id')->leftJoin('m_jabatan_tugas_tambahan', 'm_data_jabatan.idJabatanTugasTambahan', '=', 'm_jabatan_tugas_tambahan.id')->where([
           ['m_data_jabatan.id', '=', $idUsulan]
         ])->get([
           'm_data_jabatan.*',
           'm_jabatan.kodeKomponen as kodeKomponen',
-          'm_jabatan.nama as jabatan'
+          'm_jabatan.nama as jabatan',
+          'm_jabatan_tugas_tambahan.nama as tugasTambahan'
         ]);
         foreach(json_decode($data_, true) as $key => $value) {
           $kodeKomponen = explode(".",$value['kodeKomponen']);
