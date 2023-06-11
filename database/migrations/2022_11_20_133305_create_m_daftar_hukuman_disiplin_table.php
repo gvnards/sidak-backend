@@ -19,6 +19,7 @@ class CreateMDaftarHukumanDisiplinTable extends Migration
       $table->unsignedBigInteger('idJenisHukumanDisiplin');
       $table->foreign('idJenisHukumanDisiplin')->references('id')->on('m_jenis_hukuman_disiplin');
       $table->timestamps();
+      $table->string('idBkn')->default('');
     });
   }
 

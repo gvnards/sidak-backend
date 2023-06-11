@@ -17,6 +17,7 @@ class CreateMStatusPerkawinanTable extends Migration
       $table->id()->autoIncrement()->index();
       $table->string('nama');
       $table->timestamps();
+      $table->string('idBkn')->default('');
     });
   }
 

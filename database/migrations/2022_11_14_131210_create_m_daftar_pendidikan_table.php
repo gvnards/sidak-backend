@@ -19,6 +19,7 @@ class CreateMDaftarPendidikanTable extends Migration
       $table->unsignedBigInteger('idTingkatPendidikan');
       $table->foreign('idTingkatPendidikan')->references('id')->on('m_tingkat_pendidikan');
       $table->timestamps();
+      $table->string('idBkn')->default('');
     });
   }
 

@@ -41,6 +41,7 @@ class CreateMDataPendidikanTable extends Migration
       $table->foreign('idUsulanHasil')->references('id')->on('m_usulan_hasil');
       $table->text('keteranganUsulan');
       $table->timestamps();
+      $table->string('idBkn')->default('');
     });
     Schema::table('m_data_pendidikan', function (Blueprint $table) {
       $table->foreign('idDataPendidikanUpdate')->references('id')->on('m_data_pendidikan');

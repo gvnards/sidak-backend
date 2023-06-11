@@ -133,4 +133,9 @@ Route::post('user-admin', 'UsersController@insertUserAdmin');
 // Dashboard
 Route::get('pegawai-ultah/{numberofMonth}', 'DashboardController@getPegawaiUltah');
 
-Route::get('bkn', 'RestApiController@cobaPost');
+// API SIASN
+Route::get('siasn/jabatan/riwayat/detail/{idRiwayatJabatan}', 'ApiSiasnController@getRiwayatJabatanASNDetail');
+Route::get('siasn/jabatan/riwayat/{nipBaru}', 'ApiSiasnController@getRiwayatJabatanASN');
+Route::get('siasn/getAuth', 'ApiSiasnController@getAuthorizationToken');
+// dicek lagi fungsinya yang post, karena belum ada parameter yang dimasukkan
+Route::post('siasn/jabatan/riwayat', 'ApiSiasnController@insertRiwayatJabatanASN');

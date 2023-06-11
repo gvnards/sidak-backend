@@ -13,25 +13,7 @@ class MDataDiklatSeeder extends Seeder
    */
   public function run()
   {
-    $data = [
-      [
-        'id' => 1,
-        'idJenisDiklat' => 1,
-        'idDaftarDiklat' => 1,
-        'namaDiklat' => 'DIKLAT PIM TK. V',
-        'lamaDiklat' => 40,
-        'tanggalDiklat' => '2023-06-01',
-        'idDaftarInstansiDiklat' => 1,
-        'institusiPenyelenggara' => 'Pemerintah Kabupaten Situbondo',
-        'idDokumen' => NULL,
-        'idPegawai' => 5324,
-        'idUsulan' => 1,
-        'idUsulanStatus' => 4,
-        'idUsulanHasil' => 1,
-        'idDataDiklatUpdate' => NULL,
-        'keteranganUsulan' => '',
-      ]
-    ];
+    $data = [];
     foreach ($data as $key => $value) {
       DB::table('m_data_diklat')->insert([
         'id' => $value['id'],

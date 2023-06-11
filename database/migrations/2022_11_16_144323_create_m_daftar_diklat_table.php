@@ -19,6 +19,7 @@ class CreateMDaftarDiklatTable extends Migration
       $table->unsignedBigInteger('idJenisDiklat');
       $table->foreign('idJenisDiklat')->references('id')->on('m_jenis_diklat');
       $table->timestamps();
+      $table->string('idBkn')->default('');
     });
   }
 

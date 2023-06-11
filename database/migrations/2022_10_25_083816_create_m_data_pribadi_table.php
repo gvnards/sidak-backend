@@ -27,6 +27,7 @@ class CreateMDataPribadiTable extends Migration
       $table->unsignedBigInteger('idPegawai');
       $table->foreign('idPegawai')->references('id')->on('m_pegawai');
       $table->timestamps();
+      $table->string('idBkn')->default('');
     });
   }
 

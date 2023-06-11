@@ -42,6 +42,7 @@ class CreateMDataHukumanDisiplinTable extends Migration
       $table->foreign('idUsulanHasil')->references('id')->on('m_usulan_hasil');
       $table->text('keteranganUsulan');
       $table->timestamps();
+      $table->string('idBkn')->default('');
     });
     Schema::table('m_data_hukuman_disiplin', function (Blueprint $table) {
       $table->foreign('idDataHukumanDisiplinUpdate')->references('id')->on('m_data_hukuman_disiplin');

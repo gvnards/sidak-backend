@@ -17,6 +17,7 @@ class CreateMDaftarAlasanHukumanDisiplinTable extends Migration
       $table->id()->autoIncrement()->index();
       $table->text('nama');
       $table->timestamps();
+      $table->text('idBkn')->default('');
     });
   }
 

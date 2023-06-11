@@ -39,6 +39,7 @@ class CreateMDataPangkatTable extends Migration
       $table->foreign('idUsulanHasil')->references('id')->on('m_usulan_hasil');
       $table->text('keteranganUsulan');
       $table->timestamps();
+      $table->string('idBkn')->default('');
     });
     Schema::table('m_data_pangkat', function (Blueprint $table) {
       $table->foreign('idDataPangkatUpdate')->references('id')->on('m_data_pangkat');

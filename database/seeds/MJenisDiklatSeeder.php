@@ -16,8 +16,7 @@ class MJenisDiklatSeeder extends Seeder
     $data = [
       ['id'=>1,'nama'=>'Diklat Struktural'],
       ['id'=>2,'nama'=>'Diklat Fungsional'],
-      ['id'=>3,'nama'=>'Diklat Teknis'],
-      ['id'=>4,'nama'=>'Seminar/Workshop/Magang/Sejenisnya'],
+      ['id'=>3,'nama'=>'Diklat Teknis/Seminar/Workshop/Magang/Sejenisnya'],
     ];
 
     foreach ($data as $key => $value) {

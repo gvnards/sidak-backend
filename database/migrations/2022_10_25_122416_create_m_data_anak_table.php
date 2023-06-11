@@ -37,6 +37,7 @@ class CreateMDataAnakTable extends Migration
       $table->foreign('idUsulanHasil')->references('id')->on('m_usulan_hasil');
       $table->text('keteranganUsulan');
       $table->timestamps();
+      $table->string('idBkn')->default('');
     });
     Schema::table('m_data_anak', function (Blueprint $table) {
       $table->foreign('idDataAnakUpdate')->references('id')->on('m_data_anak');

@@ -18,6 +18,7 @@ class CreateMDaftarPangkatTable extends Migration
       $table->string('golongan', 50)->index();
       $table->string('pangkat', 255);
       $table->timestamps();
+      $table->string('idBkn')->default('');
     });
   }
 

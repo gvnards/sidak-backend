@@ -17,6 +17,7 @@ class CreateMEselonTable extends Migration
       $table->id()->autoIncrement()->index();
       $table->string('nama', 10);
       $table->timestamps();
+      $table->string('idBkn')->default('');
     });
   }
 

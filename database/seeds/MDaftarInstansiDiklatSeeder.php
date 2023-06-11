@@ -14,7 +14,7 @@ class MDaftarInstansiDiklatSeeder extends Seeder
   public function run()
   {
     $data = [
-      ['id'=>1,'nama'=>'Pemerintah Kabupaten Situbondo'],
+      ['id'=>1,'nama'=>'Pemerintah Kabupaten Situbondo','idBkn'=>'A5EB03E23CD4F6A0E040640A040252AD'],
     ];
 
     foreach ($data as $key => $value) {
@@ -22,7 +22,8 @@ class MDaftarInstansiDiklatSeeder extends Seeder
         'id' => $value['id'],
         'nama' => $value['nama'],
         'created_at' => Carbon::now()->format('Y-m-d H:i:s'),
-        'updated_at' => Carbon::now()->format('Y-m-d H:i:s')
+        'updated_at' => Carbon::now()->format('Y-m-d H:i:s'),
+        'idBkn' => $value['idBkn'],
       ]);
     }
   }

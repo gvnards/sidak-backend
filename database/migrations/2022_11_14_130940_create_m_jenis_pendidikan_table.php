@@ -17,6 +17,7 @@ class CreateMJenisPendidikanTable extends Migration
       $table->id()->autoIncrement()->index();
       $table->string('nama', 255);
       $table->timestamps();
+      $table->string('idBkn')->default('');
     });
   }
 

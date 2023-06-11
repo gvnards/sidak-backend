@@ -38,6 +38,7 @@ class CreateMDataDiklatTable extends Migration
       $table->foreign('idUsulanHasil')->references('id')->on('m_usulan_hasil');
       $table->text('keteranganUsulan');
       $table->timestamps();
+      $table->string('idBkn')->default('');
     });
     Schema::table('m_data_diklat', function (Blueprint $table) {
       $table->foreign('idDataDiklatUpdate')->references('id')->on('m_data_diklat');

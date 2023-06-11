@@ -36,6 +36,7 @@ class CreateMDataPasanganTable extends Migration
       $table->foreign('idUsulanHasil')->references('id')->on('m_usulan_hasil');
       $table->text('keteranganUsulan');
       $table->timestamps();
+      $table->string('idBkn')->default('');
     });
     Schema::table('m_data_pasangan', function (Blueprint $table) {
       $table->foreign('idDataPasanganUpdate')->references('id')->on('m_data_pasangan');

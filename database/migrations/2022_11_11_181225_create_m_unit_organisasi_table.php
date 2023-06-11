@@ -19,6 +19,8 @@ class CreateMUnitOrganisasiTable extends Migration
       $table->string('kodeKomponen', 50)->index();
       $table->boolean('digunakanSotkSekarang');
       $table->timestamps();
+      $table->string('idBkn')->default('');
+      $table->string('idBknAtasan')->default('');
     });
   }
 

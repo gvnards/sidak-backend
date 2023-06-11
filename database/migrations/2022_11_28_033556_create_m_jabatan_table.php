@@ -26,6 +26,7 @@ class CreateMJabatanTable extends Migration
       $table->unsignedBigInteger('idEselon')->nullable();
       $table->foreign('idEselon')->references('id')->on('m_eselon');
       $table->timestamps();
+      $table->string('idBkn')->default('');
     });
   }
 

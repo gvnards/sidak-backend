@@ -20,6 +20,7 @@ class CreateMPegawaiTable extends Migration
       $table->unsignedBigInteger('idAppRoleUser');
       $table->foreign('idAppRoleUser')->references('id')->on('m_app_role_user');
       $table->timestamps();
+      $table->string('idBkn')->default('');
     });
   }
 

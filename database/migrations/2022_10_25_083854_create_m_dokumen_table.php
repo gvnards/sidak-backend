@@ -17,6 +17,7 @@ class CreateMDokumenTable extends Migration
       $table->id()->autoIncrement()->index();
       $table->string('nama', 255)->index();
       $table->timestamps();
+      $table->string('idBkn')->default('');
     });
   }
 
