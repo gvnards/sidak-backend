@@ -137,6 +137,7 @@ Route::get('pegawai-ultah/{numberofMonth}', 'DashboardController@getPegawaiUltah
 Route::get('siasn/jabatan/riwayat/sync/{idPegawai}', 'ApiSiasnSyncController@syncJabatanASN');
 Route::get('siasn/diklat/riwayat/sync/{idPegawai}', 'ApiSiasnSyncController@syncDiklatASN');
 Route::get('siasn/pangkat-golongan/riwayat/sync/{idPegawai}', 'ApiSiasnSyncController@syncPangkatGolonganASN');
+Route::get('siasn/pendidikan/riwayat/sync/{idPegawai}', 'ApiSiasnSyncController@syncPendidikanASN');
 
 // API SIASN MASTER
 /// DIKLAT dan KURSUS
@@ -149,3 +150,5 @@ Route::get('siasn/jabatan/riwayat/detail/{idRiwayatJabatan}', 'ApiSiasnControlle
 Route::get('siasn/jabatan/riwayat/{nipBaru}', 'ApiSiasnController@getRiwayatJabatanASN');
 /// GOLONGAN
 Route::get('siasn/golongan/riwayat/{nipBaru}', 'ApiSiasnController@getRiwayatPangkatGolonganASN');
+/// PENDIDIKAN
+Route::get('siasn/pendidikan/riwayat/{nipBaru}', 'ApiSiasnController@getRiwayatPendidikanASN');

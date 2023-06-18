@@ -390,6 +390,9 @@ class ApiSiasnSyncController extends ApiSiasnController
     ///// loop insert pangkat/golongan dari siasn
     $affected = '';
     for($i=0; $i<count($newPangkatGolonganFromSiasn); $i++) {
+      if ($newPangkatGolonganFromSiasn[$i]['jenisKPId'] == "") {
+        continue;
+      }
       $idJenisPangkat = json_decode(DB::table('m_jenis_pangkat')->where([
         ['idBkn', '=', $newPangkatGolonganFromSiasn[$i]['jenisKPId']]
       ])->get()->toJson(), true)[0];
@@ -422,6 +425,100 @@ class ApiSiasnSyncController extends ApiSiasnController
 
     $callback = [
       'message' => "Data pangkat/golongan sudah berhasil disinkronisasi dari MySAPK.\nJika terdapat ketidaksesuaian pangkat/golongan, dapat menghubungi Admin BKPSDM.",
+      'status' => 2
+    ];
+    return $this->encrypt($username, json_encode($callback));
+  }
+  public function syncPendidikanASN(Request $request, $idPegawai) {
+    $authenticated = $this->isAuth($request)['authenticated'];
+    $username = $this->isAuth($request)['username'];
+    if(!$authenticated) return $this->encrypt($username, json_encode([
+      'message' => $authenticated == true ? 'Authorized' : 'Not Authorized',
+      'status' => $authenticated === true ? 1 : 0
+    ]));
+
+    ///// get data asn untuk mendapatkan nip berdasarkan idPegawai
+    $getAsn = DB::table('m_pegawai')->where([
+      ['id', '=', $idPegawai]
+    ])->get()->toJson();
+    $getAsn = json_decode($getAsn, true);
+    if (count($getAsn) === 0) {
+      return $this->encrypt($username, json_encode([
+        'message' => 'Data ASN tidak ditemukan.',
+        'status' => 3
+      ]));
+    }
+    $nipBaru = $getAsn[0]['nip'];
+
+    ///// get data riwayat pendidikan dari siasn
+    $pendidikanFromSiasn = $this->getRiwayatPendidikanASN($request, $nipBaru);
+    $pendidikanFromSiasn = $pendidikanFromSiasn['data'];
+
+    ///// get pendidikan asn dari sidak
+    $pendidikanFromSidak = DB::table('m_data_pendidikan')->where([
+      ['idPegawai', '=', $idPegawai]
+    ])->get()->toJson();
+    $pendidikanFromSidak = json_decode($pendidikanFromSidak, true);
+
+    ///// cek apakah pendidikan yang dari siasn sudah ada di sidak, jika belum, kumpulkan ke dalam variabel newPendidikanFromSiasn
+    $newPendidikanFromSiasn = [];
+    for($i=0; $i<count($pendidikanFromSiasn); $i++) {
+      $isFind = false;
+      for($j=0; $j<count($pendidikanFromSidak); $j++) {
+        // cek
+        if ($pendidikanFromSiasn[$i]['id'] == $pendidikanFromSidak[$j]['idBkn']) {
+          $isFind = true;
+        }
+      }
+      if (!$isFind) {
+        array_push($newPendidikanFromSiasn, $pendidikanFromSiasn[$i]);
+      }
+    }
+
+    ///// loop insert pangkat/golongan dari siasn
+    $affected = '';
+    $pendidikanPertamaSaatPns = null;
+    for($i=0; $i<count($newPendidikanFromSiasn); $i++) {
+      $idJenisPendidikan = 1;
+      $pendidikanPertamaSaatPns = intval($newPendidikanFromSiasn[$i]['isPendidikanPertama']) > 0 ? intval($newPendidikanFromSiasn[$i]['tkPendidikanId']) : $pendidikanPertamaSaatPns;
+      if ($pendidikanPertamaSaatPns != null) {
+        if (intval($pendidikanPertamaSaatPns) >= $newPendidikanFromSiasn[$i]['tkPendidikanId']) {
+          $idJenisPendidikan = 3;
+        }
+      }
+      $idTingkatPendidikan = json_decode(DB::table('m_tingkat_pendidikan')->where([
+        ['idBkn', '=', $newPendidikanFromSiasn[$i]['tkPendidikanId']]
+      ])->get()->toJson(), true)[0];
+      $idDaftarPendidikan = json_decode(DB::table('m_daftar_pendidikan')->where([
+        ['idBkn', '=', $newPendidikanFromSiasn[$i]['pendidikanId']]
+      ])->get()->toJson(), true)[0];
+      DB::table('m_data_pendidikan')->insert([
+        'id' => NULL,
+        'idJenisPendidikan' => intval($newPendidikanFromSiasn[$i]['isPendidikanPertama']) > 0 ? 2 : $idJenisPendidikan,
+        'idTingkatPendidikan' => $idTingkatPendidikan['id'],
+        'idDaftarPendidikan' => $idDaftarPendidikan['id'],
+        'namaSekolah' => $newPendidikanFromSiasn[$i]['namaSekolah'],
+        'gelarDepan' => $newPendidikanFromSiasn[$i]['gelarDepan'] ?? '',
+        'gelarBelakang' => $newPendidikanFromSiasn[$i]['gelarBelakang'] ?? '',
+        'tanggalLulus' => $newPendidikanFromSiasn[$i]['tglLulus'] == null ? '0000-00-00' : date('Y-m-d', strtotime($newPendidikanFromSiasn[$i]['tglLulus'])),
+        'tahunLulus' => $newPendidikanFromSiasn[$i]['tahunLulus'] ?? 1111,
+        'nomorDokumen' => $newPendidikanFromSiasn[$i]['nomorIjasah'],
+        'tanggalDokumen' => $newPendidikanFromSiasn[$i]['tglLulus'] == null ? '0000-00-00' : date('Y-m-d', strtotime($newPendidikanFromSiasn[$i]['tglLulus'])),
+        'idDokumen' => NULL,
+        'idPegawai' => intval($idPegawai),
+        'idUsulan' => 1,
+        'idUsulanStatus' => 4,
+        'idUsulanHasil' => 1,
+        'idDataPendidikanUpdate' => NULL,
+        'keteranganUsulan' => 'Data sinkron dengan SIASN/MySAPK',
+        'created_at' => Carbon::now()->format('Y-m-d H:i:s'),
+        'updated_at' => Carbon::now()->format('Y-m-d H:i:s'),
+        'idBkn' => $newPendidikanFromSiasn[$i]['id'],
+      ]);
+    }
+
+    $callback = [
+      'message' => "Data pendidikan sudah berhasil disinkronisasi dari MySAPK.\nJika terdapat ketidaksesuaian pendidikan, dapat menghubungi Admin BKPSDM.",
       'status' => 2
     ];
     return $this->encrypt($username, json_encode($callback));

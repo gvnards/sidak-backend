@@ -285,15 +285,30 @@ function insertRiwayatKursusASN(Request $request, $data) {
 
   // GOLONGAN
   function getRiwayatPangkatGolonganASN(Request $request, $nipBaru) {
-    // $authenticated = $this->isAuth($request)['authenticated'];
-    // $username = $this->isAuth($request)['username'];
-    // if(!$authenticated) return $this->encrypt($username, json_encode([
-    //   'message' => $authenticated == true ? 'Authorized' : 'Not Authorized',
-    //   'status' => $authenticated === true ? 1 : 0
-    // ]));
+    $authenticated = $this->isAuth($request)['authenticated'];
+    $username = $this->isAuth($request)['username'];
+    if(!$authenticated) return $this->encrypt($username, json_encode([
+      'message' => $authenticated == true ? 'Authorized' : 'Not Authorized',
+      'status' => $authenticated === true ? 1 : 0
+    ]));
     $token = $this->getAllToken();
     // format url --> /pns/rw-golongan/{nipBaru}
     $url = $this->initialUrl() . "/pns/rw-golongan/$nipBaru";
+    $response = Http::withHeaders($token)->get($url, []);
+    return json_decode($response, true);
+  }
+
+  // PENDIDIKAN
+  function getRiwayatPendidikanASN(Request $request, $nipBaru) {
+    $authenticated = $this->isAuth($request)['authenticated'];
+    $username = $this->isAuth($request)['username'];
+    if(!$authenticated) return $this->encrypt($username, json_encode([
+      'message' => $authenticated == true ? 'Authorized' : 'Not Authorized',
+      'status' => $authenticated === true ? 1 : 0
+    ]));
+    $token = $this->getAllToken();
+    // format url --> /pns/rw-pendidikan/{nipBaru}
+    $url = $this->initialUrl() . "/pns/rw-pendidikan/$nipBaru";
     $response = Http::withHeaders($token)->get($url, []);
     return json_decode($response, true);
   }
