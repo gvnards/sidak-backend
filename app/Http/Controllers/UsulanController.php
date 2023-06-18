@@ -367,6 +367,23 @@ class UsulanController extends Controller
         }
         break;
       case 'Data Diklat':
+        $usulan = json_decode(DB::table('m_data_diklat')->where([
+          ['id', '=', $idUsulan]
+        ])->get()->toJson(), true)[0];
+        if (intval($usulan['idUsulan']) == 1 && $message['idUsulanHasil'] == 1) {
+          $response = (new ApiSiasnSyncController)->insertRiwayatDiklatKursus($request, $idUsulan);
+          if (!$response['success']) {
+            $callback = [
+              'message' => $response['message'],
+              'status' => 3
+            ];
+            return $this->encrypt($username, json_encode($callback));
+          } else {
+            DB::table('m_data_diklat')->where('id', '=', $idUsulan)->update([
+              'idBkn' => $response['mapData']['rwDiklatId'] ?? $response['mapData']['rwKursusId'],
+            ]);
+          }
+        }
         $data = DB::table('m_data_diklat')->where('id', '=', $idUsulan)->update([
           'idUsulanStatus' => $message['idUsulanStatus'],
           'idUsulanHasil' => $message['idUsulanHasil'],
@@ -583,6 +600,23 @@ class UsulanController extends Controller
         }
         break;
       case 'Data Jabatan':
+        $usulan = json_decode(DB::table('m_data_jabatan')->where([
+          ['id', '=', $idUsulan]
+        ])->get()->toJson(), true)[0];
+        if (intval($usulan['idUsulan']) == 1 && $message['idUsulanHasil'] == 1) {
+          $response = (new ApiSiasnSyncController)->insertRiwayatJabatan($request, $idUsulan);
+          if (!$response['success']) {
+            $callback = [
+              'message' => $response['message'],
+              'status' => 3
+            ];
+            return $this->encrypt($username, json_encode($callback));
+          } else {
+            DB::table('m_data_jabatan')->where('id', '=', $idUsulan)->update([
+              'idBkn' => $response['mapData']['rwJabatanId'],
+            ]);
+          }
+        }
         $data = DB::table('m_data_jabatan')->where('id', '=', $idUsulan)->update([
           'idUsulanStatus' => $message['idUsulanStatus'],
           'idUsulanHasil' => $message['idUsulanHasil'],

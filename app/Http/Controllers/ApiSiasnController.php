@@ -70,53 +70,196 @@ class ApiSiasnController extends Controller
     return 'https://apimws.bkn.go.id:8243/apisiasn/1.0';
   }
 
-  // DIKLAT -- belum sama sekali
+  // DIKLAT dan KURSUS -- (DIKLAT (Khusus Diklat Struktural) dan KURSUS (Selain Diklat Struktural))
+  function getRiwayatDiklatASNDetail(Request $request, $idRiwayatDiklat) {
+    $authenticated = $this->isAuth($request)['authenticated'];
+    $username = $this->isAuth($request)['username'];
+    if(!$authenticated) return $this->encrypt($username, json_encode([
+      'message' => $authenticated == true ? 'Authorized' : 'Not Authorized',
+      'status' => $authenticated === true ? 1 : 0
+    ]));
+    $token = $this->getAllToken();
+    // format url --> /diklat/id/{idRiwayatDiklat}
+    $url = $this->initialUrl() . "/diklat/id/$idRiwayatDiklat";
+    $response = Http::withHeaders($token)->get($url, []);
+    return json_decode($response, true);
+  }
+  function getRiwayatDiklatASN(Request $request, $nipBaru) {
+    $authenticated = $this->isAuth($request)['authenticated'];
+    $username = $this->isAuth($request)['username'];
+    if(!$authenticated) return $this->encrypt($username, json_encode([
+      'message' => $authenticated == true ? 'Authorized' : 'Not Authorized',
+      'status' => $authenticated === true ? 1 : 0
+    ]));
+    $token = $this->getAllToken();
+    // format url --> /pns/rw-diklat/{nipBaru}
+    $url = $this->initialUrl() . "/pns/rw-diklat/$nipBaru";
+    $response = Http::withHeaders($token)->get($url, []);
+    return json_decode($response, true);
+  }
+  function insertRiwayatDiklatASN(Request $request, $data) {
+    $authenticated = $this->isAuth($request)['authenticated'];
+    $username = $this->isAuth($request)['username'];
+    if(!$authenticated) return $this->encrypt($username, json_encode([
+      'message' => $authenticated == true ? 'Authorized' : 'Not Authorized',
+      'status' => $authenticated === true ? 1 : 0
+    ]));
+    $token = $this->getAllToken();
+    // format url --> /diklat/save
+    // "id" dan "path", tidak perlu diisi dulu tidak masalah
+    // untuk "path", itu harus upload dokumen terlebih dahulu, nanti kita dapat callback dari dokumennya,
+    // lalu dari callback dokumen, nanti ditaruh di path
+    $url = $this->initialUrl() . "/diklat/save";
+    $response = Http::withHeaders($token)->post($url, [
+      // 'id'=> 'string',
+      // 'path'=> [
+      //   'dok_id'=> 'string',
+      //   'dok_nama'=> 'string',
+      //   'dok_uri'=> 'string',
+      //   'object'=> 'string',
+      //   'slug'=> 'string'
+      // ],
+      'bobot'=> 0,
+      'institusiPenyelenggara'=> $data['institusiPenyelenggara'],
+      'jenisKompetensi'=> '',
+      'jumlahJam'=> intval($data['jumlahJam']),
+      'latihanStrukturalId'=> $data['latihanStrukturalId'],
+      'nomor'=> $data['nomor'],
+      'pnsOrangId'=> $data['pnsOrangId'],
+      'tahun'=> intval($data['tahun']),
+      'tanggal'=> $data['tanggal'],
+      'tanggalSelesai'=> $data['tanggalSelesai']
+    ]);
+    return json_decode($response, true);
+  }
+  function getRiwayatKursusASNDetail(Request $request, $idRiwayatKursus) {
+    $authenticated = $this->isAuth($request)['authenticated'];
+    $username = $this->isAuth($request)['username'];
+    if(!$authenticated) return $this->encrypt($username, json_encode([
+      'message' => $authenticated == true ? 'Authorized' : 'Not Authorized',
+      'status' => $authenticated === true ? 1 : 0
+    ]));
+    $token = $this->getAllToken();
+    // format url --> /kursus/id/{idRiwayatKursus}
+    $url = $this->initialUrl() . "/kursus/id/$idRiwayatKursus";
+    $response = Http::withHeaders($token)->get($url, []);
+    return json_decode($response, true);
+  }
+  function getRiwayatKursusASN(Request $request, $nipBaru) {
+    $authenticated = $this->isAuth($request)['authenticated'];
+    $username = $this->isAuth($request)['username'];
+    if(!$authenticated) return $this->encrypt($username, json_encode([
+      'message' => $authenticated == true ? 'Authorized' : 'Not Authorized',
+      'status' => $authenticated === true ? 1 : 0
+    ]));
+    $token = $this->getAllToken();
+    // format url --> /pns/rw-kursus/{nipBaru}
+    $url = $this->initialUrl() . "/pns/rw-kursus/$nipBaru";
+    $response = Http::withHeaders($token)->get($url, []);
+    return json_decode($response, true);
+  }
+function insertRiwayatKursusASN(Request $request, $data) {
+  $authenticated = $this->isAuth($request)['authenticated'];
+  $username = $this->isAuth($request)['username'];
+  if(!$authenticated) return $this->encrypt($username, json_encode([
+    'message' => $authenticated == true ? 'Authorized' : 'Not Authorized',
+    'status' => $authenticated === true ? 1 : 0
+  ]));
+  $token = $this->getAllToken();
+  // format url --> /kursus/save
+  // "id" dan "path", tidak perlu diisi dulu tidak masalah
+  // untuk "path", itu harus upload dokumen terlebih dahulu, nanti kita dapat callback dari dokumennya,
+  // lalu dari callback dokumen, nanti ditaruh di path
+  $url = $this->initialUrl() . "/kursus/save";
+  $response = Http::withHeaders($token)->post($url, [
+    // 'id' => 'string',
+    // 'path' => [
+    //   'dok_id' => 'string',
+    //   'dok_nama' => 'string',
+    //   'dok_uri' => 'string',
+    //   'object' => 'string',
+    //   'slug' => 'string'
+    // ],
+    'lokasiId' => '',
+    'instansiId' => 'A5EB03E2421DF6A0E040640A040252AD',
+    'institusiPenyelenggara' => $data['institusiPenyelenggara'],
+    'jenisDiklatId' => $data['jenisDiklatId'],
+    'jenisKursus' => $data['jenisKursus'],
+    'jenisKursusSertipikat' => $data['jenisKursusSertipikat'],
+    'jumlahJam' => intval($data['jumlahJam']),
+    'namaKursus' => $data['namaKursus'],
+    'nomorSertipikat' => $data['nomorSertipikat'],
+    'pnsOrangId' => $data['pnsOrangId'],
+    'tahunKursus' => intval($data['tahunKursus']),
+    'tanggalKursus' => $data['tanggalKursus'],
+    'tanggalSelesaiKursus' => $data['tanggalSelesaiKursus']
+  ]);
+  return json_decode($response, true);
+}
   // UPLOAD -- belum sama sekali
   // JABATAN --
-  function getDetailJabatanASN(Request $request, $idRiwayatJabatan) {
+  function getRiwayatJabatanASNDetail(Request $request, $idRiwayatJabatan) {
+    $authenticated = $this->isAuth($request)['authenticated'];
+    $username = $this->isAuth($request)['username'];
+    if(!$authenticated) return $this->encrypt($username, json_encode([
+      'message' => $authenticated == true ? 'Authorized' : 'Not Authorized',
+      'status' => $authenticated === true ? 1 : 0
+    ]));
     $token = $this->getAllToken();
     // format url --> /jabatan/id/{idRiwayatJabatan}
     $url = $this->initialUrl() . "/jabatan/id/$idRiwayatJabatan";
     $response = Http::withHeaders($token)->get($url, []);
     return json_decode($response, true);
   }
-  function getDataJabatanASN(Request $request, $nipBaru) {
+  function getRiwayatJabatanASN(Request $request, $nipBaru) {
+    $authenticated = $this->isAuth($request)['authenticated'];
+    $username = $this->isAuth($request)['username'];
+    if(!$authenticated) return $this->encrypt($username, json_encode([
+      'message' => $authenticated == true ? 'Authorized' : 'Not Authorized',
+      'status' => $authenticated === true ? 1 : 0
+    ]));
     $token = $this->getAllToken();
     // format url --> /jabatan/pns/{nipBaru}
     $url = $this->initialUrl() . "/jabatan/pns/$nipBaru";
     $response = Http::withHeaders($token)->get($url, []);
     return json_decode($response, true);
   }
-  function insertDataJabatanASN(Request $request) {
+  function insertRiwayatJabatanASN(Request $request, $data) {
+    $authenticated = $this->isAuth($request)['authenticated'];
+    $username = $this->isAuth($request)['username'];
+    if(!$authenticated) return $this->encrypt($username, json_encode([
+      'message' => $authenticated == true ? 'Authorized' : 'Not Authorized',
+      'status' => $authenticated === true ? 1 : 0
+    ]));
     $token = $this->getAllToken();
     // format url --> /jabatan/save
     // "id" dan "path", tidak perlu diisi dulu tidak masalah
     // untuk "path", itu harus upload dokumen terlebih dahulu, nanti kita dapat callback dari dokumennya,
     // lalu dari callback dokumen, nanti ditaruh di path
     $url = $this->initialUrl() . "/jabatan/save";
-    // $response = Http::withHeaders($token)->post($url, [
-    //   'eselonId' => '',
-    //   // 'id' => '',
-    //   'instansiId' => 'A5EB03E23CD4F6A0E040640A040252AD',
-    //   'jabatanFungsionalId' => 'A5EB03E23EB1F6A0E040640A040252AD',
-    //   'jabatanFungsionalUmumId' => '',
-    //   'jenisJabatan' => '2',
-    //   'nomorSk' => 'coba',
-    //   // 'path' => [
-    //   //   'dok_id' => '',
-    //   //   'dok_nama' => '',
-    //   //   'dok_uri' => '',
-    //   //   'object' => '',
-    //   //   'slug' => ''
-    //   // ],
-    //   'pnsId' => '7E85A2741FFFBD8DE050640A3C036B36',
-    //   'satuanKerjaId' => 'A5EB03E2421DF6A0E040640A040252AD',
-    //   'tanggalSk' => '26-05-2023',
-    //   'tmtJabatan' => '26-05-2023',
-    //   'tmtPelantikan' => '26-05-2023',
-    //   'unorId' => '8ae483a686483d1901864868a4bb0260'
-    // ]);
-    // return json_decode($response, true);
+    $response = Http::withHeaders($token)->post($url, [
+      'eselonId' => $data['eselonId'],
+      // 'id' => '',
+      'instansiId' => 'A5EB03E23CD4F6A0E040640A040252AD',
+      'jabatanFungsionalId' => $data['jenisJabatan'] == '2' ? $data['jabatanId'] : '',
+      'jabatanFungsionalUmumId' => $data['jenisJabatan'] == '4' ? $data['jabatanId'] : '',
+      'jenisJabatan' => $data['jenisJabatan'],
+      'nomorSk' => $data['nomorSk'],
+      // 'path' => [
+      //   'dok_id' => '',
+      //   'dok_nama' => '',
+      //   'dok_uri' => '',
+      //   'object' => '',
+      //   'slug' => ''
+      // ],
+      'pnsId' => $data['pnsId'],
+      'satuanKerjaId' => 'A5EB03E2421DF6A0E040640A040252AD',
+      'tanggalSk' => $data['tanggalSk'],
+      'tmtJabatan' => $data['tmtJabatan'],
+      'tmtPelantikan' => $data['tmtPelantikan'],
+      'unorId' => $data['unorId']
+    ]);
+    return json_decode($response, true);
 
     ///////////// return success
     // {
@@ -138,5 +281,20 @@ class ApiSiasnController extends Controller
     //   "data": null,
     //   "message": "5 errors occurred:\n\t* UnorID is required\n\t* InstansiKerjaID is required\n\t* PnsOrangId is required\n\t* NomorSk is required\n\t* SatuanKerjaId is required\n\n"
     // }
+  }
+
+  // GOLONGAN
+  function getRiwayatPangkatGolonganASN(Request $request, $nipBaru) {
+    // $authenticated = $this->isAuth($request)['authenticated'];
+    // $username = $this->isAuth($request)['username'];
+    // if(!$authenticated) return $this->encrypt($username, json_encode([
+    //   'message' => $authenticated == true ? 'Authorized' : 'Not Authorized',
+    //   'status' => $authenticated === true ? 1 : 0
+    // ]));
+    $token = $this->getAllToken();
+    // format url --> /pns/rw-golongan/{nipBaru}
+    $url = $this->initialUrl() . "/pns/rw-golongan/$nipBaru";
+    $response = Http::withHeaders($token)->get($url, []);
+    return json_decode($response, true);
   }
 }

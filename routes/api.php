@@ -133,9 +133,19 @@ Route::post('user-admin', 'UsersController@insertUserAdmin');
 // Dashboard
 Route::get('pegawai-ultah/{numberofMonth}', 'DashboardController@getPegawaiUltah');
 
-// API SIASN
+// API SIASN SYNC
+Route::get('siasn/jabatan/riwayat/sync/{idPegawai}', 'ApiSiasnSyncController@syncJabatanASN');
+Route::get('siasn/diklat/riwayat/sync/{idPegawai}', 'ApiSiasnSyncController@syncDiklatASN');
+Route::get('siasn/pangkat-golongan/riwayat/sync/{idPegawai}', 'ApiSiasnSyncController@syncPangkatGolonganASN');
+
+// API SIASN MASTER
+/// DIKLAT dan KURSUS
+Route::get('siasn/diklat/riwayat/detail/{idRiwayatDiklat}', 'ApiSiasnController@getRiwayatDiklatASNDetail');
+Route::get('siasn/diklat/riwayat/{nipBaru}', 'ApiSiasnController@getRiwayatDiklatASN');
+Route::get('siasn/kursus/riwayat/detail/{idRiwayatKursus}', 'ApiSiasnController@getRiwayatKursusASNDetail');
+Route::get('siasn/kursus/riwayat/{nipBaru}', 'ApiSiasnController@getRiwayatKursusASN');
+/// JABATAN
 Route::get('siasn/jabatan/riwayat/detail/{idRiwayatJabatan}', 'ApiSiasnController@getRiwayatJabatanASNDetail');
 Route::get('siasn/jabatan/riwayat/{nipBaru}', 'ApiSiasnController@getRiwayatJabatanASN');
-Route::get('siasn/getAuth', 'ApiSiasnController@getAuthorizationToken');
-// dicek lagi fungsinya yang post, karena belum ada parameter yang dimasukkan
-Route::post('siasn/jabatan/riwayat', 'ApiSiasnController@insertRiwayatJabatanASN');
+/// GOLONGAN
+Route::get('siasn/golongan/riwayat/{nipBaru}', 'ApiSiasnController@getRiwayatPangkatGolonganASN');

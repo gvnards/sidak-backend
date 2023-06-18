@@ -22,9 +22,11 @@ class CreateMDataDiklatTable extends Migration
       $table->string('namaDiklat');
       $table->integer('lamaDiklat');
       $table->date('tanggalDiklat')->nullable();
+      $table->date('tanggalSelesaiDiklat')->nullable();
       $table->unsignedBigInteger('idDaftarInstansiDiklat');
       $table->foreign('idDaftarInstansiDiklat')->references('id')->on('m_daftar_instansi_diklat');
       $table->string('institusiPenyelenggara', 255);
+      $table->string('nomorDokumen', 255);
       $table->unsignedBigInteger('idDokumen')->nullable();
       $table->unsignedBigInteger('idPegawai');
       $table->unsignedBigInteger('idUsulan');

@@ -68,7 +68,8 @@ class DataDiklatController extends Controller
       ])->get([
         'm_data_diklat.id',
         'm_jenis_diklat.nama as jenisDiklat',
-        'm_daftar_diklat.nama as daftarDiklat'
+        'm_daftar_diklat.nama as daftarDiklat',
+        'm_data_diklat.namaDiklat as namaDiklat'
       ]);
     } else {
       $data = json_decode(DB::table('m_pegawai')->join('m_data_diklat', 'm_pegawai.id', '=', 'm_data_diklat.idPegawai')->where([
@@ -112,8 +113,10 @@ class DataDiklatController extends Controller
       'namaDiklat' => $message['namaDiklat'],
       'lamaDiklat' => $message['lamaDiklat'],
       'tanggalDiklat' => $message['tanggalDiklat'],
+      'tanggalSelesaiDiklat' => $message['tanggalSelesaiDiklat'],
       'idDaftarInstansiDiklat' => $message['idDaftarInstansiDiklat'],
       'institusiPenyelenggara' => $message['institusiPenyelenggara'],
+      'nomorDokumen' => $message['nomorDokumen'],
       'idDokumen' => $dokumen,
       'idPegawai' => $message['idPegawai'],
       'idUsulan' => $id == NULL ? 1 : 2,
