@@ -41,6 +41,23 @@ class ApiSiasnSyncController extends ApiSiasnController
     ])->get()->toJson();
     $jabatanFromSidak = json_decode($jabatanFromSidak, true);
 
+    ///// cek apakah jabatan dari sidak (yang ada idBkn nya), itu masih ada atau tidak di siasn, jika tidak, hapus
+    for($i=0; $i<count($jabatanFromSidak); $i++) {
+      if ($jabatanFromSidak[$i]['idBkn'] != '' && $jabatanFromSidak[$i]['idBkn'] != null) {
+        $isFind = false;
+        for($j=0; $j<count($jabatanFromSiasn); $j++) {
+          if ($jabatanFromSidak[$i]['idBkn'] == $jabatanFromSiasn[$j]['id']) {
+            $isFind = true;
+          }
+        }
+        if (!$isFind) {
+          DB::table('m_data_jabatan')->where([
+            ['id', '=', $jabatanFromSidak[$i]['id']]
+          ])->delete();
+        }
+      }
+    }
+
     ///// cek apakah jabatan yang dari siasn sudah ada di sidak, jika belum, kumpulkan ke dalam variabel newJabatanFromSiasn
     $newJabatanFromSiasn = [];
     for($i=0; $i<count($jabatanFromSiasn); $i++) {
@@ -475,14 +492,20 @@ class ApiSiasnSyncController extends ApiSiasnController
       }
     }
 
-    ///// loop insert pangkat/golongan dari siasn
-    $affected = '';
+    ///// loop cek data pendidikan pertama kali saat diangkat pns
     $pendidikanPertamaSaatPns = null;
     for($i=0; $i<count($newPendidikanFromSiasn); $i++) {
+      if (intval($newPendidikanFromSiasn[$i]['isPendidikanPertama']) == 1) {
+        $pendidikanPertamaSaatPns = $newPendidikanFromSiasn[$i]['tkPendidikanId'];
+      }
+    }
+
+    ///// loop insert pangkat/golongan dari siasn
+    $affected = '';
+    for($i=0; $i<count($newPendidikanFromSiasn); $i++) {
       $idJenisPendidikan = 1;
-      $pendidikanPertamaSaatPns = intval($newPendidikanFromSiasn[$i]['isPendidikanPertama']) > 0 ? intval($newPendidikanFromSiasn[$i]['tkPendidikanId']) : $pendidikanPertamaSaatPns;
       if ($pendidikanPertamaSaatPns != null) {
-        if (intval($pendidikanPertamaSaatPns) >= $newPendidikanFromSiasn[$i]['tkPendidikanId']) {
+        if (intval($pendidikanPertamaSaatPns) <= intval($newPendidikanFromSiasn[$i]['tkPendidikanId'])) {
           $idJenisPendidikan = 3;
         }
       }

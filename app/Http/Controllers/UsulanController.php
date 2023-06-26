@@ -382,6 +382,10 @@ class UsulanController extends Controller
             DB::table('m_data_diklat')->where('id', '=', $idUsulan)->update([
               'idBkn' => $response['mapData']['rwDiklatId'] ?? $response['mapData']['rwKursusId'],
             ]);
+            $dokumen = json_decode(DB::table('m_dokumen')->where([
+              ['id', '=', $usulan['idDokumen']]
+            ])->get()->toJson(), true)[0];
+            (new ApiSiasnController)->insertDokumenRiwayat($request, $response['mapData']['rwDiklatId'] ?? $response['mapData']['rwKursusId'], 874, 'diklat', $dokumen['nama'], 'pdf');
           }
         }
         $data = DB::table('m_data_diklat')->where('id', '=', $idUsulan)->update([
@@ -615,6 +619,10 @@ class UsulanController extends Controller
             DB::table('m_data_jabatan')->where('id', '=', $idUsulan)->update([
               'idBkn' => $response['mapData']['rwJabatanId'],
             ]);
+            $dokumen = json_decode(DB::table('m_dokumen')->where([
+              ['id', '=', $usulan['idDokumen']]
+            ])->get()->toJson(), true)[0];
+            (new ApiSiasnController)->insertDokumenRiwayat($request, $response['mapData']['rwJabatanId'], 872, 'jabatan', $dokumen['nama'], 'pdf');
           }
         }
         $data = DB::table('m_data_jabatan')->where('id', '=', $idUsulan)->update([

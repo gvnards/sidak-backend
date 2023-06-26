@@ -197,6 +197,31 @@ function insertRiwayatKursusASN(Request $request, $data) {
   return json_decode($response, true);
 }
   // UPLOAD -- belum sama sekali
+  function insertDokumenRiwayat(Request $request, $idRiwayat, $idRefDokumen, $folderDokumen, $namaDokumen, $ekstensiDokumen) {
+    $authenticated = $this->isAuth($request)['authenticated'];
+    $username = $this->isAuth($request)['username'];
+    if(!$authenticated) return $this->encrypt($username, json_encode([
+      'message' => $authenticated == true ? 'Authorized' : 'Not Authorized',
+      'status' => $authenticated === true ? 1 : 0
+    ]));
+    $token = $this->getAllToken();
+    $curl = curl_init($this->initialUrl()."/upload-dok-rw");
+    $headers = [];
+    $headers[] = "Auth: ".$token['Auth'];
+    $headers[] = "Authorization: ".$token['Authorization'];
+    curl_setopt($curl, CURLOPT_HTTPHEADER, $headers);
+    curl_setopt($curl, CURLOPT_POST, true);
+    curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+    // 'c7f49f64-0e71-11ee-9b1c-0a580a830063'
+    $data_ = [
+      'id_riwayat' => $idRiwayat,
+      'id_ref_dokumen' => $idRefDokumen,
+      'file' => curl_file_create(storage_path("app/dokumen/$folderDokumen/$namaDokumen.$ekstensiDokumen"), 'application/pdf', "$namaDokumen.$ekstensiDokumen")
+    ];
+    curl_setopt($curl, CURLOPT_POSTFIELDS, $data_);
+    $response = curl_exec($curl);
+    return $response;
+  }
   // JABATAN --
   function getRiwayatJabatanASNDetail(Request $request, $idRiwayatJabatan) {
     $authenticated = $this->isAuth($request)['authenticated'];

@@ -48,6 +48,18 @@ class DataJabatanController extends Controller
       'message' => $authenticated == true ? 'Authorized' : 'Not Authorized',
       'status' => $authenticated === true ? 1 : 0
     ]));
+    if ($id !== NULL) {
+      $countIsAny = count(json_decode(DB::table('m_data_jabatan')->where([
+        ['idDataJabatanUpdate', '=', $id],
+        ['idUsulanHasil', '=', 3]
+      ])->get()->toJson(), true));
+      if ($countIsAny > 0) {
+        return $this->encrypt($username, json_encode([
+          'message' => "Maaf, data sudah pernah diusulkan sebelumnya untuk perubahan.\nSilahkan menunggu data terverifikasi terlebih dahulu.",
+          'status' => 3
+        ]));
+      }
+    }
     $message = json_decode($this->decrypt($username, $request->message), true);
     $nip_ = DB::table('m_pegawai')->where([['id', '=', $message['idPegawai']]])->get();
     foreach ($nip_ as $key => $value) {
@@ -82,7 +94,7 @@ class DataJabatanController extends Controller
     ]);
     $method = $id == NULL ? 'ditambahkan' : 'diperbaharui';
     $callback = [
-      'message' => $data == 1 ? "Data berhasil diusulkan untuk $method." : "Data gagal diusulkan untuk $method.",
+      'message' => $data == 1 ? "Data berhasil diusulkan untuk $method.\nSilahkan cek status usulan secara berkala pada Menu Usulan." : "Data gagal diusulkan untuk $method.",
       'status' => $data == 1 ? 2 : 3
     ];
     return $this->encrypt($username, json_encode($callback));

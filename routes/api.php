@@ -152,3 +152,4 @@ Route::get('siasn/jabatan/riwayat/{nipBaru}', 'ApiSiasnController@getRiwayatJaba
 Route::get('siasn/golongan/riwayat/{nipBaru}', 'ApiSiasnController@getRiwayatPangkatGolonganASN');
 /// PENDIDIKAN
 Route::get('siasn/pendidikan/riwayat/{nipBaru}', 'ApiSiasnController@getRiwayatPendidikanASN');
+Route::post('siasn/jabatan/riwayat', 'ApiSiasnController@insertRiwayatJabatanASN');
