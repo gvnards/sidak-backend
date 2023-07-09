@@ -84,6 +84,7 @@ Route::get('uang-kinerja', 'JabatanUnitOrganisasiController@getUangKinerja');
 Route::get('kelas-jabatan', 'JabatanUnitOrganisasiController@getKelasJabatan');
 Route::get('jabatan', 'JabatanUnitOrganisasiController@getJabatan');
 Route::get('jabatan/{kodeKomponen}', 'JabatanUnitOrganisasiController@getJabatan');
+Route::get('jabatan-all-group/{kodeKomponen}', 'JabatanUnitOrganisasiController@getJabatanAllGroup');
 Route::get('tugas-tambahan', 'JabatanUnitOrganisasiController@getTugasTambahan');
 Route::get('jenis-golpang', 'DataGolonganPangkatController@getJenisGolPang');
 Route::get('daftar-golpang', 'DataGolonganPangkatController@getDaftarGolPang');
@@ -135,6 +136,7 @@ Route::get('pegawai-ultah/{numberofMonth}', 'DashboardController@getPegawaiUltah
 
 // API SIASN SYNC
 Route::get('siasn/jabatan/riwayat/sync/{idPegawai}', 'ApiSiasnSyncController@syncJabatanASN');
+Route::get('siasn/jabatan/riwayat/sync/all/{from}/{to}/{timeForNoCache}', 'ApiSiasnSyncController@syncJabatanASNAll');
 Route::get('siasn/diklat/riwayat/sync/{idPegawai}', 'ApiSiasnSyncController@syncDiklatASN');
 Route::get('siasn/pangkat-golongan/riwayat/sync/{idPegawai}', 'ApiSiasnSyncController@syncPangkatGolonganASN');
 Route::get('siasn/pendidikan/riwayat/sync/{idPegawai}', 'ApiSiasnSyncController@syncPendidikanASN');
@@ -152,4 +154,6 @@ Route::get('siasn/jabatan/riwayat/{nipBaru}', 'ApiSiasnController@getRiwayatJaba
 Route::get('siasn/golongan/riwayat/{nipBaru}', 'ApiSiasnController@getRiwayatPangkatGolonganASN');
 /// PENDIDIKAN
 Route::get('siasn/pendidikan/riwayat/{nipBaru}', 'ApiSiasnController@getRiwayatPendidikanASN');
-Route::post('siasn/jabatan/riwayat', 'ApiSiasnController@insertRiwayatJabatanASN');
+/// HUKDIS
+Route::get('siasn/hukdis/riwayat/{nipBaru}', 'ApiSiasnController@getRiwayatHukdisASN');
+// Route::post('siasn/jabatan/riwayat', 'ApiSiasnController@insertRiwayatJabatanASN');

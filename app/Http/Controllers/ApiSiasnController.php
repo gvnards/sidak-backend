@@ -158,45 +158,45 @@ class ApiSiasnController extends Controller
     $response = Http::withHeaders($token)->get($url, []);
     return json_decode($response, true);
   }
-function insertRiwayatKursusASN(Request $request, $data) {
-  $authenticated = $this->isAuth($request)['authenticated'];
-  $username = $this->isAuth($request)['username'];
-  if(!$authenticated) return $this->encrypt($username, json_encode([
-    'message' => $authenticated == true ? 'Authorized' : 'Not Authorized',
-    'status' => $authenticated === true ? 1 : 0
-  ]));
-  $token = $this->getAllToken();
-  // format url --> /kursus/save
-  // "id" dan "path", tidak perlu diisi dulu tidak masalah
-  // untuk "path", itu harus upload dokumen terlebih dahulu, nanti kita dapat callback dari dokumennya,
-  // lalu dari callback dokumen, nanti ditaruh di path
-  $url = $this->initialUrl() . "/kursus/save";
-  $response = Http::withHeaders($token)->post($url, [
-    // 'id' => 'string',
-    // 'path' => [
-    //   'dok_id' => 'string',
-    //   'dok_nama' => 'string',
-    //   'dok_uri' => 'string',
-    //   'object' => 'string',
-    //   'slug' => 'string'
-    // ],
-    'lokasiId' => '',
-    'instansiId' => 'A5EB03E2421DF6A0E040640A040252AD',
-    'institusiPenyelenggara' => $data['institusiPenyelenggara'],
-    'jenisDiklatId' => $data['jenisDiklatId'],
-    'jenisKursus' => $data['jenisKursus'],
-    'jenisKursusSertipikat' => $data['jenisKursusSertipikat'],
-    'jumlahJam' => intval($data['jumlahJam']),
-    'namaKursus' => $data['namaKursus'],
-    'nomorSertipikat' => $data['nomorSertipikat'],
-    'pnsOrangId' => $data['pnsOrangId'],
-    'tahunKursus' => intval($data['tahunKursus']),
-    'tanggalKursus' => $data['tanggalKursus'],
-    'tanggalSelesaiKursus' => $data['tanggalSelesaiKursus']
-  ]);
-  return json_decode($response, true);
-}
-  // UPLOAD -- belum sama sekali
+  function insertRiwayatKursusASN(Request $request, $data) {
+    $authenticated = $this->isAuth($request)['authenticated'];
+    $username = $this->isAuth($request)['username'];
+    if(!$authenticated) return $this->encrypt($username, json_encode([
+      'message' => $authenticated == true ? 'Authorized' : 'Not Authorized',
+      'status' => $authenticated === true ? 1 : 0
+    ]));
+    $token = $this->getAllToken();
+    // format url --> /kursus/save
+    // "id" dan "path", tidak perlu diisi dulu tidak masalah
+    // untuk "path", itu harus upload dokumen terlebih dahulu, nanti kita dapat callback dari dokumennya,
+    // lalu dari callback dokumen, nanti ditaruh di path
+    $url = $this->initialUrl() . "/kursus/save";
+    $response = Http::withHeaders($token)->post($url, [
+      // 'id' => 'string',
+      // 'path' => [
+      //   'dok_id' => 'string',
+      //   'dok_nama' => 'string',
+      //   'dok_uri' => 'string',
+      //   'object' => 'string',
+      //   'slug' => 'string'
+      // ],
+      'lokasiId' => '',
+      'instansiId' => 'A5EB03E2421DF6A0E040640A040252AD',
+      'institusiPenyelenggara' => $data['institusiPenyelenggara'],
+      'jenisDiklatId' => $data['jenisDiklatId'],
+      'jenisKursus' => $data['jenisKursus'],
+      'jenisKursusSertipikat' => $data['jenisKursusSertipikat'],
+      'jumlahJam' => intval($data['jumlahJam']),
+      'namaKursus' => $data['namaKursus'],
+      'nomorSertipikat' => $data['nomorSertipikat'],
+      'pnsOrangId' => $data['pnsOrangId'],
+      'tahunKursus' => intval($data['tahunKursus']),
+      'tanggalKursus' => $data['tanggalKursus'],
+      'tanggalSelesaiKursus' => $data['tanggalSelesaiKursus']
+    ]);
+    return json_decode($response, true);
+  }
+  // UPLOAD
   function insertDokumenRiwayat(Request $request, $idRiwayat, $idRefDokumen, $folderDokumen, $namaDokumen, $ekstensiDokumen) {
     $authenticated = $this->isAuth($request)['authenticated'];
     $username = $this->isAuth($request)['username'];
@@ -334,6 +334,21 @@ function insertRiwayatKursusASN(Request $request, $data) {
     $token = $this->getAllToken();
     // format url --> /pns/rw-pendidikan/{nipBaru}
     $url = $this->initialUrl() . "/pns/rw-pendidikan/$nipBaru";
+    $response = Http::withHeaders($token)->get($url, []);
+    return json_decode($response, true);
+  }
+
+  // HUKUMAN DISIPLIN
+  function getRiwayatHukdisASN(Request $request, $nipBaru) {
+    // $authenticated = $this->isAuth($request)['authenticated'];
+    // $username = $this->isAuth($request)['username'];
+    // if(!$authenticated) return $this->encrypt($username, json_encode([
+    //   'message' => $authenticated == true ? 'Authorized' : 'Not Authorized',
+    //   'status' => $authenticated === true ? 1 : 0
+    // ]));
+    $token = $this->getAllToken();
+    // format url --> /pns/rw-hukdis/{nipBaru}
+    $url = $this->initialUrl() . "/pns/rw-hukdis/$nipBaru";
     $response = Http::withHeaders($token)->get($url, []);
     return json_decode($response, true);
   }

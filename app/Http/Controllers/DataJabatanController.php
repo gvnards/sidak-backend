@@ -61,6 +61,29 @@ class DataJabatanController extends Controller
       }
     }
     $message = json_decode($this->decrypt($username, $request->message), true);
+    $jabatanCount = json_decode(DB::table('m_jabatan')->where([
+      ['id', '=', $message['idJabatan']],
+      ['kodeKomponen', '=', $message['kodeKomponen']]
+    ])->get()->toJson(), true);
+    if (count($jabatanCount) === 0) {
+      $jabatanBaru = json_decode(DB::table('m_jabatan')->where([
+        ['id', '=', $message['idJabatan']]
+      ])->get()->toJson(), true)[0];
+      $idJabatanBaru = DB::table('m_jabatan')->insertGetId([
+        'id' => NULL,
+        'nama' => $jabatanBaru['nama'].' (Tidak ada di dalam Peta Jabatan Unit Organisasi)',
+        'kebutuhan' => -1,
+        'idKelasJabatan' => $jabatanBaru['idKelasJabatan'],
+        'target' => $jabatanBaru['target'],
+        'kodeKomponen' => $message['kodeKomponen'],
+        'idJenisJabatan' => $jabatanBaru['idJenisJabatan'],
+        'idEselon' => $jabatanBaru['idEselon'],
+        'created_at' => Carbon::now()->format('Y-m-d H:i:s'),
+        'updated_at' => Carbon::now()->format('Y-m-d H:i:s'),
+        'idBkn' => $jabatanBaru['idBkn']
+      ]);
+      $message['idJabatan'] = $idJabatanBaru;
+    }
     $nip_ = DB::table('m_pegawai')->where([['id', '=', $message['idPegawai']]])->get();
     foreach ($nip_ as $key => $value) {
       $nip = $value->nip;

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Http;
 
 class LoginController extends Controller
 {
@@ -14,7 +15,38 @@ class LoginController extends Controller
     $password = $message['password'];
     $users = [];
     if(!str_contains($username, 'admin')) {
-      $users = DB::table('m_pegawai')->join('m_data_pribadi', 'm_pegawai.id', '=', 'm_data_pribadi.idPegawai')->join('m_app_role_user', 'm_pegawai.idAppRoleUser', '=', 'm_app_role_user.id')->where([
+      $response = Http::asForm()->post('https://sso-siasn.bkn.go.id/auth/realms/public-siasn/protocol/openid-connect/token', [
+        'client_id' => 'situbndoservice',
+        'grant_type' => 'password',
+        'username' => $username,
+        'password' => $password
+      ]);
+      $response = json_decode($response, true);
+      if(!isset($response['access_token'])) {
+        return $this->encrypt('sidak.bkpsdmsitubondokab', json_encode([
+          'message' => 'Username / password salah!',
+          'status' => 3
+        ]));
+      }
+      $usersTemp = [json_decode(DB::table('m_pegawai')->where([
+        ['nip', '=', $username]
+      ])->get()->toJson(), true)[0]];
+      if(count($usersTemp) === 1) {
+        if (!password_verify($password, $usersTemp[0]['password'])) {
+          $newPassword = password_hash($password, PASSWORD_DEFAULT);
+          DB::table('m_pegawai')->where([
+            ['id', '=', $usersTemp[0]['id']]
+          ])->update([
+            'password' => $newPassword
+          ]);
+        }
+      } else {
+        return $this->encrypt('sidak.bkpsdmsitubondokab', json_encode([
+          'message' => 'Username / password salah!',
+          'status' => 3
+        ]));
+      }
+      array_push($users, json_decode(DB::table('m_pegawai')->join('m_data_pribadi', 'm_pegawai.id', '=', 'm_data_pribadi.idPegawai')->join('m_app_role_user', 'm_pegawai.idAppRoleUser', '=', 'm_app_role_user.id')->where([
         ['m_pegawai.nip', '=', $username]
       ])->get([
         'm_pegawai.id as id',
@@ -23,9 +55,9 @@ class LoginController extends Controller
         'm_data_pribadi.nama as nama',
         'm_app_role_user.id as idAppRoleUser',
         'm_app_role_user.nama as appRoleUser'
-      ]);
+      ]), true)[0]);
     } else {
-      $users = DB::table('m_admin')->join('m_app_role_user', 'm_admin.idAppRoleUser', '=', 'm_app_role_user.id')->where([
+      $users = [json_decode(DB::table('m_admin')->join('m_app_role_user', 'm_admin.idAppRoleUser', '=', 'm_app_role_user.id')->where([
         ['username', '=', $username]
       ])->get([
         'm_admin.id as id',
@@ -34,21 +66,21 @@ class LoginController extends Controller
         'm_admin.username as nama',
         'm_app_role_user.id as idAppRoleUser',
         'm_app_role_user.nama as appRoleUser'
-      ]);
+      ])->toJson(), true)[0]];
     }
     $callback = [
       'message' => 'Username / password salah!',
       'status' => 3
     ];
     foreach ($users as $user) {
-      if(password_verify($password, $user->password)) {
+      if(password_verify($password, $user['password'])) {
         $callback = [
-          'id' => $user->id,
+          'id' => $user['id'],
           'username' => $username,
-          'password' => $user->password,
-          'idAppRoleUser' => $user->idAppRoleUser,
-          'appRoleUser' => $user->appRoleUser,
-          'message' => "Selamat datang $user->nama.",
+          'password' => $user['password'],
+          'idAppRoleUser' => $user['idAppRoleUser'],
+          'appRoleUser' => $user['appRoleUser'],
+          'message' => "Selamat datang ".$user['nama'].".",
           'status' => 2
         ];
       }

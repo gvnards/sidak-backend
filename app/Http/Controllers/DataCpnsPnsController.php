@@ -24,7 +24,7 @@ class DataCpnsPnsController extends Controller
     $data[0]['dokumenSkPns'] = $this->getBlobDokumen($data[0]['idDokumenSkPns'], 'pns', 'pdf');
     $callback = [
       'message' => count($data) == 1 ? $data : 'Data tidak ditemukan.',
-      'status' => count($data) == 1 ? 1 : 0
+      'status' => count($data) == 1 ? 2 : 3
     ];
     return $this->encrypt($username, json_encode($callback));
   }

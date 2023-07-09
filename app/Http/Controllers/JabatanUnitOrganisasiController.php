@@ -324,7 +324,10 @@ class JabatanUnitOrganisasiController extends Controller
       'status' => $authenticated === true ? 1 : 0
     ]));
     if($kodeKomponen == NULL) {
-      $data = DB::table('v_m_daftar_jabatan')->join('m_kelas_jabatan', 'v_m_daftar_jabatan.idKelasJabatan', '=', 'm_kelas_jabatan.id')->join('m_uang_kinerja', 'm_kelas_jabatan.idUangKinerja', '=', 'm_uang_kinerja.id')->get([
+      $data = DB::table('v_m_daftar_jabatan')->join('m_kelas_jabatan', 'v_m_daftar_jabatan.idKelasJabatan', '=', 'm_kelas_jabatan.id')->join('m_uang_kinerja', 'm_kelas_jabatan.idUangKinerja', '=', 'm_uang_kinerja.id')->where(function ($query) {
+        $query->where('v_m_daftar_jabatan.terisi', '>', 0)
+              ->orWhere('v_m_daftar_jabatan.kebutuhan', '>', -1);
+      })->get([
         'v_m_daftar_jabatan.id as id',
         'v_m_daftar_jabatan.nama as jabatan',
         'v_m_daftar_jabatan.kebutuhan as kebutuhan',
@@ -337,7 +340,10 @@ class JabatanUnitOrganisasiController extends Controller
     } else {
       $data = DB::table('v_m_daftar_jabatan')->join('m_kelas_jabatan', 'v_m_daftar_jabatan.idKelasJabatan', '=', 'm_kelas_jabatan.id')->join('m_uang_kinerja', 'm_kelas_jabatan.idUangKinerja', '=', 'm_uang_kinerja.id')->where([
         ['v_m_daftar_jabatan.kodeKomponen', 'LIKE', $kodeKomponen]
-      ])->get([
+      ])->where(function ($query) {
+        $query->where('v_m_daftar_jabatan.terisi', '>', 0)
+              ->orWhere('v_m_daftar_jabatan.kebutuhan', '>', -1);
+      })->get([
         'v_m_daftar_jabatan.id as id',
         'v_m_daftar_jabatan.nama as jabatan',
         'v_m_daftar_jabatan.kebutuhan as kebutuhan',
@@ -348,6 +354,50 @@ class JabatanUnitOrganisasiController extends Controller
         'm_uang_kinerja.nominal as uangKinerja'
       ]);
     }
+    $callback = [
+      'message' => $data,
+      'status' => 2
+    ];
+    return $this->encrypt($username, json_encode($callback));
+  }
+
+  public function getJabatanAllGroup($kodeKomponen, Request $request) {
+    $authenticated = $this->isAuth($request)['authenticated'];
+    $username = $this->isAuth($request)['username'];
+    if(!$authenticated) return $this->encrypt($username, json_encode([
+      'message' => $authenticated == true ? 'Authorized' : 'Not Authorized',
+      'status' => $authenticated === true ? 1 : 0
+    ]));
+    $data = json_decode(DB::table('v_m_daftar_jabatan')->join('m_kelas_jabatan', 'v_m_daftar_jabatan.idKelasJabatan', '=', 'm_kelas_jabatan.id')->join('m_uang_kinerja', 'm_kelas_jabatan.idUangKinerja', '=', 'm_uang_kinerja.id')->where([
+      ['v_m_daftar_jabatan.kodeKomponen', '=', $kodeKomponen]
+    ])->get([
+      'v_m_daftar_jabatan.id as id',
+      'v_m_daftar_jabatan.nama as jabatan',
+      'v_m_daftar_jabatan.kebutuhan as kebutuhan',
+      'v_m_daftar_jabatan.kodeKomponen as kodeKomponen',
+      'v_m_daftar_jabatan.terisi as jabatanTerisi',
+    ])->toJson(), true);
+    if (count($data) > 0) {
+      $dataNonPetaJabatan = json_decode(DB::table('v_m_daftar_jabatan')->join('m_kelas_jabatan', 'v_m_daftar_jabatan.idKelasJabatan', '=', 'm_kelas_jabatan.id')->join('m_uang_kinerja', 'm_kelas_jabatan.idUangKinerja', '=', 'm_uang_kinerja.id')->where([
+        ['v_m_daftar_jabatan.kodeKomponen', '!=', $kodeKomponen]
+      ])->where(function ($query) {
+        $query->where('v_m_daftar_jabatan.terisi', '>', 0)
+              ->orWhere('v_m_daftar_jabatan.kebutuhan', '>', -1);
+      })->groupBy('v_m_daftar_jabatan.nama')->get([
+        'v_m_daftar_jabatan.id as id',
+        'v_m_daftar_jabatan.nama as jabatan',
+        'v_m_daftar_jabatan.kodeKomponen as kodeKomponen',
+      ])->toJson(), true);
+      for($i=0; $i<count($dataNonPetaJabatan); $i++) {
+        $dataNonPetaJabatan[$i]['kebutuhan'] = -1;
+        $dataNonPetaJabatan[$i]['jabatanTerisi'] = 0;
+        $dataNonPetaJabatan[$i]['jabatan'] = $dataNonPetaJabatan[$i]['jabatan']." (Tidak ada di dalam Peta Jabatan Unit Organisasi)";
+        // $dataNonPetaJabatan[$i] = $dataNonPetaJabatan[$i];
+        array_push($data, $dataNonPetaJabatan[$i]);
+      }
+    }
+    // foreach ($dataNonPetaJabatan as $key => $value) {
+    // }
     $callback = [
       'message' => $data,
       'status' => 2

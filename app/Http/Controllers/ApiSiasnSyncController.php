@@ -33,6 +33,17 @@ class ApiSiasnSyncController extends ApiSiasnController
 
     ///// get data riwayat jabatan dari siasn
     $jabatanFromSiasn = $this->getRiwayatJabatanASN($request, $nipBaru);
+    if (!isset($jabatanFromSiasn['data'])) {
+      return $this->encrypt($username, json_encode([
+        'message' => "Data Jabatan tidak dapat ditarik dari MySAPK.\nMasalah ini sedang ditangani oleh BKN.",
+        'status' => 3
+      ]));
+    } else if (gettype($jabatanFromSiasn['data']) != "array") {
+      return $this->encrypt($username, json_encode([
+        'message' => "Data Jabatan tidak dapat ditarik dari MySAPK.\nMasalah ini sedang ditangani oleh BKN.",
+        'status' => 3
+      ]));
+    }
     $jabatanFromSiasn = $jabatanFromSiasn['data'];
 
     ///// get jabatan asn dari sidak
@@ -153,6 +164,23 @@ class ApiSiasnSyncController extends ApiSiasnController
       'status' => 2
     ];
     return $this->encrypt($username, json_encode($callback));
+  }
+  public function syncJabatanASNAll(Request $request, $from, $to) {
+    $authenticated = $this->isAuth($request)['authenticated'];
+    $username = $this->isAuth($request)['username'];
+    if(!$authenticated) return $this->encrypt($username, json_encode([
+      'message' => $authenticated == true ? 'Authorized' : 'Not Authorized',
+      'status' => $authenticated === true ? 1 : 0
+    ]));
+
+    $allPegawai = json_decode(DB::table('m_pegawai')->get()->toJson(), true);
+    for($i=($from-1); $i<($to-1); $i++) {
+      $this->syncJabatanASN($request, $allPegawai[$i]['id']);
+    }
+    return $this->encrypt($username, json_encode([
+      'message' => "Sinkron ".($to-$from+1)." pegawai telah berhasil.",
+      'status' => 2
+    ]));
   }
   public function insertRiwayatJabatan(Request $request, $idUsulan) {
     $usulan = json_decode(DB::table('m_data_jabatan')->where([
@@ -546,4 +574,84 @@ class ApiSiasnSyncController extends ApiSiasnController
     ];
     return $this->encrypt($username, json_encode($callback));
   }
+  // public function syncHukdisASN(Request $request, $idPegawai) {
+  //   $authenticated = $this->isAuth($request)['authenticated'];
+  //   $username = $this->isAuth($request)['username'];
+  //   if(!$authenticated) return $this->encrypt($username, json_encode([
+  //     'message' => $authenticated == true ? 'Authorized' : 'Not Authorized',
+  //     'status' => $authenticated === true ? 1 : 0
+  //   ]));
+
+  //   ///// get data asn untuk mendapatkan nip berdasarkan idPegawai
+  //   $getAsn = DB::table('m_pegawai')->where([
+  //     ['id', '=', $idPegawai]
+  //   ])->get()->toJson();
+  //   $getAsn = json_decode($getAsn, true);
+  //   if (count($getAsn) === 0) {
+  //     return $this->encrypt($username, json_encode([
+  //       'message' => 'Data ASN tidak ditemukan.',
+  //       'status' => 3
+  //     ]));
+  //   }
+  //   $nipBaru = $getAsn[0]['nip'];
+
+  //   ///// get data riwayat jabatan dari siasn
+  //   $hukdisFromSiasn = $this->getRiwayatHukdisASN($request, $nipBaru);
+  //   $hukdisFromSiasn = $hukdisFromSiasn['data'];
+
+  //   ///// get jabatan asn dari sidak
+  //   $hukdisFromSidak = DB::table('m_data_hukuman_disiplin')->where([
+  //     ['idPegawai', '=', $idPegawai]
+  //   ])->get()->toJson();
+  //   $hukdisFromSidak = json_decode($hukdisFromSidak, true);
+
+  //   ///// cek apakah jabatan dari sidak (yang ada idBkn nya), itu masih ada atau tidak di siasn, jika tidak, hapus
+  //   for($i=0; $i<count($hukdisFromSidak); $i++) {
+  //     if ($hukdisFromSidak[$i]['idBkn'] != '' && $hukdisFromSidak[$i]['idBkn'] != null) {
+  //       $isFind = false;
+  //       for($j=0; $j<count($hukdisFromSiasn); $j++) {
+  //         if ($hukdisFromSidak[$i]['idBkn'] == $hukdisFromSiasn[$j]['id']) {
+  //           $isFind = true;
+  //         }
+  //       }
+  //       if (!$isFind) {
+  //         DB::table('m_data_jabatan')->where([
+  //           ['id', '=', $hukdisFromSidak[$i]['id']]
+  //         ])->delete();
+  //       }
+  //     }
+  //   }
+
+  //   ///// cek apakah jabatan yang dari siasn sudah ada di sidak, jika belum, kumpulkan ke dalam variabel newJabatanFromSiasn
+  //   $newHukdisFromSiasn = [];
+  //   for($i=0; $i<count($jabatanFromSiasn); $i++) {
+  //     $isFind = false;
+  //     for($j=0; $j<count($hukdisFromSidak); $j++) {
+  //       // cek
+  //       if ($jabatanFromSiasn[$i]['id'] == $hukdisFromSidak[$j]['idBkn']) {
+  //         $isFind = true;
+  //       }
+  //     }
+  //     if (!$isFind) {
+  //       array_push($newHukdisFromSiasn, $jabatanFromSiasn[$i]);
+  //     }
+  //   }
+
+  //   ///// loop insert jabatan dari siasn, tetapi cek terlebih dahulu, idUnor dan idJabatan ada tidak dalam peta jabatan saat ini
+  //   $affected = '';
+  //   for($i=0; $i<count($newHukdisFromSiasn); $i++) {
+  //     $idJenisHukuman = json_decode(DB::table('m_jenis_hukuman_disiplin')->where('idBkn', '=', $newHukdisFromSiasn[$i]['jenisHukuman']), true)[0];
+  //     DB::table('m_data_hukuman_disiplin')->inser([
+  //       'id' => NULL,
+  //       'idJenisHukuman' => $idJenisHukuman['id'],
+  //       'idDaftarHukumanDisiplin' => 
+  //     ]);
+  //   }
+
+  //   $callback = [
+  //     'message' => "Data jabatan sudah berhasil disinkronisasi dari MySAPK.\nData yang dapat disinkronisasi adalah data sesuai dengan SOTK dan Peta Jabatan saat ini.\nJika setelah sinkronisasi tidak ada jabatan yang muncul, silahkan tambahkan jabatan sesuai dengan dasar SK Jabatan Definitif Terakhir.\n Dan jika terdapat ketidaksesuaian jabatan, dapat menghubungi Admin BKPSDM.",
+  //     'status' => 2
+  //   ];
+  //   return $this->encrypt($username, json_encode($callback));
+  // }
 }
