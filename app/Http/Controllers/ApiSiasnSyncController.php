@@ -112,6 +112,7 @@ class ApiSiasnSyncController extends ApiSiasnController
           default:
             break;
         }
+        if ($jabatanId == '') continue;
         $jabatanSidak = json_decode(DB::table('m_jabatan')->where([
           ['kodeKomponen', '=', $unorSidak[0]['kodeKomponen']],
           ['idBkn', '=', $jabatanId]

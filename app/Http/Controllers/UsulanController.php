@@ -607,7 +607,7 @@ class UsulanController extends Controller
         $usulan = json_decode(DB::table('m_data_jabatan')->where([
           ['id', '=', $idUsulan]
         ])->get()->toJson(), true)[0];
-        if (intval($usulan['idUsulan']) == 1 && $message['idUsulanHasil'] == 1) {
+        if (intval($usulan['idUsulan']) == 1 && intval($message['idUsulanHasil']) == 1) {
           $response = (new ApiSiasnSyncController)->insertRiwayatJabatan($request, $idUsulan);
           if (!$response['success']) {
             $callback = [
@@ -643,6 +643,7 @@ class UsulanController extends Controller
                 'spmt' => $value['spmt'],
                 'tanggalDokumen' => $value['tanggalDokumen'],
                 'nomorDokumen' => $value['nomorDokumen'],
+                'idJabatanTugasTambahan' => $value['idJabatanTugasTambahan'],
                 'idDokumen' => $value['idDokumen'],
                 'updated_at' => $value['updated_at'],
               ]);
