@@ -241,6 +241,7 @@ class UsulanController extends Controller
           'm_daftar_pendidikan.nama as pendidikan'
         ]), true);
         $data[0]['dokumen'] = $this->getBlobDokumen($data[0]['idDokumen'], $data[0]['idDokumen'] == 1 ? '' :  'pendidikan', 'pdf');
+        $data[0]['dokumenTranskrip'] = $this->getBlobDokumen($data[0]['idDokumenTranskrip'], $data[0]['idDokumenTranskrip'] == 1 || $data[0]['idDokumenTranskrip'] == null ? '' :  'pendidikan', 'pdf');
         break;
       case 'Data Jabatan':
         $unitOrganisasi = [];
@@ -539,9 +540,11 @@ class UsulanController extends Controller
               ['id', '=', $idUsulan]
             ])->get(), true)[0];
             DB::table('m_data_pendidikan')->where('id', '=', $idUsulan)->update([
-              'idDokumen' => 1
+              'idDokumen' => 1,
+              'idDokumenTranskrip' => 1
             ]);
             $this->deleteDokumen($getData['idDokumen'], 'pendidikan', 'pdf');
+            $this->deleteDokumen($getData['idDokumenTranskrip'], 'pendidikan', 'pdf');
           }
         }
         break;

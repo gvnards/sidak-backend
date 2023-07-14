@@ -506,6 +506,23 @@ class ApiSiasnSyncController extends ApiSiasnController
     ])->get()->toJson();
     $pendidikanFromSidak = json_decode($pendidikanFromSidak, true);
 
+    ///// cek apakah jabatan dari sidak (yang ada idBkn nya), itu masih ada atau tidak di siasn, jika tidak, hapus
+    for($i=0; $i<count($pendidikanFromSidak); $i++) {
+      if ($pendidikanFromSidak[$i]['idBkn'] != '' && $pendidikanFromSidak[$i]['idBkn'] != null) {
+        $isFind = false;
+        for($j=0; $j<count($pendidikanFromSiasn); $j++) {
+          if ($pendidikanFromSidak[$i]['idBkn'] == $pendidikanFromSiasn[$j]['id']) {
+            $isFind = true;
+          }
+        }
+        if (!$isFind) {
+          DB::table('m_data_jabatan')->where([
+            ['id', '=', $pendidikanFromSidak[$i]['id']]
+          ])->delete();
+        }
+      }
+    }
+
     ///// cek apakah pendidikan yang dari siasn sudah ada di sidak, jika belum, kumpulkan ke dalam variabel newPendidikanFromSiasn
     $newPendidikanFromSiasn = [];
     for($i=0; $i<count($pendidikanFromSiasn); $i++) {
@@ -516,7 +533,7 @@ class ApiSiasnSyncController extends ApiSiasnController
           $isFind = true;
         }
       }
-      if (!$isFind) {
+      if (!$isFind && $pendidikanFromSiasn[$i]['namaSekolah'] != null && $pendidikanFromSiasn[$i]['nomorIjasah'] != null) {
         array_push($newPendidikanFromSiasn, $pendidikanFromSiasn[$i]);
       }
     }

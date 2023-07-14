@@ -110,6 +110,7 @@ class DataPendidikanController extends Controller
     foreach ($nip_ as $key => $value) {
       $nip = $value->nip;
     }
+    /// ijazah
     $dokumen = DB::table('m_dokumen')->insertGetId([
       'id' => NULL,
       'nama' => "DOK_IJAZAH_".$nip."_".$message['date'],
@@ -117,6 +118,14 @@ class DataPendidikanController extends Controller
       'updated_at' => Carbon::now()->format('Y-m-d H:i:s')
     ]);
     $this->uploadDokumen("DOK_IJAZAH_".$nip."_".$message['date'],$message['dokumen'], 'pdf', 'pendidikan');
+    /// transkrip
+    $dokumenTranskrip = DB::table('m_dokumen')->insertGetId([
+      'id' => NULL,
+      'nama' => "DOK_TRANSKRIP_".$nip."_".$message['date'],
+      'created_at' => Carbon::now()->format('Y-m-d H:i:s'),
+      'updated_at' => Carbon::now()->format('Y-m-d H:i:s')
+    ]);
+    $this->uploadDokumen("DOK_TRANSKRIP_".$nip."_".$message['date'],$message['dokumenTranskrip'], 'pdf', 'pendidikan');
 
     $data = DB::table('m_data_pendidikan')->insert([
       'id' => NULL,
@@ -131,6 +140,7 @@ class DataPendidikanController extends Controller
       'nomorDokumen' => $message['nomorDokumen'],
       'tanggalDokumen' => $message['tanggalDokumen'],
       'idDokumen' => $dokumen,
+      'idDokumenTranskrip' => $dokumenTranskrip,
       'idPegawai' => $message['idPegawai'],
       'idUsulan' => $id == NULL ? 1 : 2,
       'idUsulanStatus' => 1,
