@@ -56,7 +56,7 @@ Route::put('data-cpns-pns/{id}', 'DataCpnsPnsController@updateDataCpnsPns');
 Route::put('unit-organisasi/{id}', 'JabatanUnitOrganisasiController@updateUnitOrganisasi');
 Route::put('uang-kinerja/{id}', 'JabatanUnitOrganisasiController@updateUangKinerja');
 Route::put('kelas-jabatan/{id}', 'JabatanUnitOrganisasiController@updateKelasJabatan');
-Route::put('jabatan/{id}', 'JabatanUnitOrganisasiController@updateJabatan');
+Route::put('jabatan-detail/{id}', 'JabatanUnitOrganisasiController@updateJabatan');
 Route::put('usulan/{id}', 'UsulanController@updateUsulan');
 Route::put('change-password', 'LoginController@changePassword');
 
@@ -84,6 +84,7 @@ Route::get('uang-kinerja', 'JabatanUnitOrganisasiController@getUangKinerja');
 Route::get('kelas-jabatan', 'JabatanUnitOrganisasiController@getKelasJabatan');
 Route::get('jabatan', 'JabatanUnitOrganisasiController@getJabatan');
 Route::get('jabatan/{kodeKomponen}', 'JabatanUnitOrganisasiController@getJabatan');
+Route::get('jabatan-detail/{idJabatan}', 'JabatanUnitOrganisasiController@getJabatanDetail');
 Route::get('jabatan-all-group/{kodeKomponen}', 'JabatanUnitOrganisasiController@getJabatanAllGroup');
 Route::get('tugas-tambahan', 'JabatanUnitOrganisasiController@getTugasTambahan');
 Route::get('jenis-golpang', 'DataGolonganPangkatController@getJenisGolPang');
@@ -142,6 +143,8 @@ Route::get('siasn/pangkat-golongan/riwayat/sync/{idPegawai}', 'ApiSiasnSyncContr
 Route::get('siasn/pendidikan/riwayat/sync/{idPegawai}', 'ApiSiasnSyncController@syncPendidikanASN');
 
 // API SIASN MASTER
+/// DOKUMEN
+Route::get('siasn/dokumen/riwayat', 'ApiSiasnController@getDokumenRiwayat');
 /// DIKLAT dan KURSUS
 Route::get('siasn/diklat/riwayat/detail/{idRiwayatDiklat}', 'ApiSiasnController@getRiwayatDiklatASNDetail');
 Route::get('siasn/diklat/riwayat/{nipBaru}', 'ApiSiasnController@getRiwayatDiklatASN');
@@ -156,4 +159,7 @@ Route::get('siasn/golongan/riwayat/{nipBaru}', 'ApiSiasnController@getRiwayatPan
 Route::get('siasn/pendidikan/riwayat/{nipBaru}', 'ApiSiasnController@getRiwayatPendidikanASN');
 /// HUKDIS
 Route::get('siasn/hukdis/riwayat/{nipBaru}', 'ApiSiasnController@getRiwayatHukdisASN');
-// Route::post('siasn/jabatan/riwayat', 'ApiSiasnController@insertRiwayatJabatanASN');
+/// ANGKA KREDIT
+Route::get('siasn/angka-kredit/riwayat/{nipBaru}', 'ApiSiasnController@getRiwayatAngkaKreditASN');
+/// DATA UTAMA
+Route::get('siasn/data-utama/{nipBaru}', 'ApiSiasnController@getDataUtamaASN');

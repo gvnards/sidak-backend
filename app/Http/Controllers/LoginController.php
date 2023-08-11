@@ -5,8 +5,9 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Carbon;
 
-class LoginController extends Controller
+class LoginController extends ApiSiasnController
 {
   public function login(Request $request) {
     $message = $this->decrypt('sidak.bkpsdmsitubondokab', $request->message);
@@ -15,22 +16,57 @@ class LoginController extends Controller
     $password = $message['password'];
     $users = [];
     if(!str_contains($username, 'admin')) {
-      $response = Http::asForm()->post('https://sso-siasn.bkn.go.id/auth/realms/public-siasn/protocol/openid-connect/token', [
-        'client_id' => 'situbndoservice',
-        'grant_type' => 'password',
-        'username' => $username,
-        'password' => $password
-      ]);
-      $response = json_decode($response, true);
+      // login ke siasn, yang akan mendapatkan access_token (jika berhasil/username dan password benar)
+      $response = $this->getAuthToken($username, $password);
       if(!isset($response['access_token'])) {
         return $this->encrypt('sidak.bkpsdmsitubondokab', json_encode([
           'message' => 'Username / password salah!',
           'status' => 3
         ]));
       }
-      $usersTemp = [json_decode(DB::table('m_pegawai')->where([
+      $usersTemp = json_decode(DB::table('m_pegawai')->where([
         ['nip', '=', $username]
-      ])->get()->toJson(), true)[0]];
+      ])->get()->toJson(), true);
+      if (count($usersTemp) === 0) {
+        $response = $this->getDataUtamaASN($request, $username);
+        if ($response['data'] === 'Data tidak ditemukan') {
+          return $this->encrypt('sidak.bkpsdmsitubondokab', json_encode([
+            'message' => 'Username / password salah!',
+            'status' => 3
+          ]));
+        }
+        $response = $response['data'];
+        // $response = json_decode($response['data'], true);
+        $newPassword = password_hash($password, PASSWORD_DEFAULT);
+        $idPegawai = DB::table('m_pegawai')->insertGetId([
+          'id' => NULL,
+          'nip' => $username,
+          'password' => $newPassword,
+          'idAppRoleUser' => 4,
+          'created_at' => Carbon::now()->format('Y-m-d H:i:s'),
+          'updated_at' => Carbon::now()->format('Y-m-d H:i:s'),
+          'idBkn' => $response['id']
+        ]);
+        DB::table('m_data_pribadi')->insert([
+          'id' => NULL,
+          'nama' => $response['nama'],
+          'tempatLahir' => $response['tempatLahir'],
+          'tanggalLahir' => date('Y-m-d', strtotime($response['tglLahir'])),
+          'alamat' => $response['alamat'],
+          'ktp' => $response['nik'],
+          'nomorHp' => $response['noHp'],
+          'email' => $response['email'],
+          'npwp' => $response['noNpwp'],
+          'bpjs' => $response['bpjs'],
+          'idPegawai' => $idPegawai,
+          'created_at' => Carbon::now()->format('Y-m-d H:i:s'),
+          'updated_at' => Carbon::now()->format('Y-m-d H:i:s'),
+        ]);
+        $usersTemp = json_decode(DB::table('m_pegawai')->where([
+          ['nip', '=', $username]
+        ])->get()->toJson(), true);
+      }
+      $usersTemp = [$usersTemp[0]];
       if(count($usersTemp) === 1) {
         if (!password_verify($password, $usersTemp[0]['password'])) {
           $newPassword = password_hash($password, PASSWORD_DEFAULT);

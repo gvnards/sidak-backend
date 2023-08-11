@@ -16,12 +16,12 @@ class ApiSiasnController extends Controller
     return json_decode($response, true);
   }
 
-  function getAuthToken() {
+  function getAuthToken($username='199706172020121007', $password='Alhamdulillah17') {
     $response = Http::asForm()->post('https://sso-siasn.bkn.go.id/auth/realms/public-siasn/protocol/openid-connect/token', [
       'client_id' => 'situbndoservice',
       'grant_type' => 'password',
-      'username' => '199706172020121007',
-      'password' => 'Alhamdulillah17'
+      'username' => $username,
+      'password' => $password
     ]);
     return json_decode($response, true);
   }
@@ -222,6 +222,23 @@ class ApiSiasnController extends Controller
     $response = curl_exec($curl);
     return $response;
   }
+  function getDokumenRiwayat(Request $request) {
+    $authenticated = $this->isAuth($request)['authenticated'];
+    $username = $this->isAuth($request)['username'];
+    if(!$authenticated) return $this->encrypt($username, json_encode([
+      'message' => $authenticated == true ? 'Authorized' : 'Not Authorized',
+      'status' => $authenticated === true ? 1 : 0
+    ]));
+    $token = $this->getAllToken();
+    // format url --> /download-dok?filePath=
+    $url = $this->initialUrl() . "/download-dok";
+    $response = Http::withHeaders($token)->get($url, [
+      'filePath' => $request->filePath
+    ]);
+    return response($response, 200, [
+      'Content-Type' => 'application/pdf'
+    ]);
+  }
   // JABATAN --
   function getRiwayatJabatanASNDetail(Request $request, $idRiwayatJabatan) {
     $authenticated = $this->isAuth($request)['authenticated'];
@@ -349,6 +366,36 @@ class ApiSiasnController extends Controller
     $token = $this->getAllToken();
     // format url --> /pns/rw-hukdis/{nipBaru}
     $url = $this->initialUrl() . "/pns/rw-hukdis/$nipBaru";
+    $response = Http::withHeaders($token)->get($url, []);
+    return json_decode($response, true);
+  }
+
+  // ANGKA KREDIT
+  function getRiwayatAngkaKreditASN(Request $request, $nipBaru) {
+    // $authenticated = $this->isAuth($request)['authenticated'];
+    // $username = $this->isAuth($request)['username'];
+    // if(!$authenticated) return $this->encrypt($username, json_encode([
+    //   'message' => $authenticated == true ? 'Authorized' : 'Not Authorized',
+    //   'status' => $authenticated === true ? 1 : 0
+    // ]));
+    $token = $this->getAllToken();
+    // format url --> /pns/rw-angkakredit/{nipBaru}
+    $url = $this->initialUrl() . "/pns/rw-angkakredit/$nipBaru";
+    $response = Http::withHeaders($token)->get($url, []);
+    return json_decode($response, true);
+  }
+
+  // DATA UTAMA
+  function getDataUtamaASN(Request $request, $nipBaru) {
+    // $authenticated = $this->isAuth($request)['authenticated'];
+    // $username = $this->isAuth($request)['username'];
+    // if(!$authenticated) return $this->encrypt($username, json_encode([
+    //   'message' => $authenticated == true ? 'Authorized' : 'Not Authorized',
+    //   'status' => $authenticated === true ? 1 : 0
+    // ]));
+    $token = $this->getAllToken();
+    // format url --> /pns/data-utama/{nipBaru}
+    $url = $this->initialUrl() . "/pns/data-utama/$nipBaru";
     $response = Http::withHeaders($token)->get($url, []);
     return json_decode($response, true);
   }

@@ -361,6 +361,25 @@ class JabatanUnitOrganisasiController extends Controller
     return $this->encrypt($username, json_encode($callback));
   }
 
+  public function getJabatanDetail($idJabatan, Request $request) {
+    $authenticated = $this->isAuth($request)['authenticated'];
+    $username = $this->isAuth($request)['username'];
+    if(!$authenticated) return $this->encrypt($username, json_encode([
+      'message' => $authenticated == true ? 'Authorized' : 'Not Authorized',
+      'status' => $authenticated === true ? 1 : 0
+    ]));
+
+    $data = json_decode(DB::table('m_jabatan')->where([
+      ['m_jabatan.id', '=', $idJabatan]
+    ])->get(), true)[0];
+
+    $callback = [
+      'message' => $data,
+      'status' => 2
+    ];
+    return $this->encrypt($username, json_encode($callback));
+  }
+
   public function getJabatanAllGroup($kodeKomponen, Request $request) {
     $authenticated = $this->isAuth($request)['authenticated'];
     $username = $this->isAuth($request)['username'];
@@ -434,6 +453,7 @@ class JabatanUnitOrganisasiController extends Controller
       'nama' => $message['nama'],
       'kebutuhan' => $message['kebutuhan'],
       'idKelasJabatan' => $message['idKelasJabatan'],
+      'idJenisJabatan' => $message['idJenisJabatan'],
       'target' => $message['target'],
       'kodeKomponen' => $message['kodeKomponen']
     ]);
@@ -476,6 +496,7 @@ class JabatanUnitOrganisasiController extends Controller
       'nama' => $message['nama'],
       'kebutuhan' => $message['kebutuhan'],
       'idKelasJabatan' => $message['idKelasJabatan'],
+      'idJenisJabatan' => $message['idJenisJabatan'],
       'target' => $message['target'],
       'kodeKomponen' => $message['kodeKomponen'],
       'created_at' => Carbon::now()->format('Y-m-d H:i:s'),
