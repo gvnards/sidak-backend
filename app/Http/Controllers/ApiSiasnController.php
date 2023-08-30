@@ -357,12 +357,12 @@ class ApiSiasnController extends Controller
 
   // HUKUMAN DISIPLIN
   function getRiwayatHukdisASN(Request $request, $nipBaru) {
-    // $authenticated = $this->isAuth($request)['authenticated'];
-    // $username = $this->isAuth($request)['username'];
-    // if(!$authenticated) return $this->encrypt($username, json_encode([
-    //   'message' => $authenticated == true ? 'Authorized' : 'Not Authorized',
-    //   'status' => $authenticated === true ? 1 : 0
-    // ]));
+    $authenticated = $this->isAuth($request)['authenticated'];
+    $username = $this->isAuth($request)['username'];
+    if(!$authenticated) return $this->encrypt($username, json_encode([
+      'message' => $authenticated == true ? 'Authorized' : 'Not Authorized',
+      'status' => $authenticated === true ? 1 : 0
+    ]));
     $token = $this->getAllToken();
     // format url --> /pns/rw-hukdis/{nipBaru}
     $url = $this->initialUrl() . "/pns/rw-hukdis/$nipBaru";
@@ -372,12 +372,12 @@ class ApiSiasnController extends Controller
 
   // ANGKA KREDIT
   function getRiwayatAngkaKreditASN(Request $request, $nipBaru) {
-    // $authenticated = $this->isAuth($request)['authenticated'];
-    // $username = $this->isAuth($request)['username'];
-    // if(!$authenticated) return $this->encrypt($username, json_encode([
-    //   'message' => $authenticated == true ? 'Authorized' : 'Not Authorized',
-    //   'status' => $authenticated === true ? 1 : 0
-    // ]));
+    $authenticated = $this->isAuth($request)['authenticated'];
+    $username = $this->isAuth($request)['username'];
+    if(!$authenticated) return $this->encrypt($username, json_encode([
+      'message' => $authenticated == true ? 'Authorized' : 'Not Authorized',
+      'status' => $authenticated === true ? 1 : 0
+    ]));
     $token = $this->getAllToken();
     // format url --> /pns/rw-angkakredit/{nipBaru}
     $url = $this->initialUrl() . "/pns/rw-angkakredit/$nipBaru";
@@ -387,16 +387,58 @@ class ApiSiasnController extends Controller
 
   // DATA UTAMA
   function getDataUtamaASN(Request $request, $nipBaru) {
-    // $authenticated = $this->isAuth($request)['authenticated'];
-    // $username = $this->isAuth($request)['username'];
-    // if(!$authenticated) return $this->encrypt($username, json_encode([
-    //   'message' => $authenticated == true ? 'Authorized' : 'Not Authorized',
-    //   'status' => $authenticated === true ? 1 : 0
-    // ]));
+    $authenticated = $this->isAuth($request)['authenticated'];
+    $username = $this->isAuth($request)['username'];
+    if(!$authenticated) return $this->encrypt($username, json_encode([
+      'message' => $authenticated == true ? 'Authorized' : 'Not Authorized',
+      'status' => $authenticated === true ? 1 : 0
+    ]));
     $token = $this->getAllToken();
     // format url --> /pns/data-utama/{nipBaru}
     $url = $this->initialUrl() . "/pns/data-utama/$nipBaru";
     $response = Http::withHeaders($token)->get($url, []);
+    return json_decode($response, true);
+  }
+
+  // DATA PENGHARGAAN
+  function getRiwayatPenghargaanASN(Request $request, $nipBaru) {
+    $authenticated = $this->isAuth($request)['authenticated'];
+    $username = $this->isAuth($request)['username'];
+    if(!$authenticated) return $this->encrypt($username, json_encode([
+      'message' => $authenticated == true ? 'Authorized' : 'Not Authorized',
+      'status' => $authenticated === true ? 1 : 0
+    ]));
+    $token = $this->getAllToken();
+    // format url --> /pns/rw-penghargaan/{nipBaru}
+    $url = $this->initialUrl() . "/pns/rw-penghargaan/$nipBaru";
+    $response = Http::withHeaders($token)->get($url, []);
+    return json_decode($response, true);
+  }
+
+  function insertRiwayatPenghargaanASN(Request $request, $data) {
+    $authenticated = $this->isAuth($request)['authenticated'];
+    $username = $this->isAuth($request)['username'];
+    if(!$authenticated) return $this->encrypt($username, json_encode([
+      'message' => $authenticated == true ? 'Authorized' : 'Not Authorized',
+      'status' => $authenticated === true ? 1 : 0
+    ]));
+    $token = $this->getAllToken();
+    // format url --> /penghargaan/save
+    // "id" dan "path", tidak perlu diisi dulu tidak masalah
+    // untuk "path", itu harus upload dokumen terlebih dahulu, nanti kita dapat callback dari dokumennya,
+    // lalu dari callback dokumen, nanti ditaruh di path
+    $url = $this->initialUrl() . "/penghargaan/save";
+    $response = Http::withHeaders($token)->post($url, [
+      'hargaId' => $data['hargaId'],
+      'pnsOrangId' => $data['pnsOrangId'],
+      'skDate' => $data['skDate'],
+      'skNomor' => $data['skNomor'],
+      'tahun' => $data['tahun']
+    ]);
+    //// FAILED
+    // {"success":false,"mapData":null,"message":"code=400, message=parsing time \"2023-08-28\" as \"02-01-2006\": cannot parse \"23-08-28\" as \"-\", internal=parsing time \"2023-08-28\" as \"02-01-2006\": cannot parse \"23-08-28\" as \"-\""}
+    //// SUKSES
+    // {"success":true,"mapData":{"rwPenghargaanId":"47575a4c-455c-11ee-ba36-0a580a83005c"},"message":"success"}
     return json_decode($response, true);
   }
 }

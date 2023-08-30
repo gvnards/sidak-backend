@@ -50,6 +50,8 @@ Route::post('jabatan', 'JabatanUnitOrganisasiController@insertJabatan');
 Route::post('data-status-kepegawaian', 'DataStatusKepegawaianController@insertDataStatusKepegawaian');
 Route::post('data-atasan', 'DataAtasanController@insertDataAtasan');
 Route::post('user-pegawai', 'DataPegawaiController@insertDataPegawai');
+Route::post('data-penghargaan', 'DataPenghargaanController@insertDataPenghargaan');
+Route::post('data-penghargaan/{id}', 'DataPenghargaanController@insertDataPenghargaan');
 
 Route::put('data-pribadi/{id}', 'DataPribadiController@updateDataPribadi');
 Route::put('data-cpns-pns/{id}', 'DataCpnsPnsController@updateDataCpnsPns');
@@ -120,6 +122,9 @@ Route::get('data-status-kepegawaian/{idPegawai}', 'DataStatusKepegawaianControll
 Route::get('daftar-atasan', 'DataAtasanController@getDaftarAtasan');
 Route::get('data-atasan/{idPegawai}', 'DataAtasanController@getDataAtasan');
 Route::get('data-bawahan/{idAtasan}', 'DataAtasanController@getDataBawahan');
+Route::get('data-penghargaan/{idPegawai}', 'DataPenghargaanController@getDataPenghargaan');
+Route::get('data-penghargaan/{idPegawai}/{idUsulan}', 'DataPenghargaanController@getDataPenghargaan');
+Route::get('jenis-penghargaan', 'DataPenghargaanController@getDaftarJenisPenghargaan');
 
 Route::get('list-pegawai', 'ListPegawaiController@getListPegawai');
 Route::get('total-pegawai', 'ListPegawaiController@getTotalPegawai');
@@ -141,6 +146,8 @@ Route::get('siasn/jabatan/riwayat/sync/all/{from}/{to}/{timeForNoCache}', 'ApiSi
 Route::get('siasn/diklat/riwayat/sync/{idPegawai}', 'ApiSiasnSyncController@syncDiklatASN');
 Route::get('siasn/pangkat-golongan/riwayat/sync/{idPegawai}', 'ApiSiasnSyncController@syncPangkatGolonganASN');
 Route::get('siasn/pendidikan/riwayat/sync/{idPegawai}', 'ApiSiasnSyncController@syncPendidikanASN');
+Route::get('siasn/hukuman-disiplin/riwayat/sync/{idPegawai}', 'ApiSiasnSyncController@syncHukdisASN');
+Route::get('siasn/penghargaan/riwayat/sync/{idPegawai}', 'ApiSiasnSyncController@syncPenghargaanASN');
 
 // API SIASN MASTER
 /// DOKUMEN
@@ -163,3 +170,5 @@ Route::get('siasn/hukdis/riwayat/{nipBaru}', 'ApiSiasnController@getRiwayatHukdi
 Route::get('siasn/angka-kredit/riwayat/{nipBaru}', 'ApiSiasnController@getRiwayatAngkaKreditASN');
 /// DATA UTAMA
 Route::get('siasn/data-utama/{nipBaru}', 'ApiSiasnController@getDataUtamaASN');
+/// DATA PENGHARGAAN
+Route::get('siasn/penghargaan/{nipBaru}', 'ApiSiasnController@getRiwayatPenghargaanASN');
