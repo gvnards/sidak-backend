@@ -71,7 +71,7 @@ class DataJabatanController extends Controller
       ])->get()->toJson(), true)[0];
       $idJabatanBaru = DB::table('m_jabatan')->insertGetId([
         'id' => NULL,
-        'nama' => $jabatanBaru['nama'].' (Tidak ada di dalam Peta Jabatan Unit Organisasi)',
+        'nama' => $jabatanBaru['nama'],
         'kebutuhan' => -1,
         'idKelasJabatan' => $jabatanBaru['idKelasJabatan'],
         'target' => $jabatanBaru['target'],

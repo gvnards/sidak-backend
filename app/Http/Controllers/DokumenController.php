@@ -24,4 +24,10 @@ class DokumenController extends Controller
     return $this->encrypt($username, json_encode($callback));
     // return $request;
   }
+  public function getDocumentCategory($keterangan) {
+    $data = json_decode(DB::table('m_dokumen_kategori')->where([
+      ['keterangan', 'LIKE', "%$keterangan%"]
+    ])->get(), true)[0];
+    return $data;
+  }
 }

@@ -52,6 +52,8 @@ Route::post('data-atasan', 'DataAtasanController@insertDataAtasan');
 Route::post('user-pegawai', 'DataPegawaiController@insertDataPegawai');
 Route::post('data-penghargaan', 'DataPenghargaanController@insertDataPenghargaan');
 Route::post('data-penghargaan/{id}', 'DataPenghargaanController@insertDataPenghargaan');
+Route::post('angka-kredit', 'DataAngkaKreditController@insertDataAngkaKredit');
+Route::post('angka-kredit/{id}', 'DataAngkaKreditController@insertDataAngkaKredit');
 
 Route::put('data-pribadi/{id}', 'DataPribadiController@updateDataPribadi');
 Route::put('data-cpns-pns/{id}', 'DataCpnsPnsController@updateDataCpnsPns');
@@ -60,6 +62,7 @@ Route::put('uang-kinerja/{id}', 'JabatanUnitOrganisasiController@updateUangKiner
 Route::put('kelas-jabatan/{id}', 'JabatanUnitOrganisasiController@updateKelasJabatan');
 Route::put('jabatan-detail/{id}', 'JabatanUnitOrganisasiController@updateJabatan');
 Route::put('usulan/{id}', 'UsulanController@updateUsulan');
+Route::put('usulan-multiple', 'UsulanController@updateUsulanMultiple');
 Route::put('change-password', 'LoginController@changePassword');
 
 Route::get('main-menu', 'MenuController@getMainMenu');
@@ -125,6 +128,9 @@ Route::get('data-bawahan/{idAtasan}', 'DataAtasanController@getDataBawahan');
 Route::get('data-penghargaan/{idPegawai}', 'DataPenghargaanController@getDataPenghargaan');
 Route::get('data-penghargaan/{idPegawai}/{idUsulan}', 'DataPenghargaanController@getDataPenghargaan');
 Route::get('jenis-penghargaan', 'DataPenghargaanController@getDaftarJenisPenghargaan');
+Route::get('angka-kredit/created/{idPegawai}', 'DataAngkaKreditController@getDataCreated');
+Route::get('angka-kredit/updated/{idPegawai}/{idUsulan}', 'DataAngkaKreditController@getDataUpdated');
+Route::get('angka-kredit/list/{idPegawai}', 'DataAngkaKreditController@getListDataAngkaKredit');
 
 Route::get('list-pegawai', 'ListPegawaiController@getListPegawai');
 Route::get('total-pegawai', 'ListPegawaiController@getTotalPegawai');

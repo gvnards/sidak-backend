@@ -65,6 +65,7 @@ class DataAnakController extends Controller
 
     $data = DB::table('m_pegawai')->join('m_data_pasangan', 'm_pegawai.id', '=', 'm_data_pasangan.idPegawai')->join('m_status_perkawinan', 'm_data_pasangan.idStatusPerkawinan', '=', 'm_status_perkawinan.id')->whereIn('m_data_pasangan.idUsulanStatus', [3, 4])->where([
       ['m_pegawai.id', '=', $idPegawai],
+      ['m_data_pasangan.idUsulan', '=', 1],
       ['m_data_pasangan.idUsulanHasil', '=', 1],
     ])->get([
       'm_data_pasangan.id',

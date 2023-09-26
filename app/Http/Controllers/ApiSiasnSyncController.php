@@ -123,7 +123,7 @@ class ApiSiasnSyncController extends ApiSiasnController
         if (count($jabatanSidak) === 0) {
           $idJabatan = DB::table('m_jabatan')->insertGetId([
             'id' => NULL,
-            'nama' => $jabatanNama.' (Tidak ada di dalam Peta Jabatan Unit Organisasi)',
+            'nama' => $jabatanNama,
             'kebutuhan' => -1,
             'idKelasJabatan' => 1,
             'target' => 0,
@@ -516,7 +516,7 @@ class ApiSiasnSyncController extends ApiSiasnController
           }
         }
         if (!$isFind) {
-          DB::table('m_data_jabatan')->where([
+          DB::table('m_data_pendidikan')->where([
             ['id', '=', $pendidikanFromSidak[$i]['id']]
           ])->delete();
         }
@@ -533,7 +533,7 @@ class ApiSiasnSyncController extends ApiSiasnController
           $isFind = true;
         }
       }
-      if (!$isFind && $pendidikanFromSiasn[$i]['namaSekolah'] != null && $pendidikanFromSiasn[$i]['nomorIjasah'] != null) {
+      if (!$isFind/* && $pendidikanFromSiasn[$i]['namaSekolah'] != null && $pendidikanFromSiasn[$i]['nomorIjasah'] != null*/) {
         array_push($newPendidikanFromSiasn, $pendidikanFromSiasn[$i]);
       }
     }
@@ -566,12 +566,12 @@ class ApiSiasnSyncController extends ApiSiasnController
         'idJenisPendidikan' => intval($newPendidikanFromSiasn[$i]['isPendidikanPertama']) > 0 ? 2 : $idJenisPendidikan,
         'idTingkatPendidikan' => $idTingkatPendidikan['id'],
         'idDaftarPendidikan' => $idDaftarPendidikan['id'],
-        'namaSekolah' => $newPendidikanFromSiasn[$i]['namaSekolah'],
+        'namaSekolah' => $newPendidikanFromSiasn[$i]['namaSekolah'] ?? '',
         'gelarDepan' => $newPendidikanFromSiasn[$i]['gelarDepan'] ?? '',
         'gelarBelakang' => $newPendidikanFromSiasn[$i]['gelarBelakang'] ?? '',
         'tanggalLulus' => $newPendidikanFromSiasn[$i]['tglLulus'] == null ? '0000-00-00' : date('Y-m-d', strtotime($newPendidikanFromSiasn[$i]['tglLulus'])),
         'tahunLulus' => $newPendidikanFromSiasn[$i]['tahunLulus'] ?? 1111,
-        'nomorDokumen' => $newPendidikanFromSiasn[$i]['nomorIjasah'],
+        'nomorDokumen' => $newPendidikanFromSiasn[$i]['nomorIjasah'] ?? '',
         'tanggalDokumen' => $newPendidikanFromSiasn[$i]['tglLulus'] == null ? '0000-00-00' : date('Y-m-d', strtotime($newPendidikanFromSiasn[$i]['tglLulus'])),
         'idDokumen' => NULL,
         'idPegawai' => intval($idPegawai),
@@ -820,5 +820,14 @@ class ApiSiasnSyncController extends ApiSiasnController
     ];
     $response = $this->insertRiwayatPenghargaanASN($request, $data);
     return $response;
+  }
+  public function insertRiwayatAngkaKredit(Request $request, $idUsulan) {
+    $usulan = json_decode(DB::table('m_data_angka_kredit')->where([
+      ['id', '=', $idUsulan]
+    ])->get(), true)[0];
+    $asn = json_decode(DB::table('m_pegawai')->where([
+      ['id', '=', $usulan['idPegawai']]
+    ])->get()->toJson(), true)[0];
+    /// belum
   }
 }

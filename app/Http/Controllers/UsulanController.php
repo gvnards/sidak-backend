@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Carbon\Carbon;
 
 class UsulanController extends Controller
 {
@@ -15,7 +16,6 @@ class UsulanController extends Controller
       'message' => $authenticated == true ? 'Authorized' : 'Not Authorized',
       'status' => $authenticated === true ? 1 : 0
     ]));
-    $data = [];
     $daftarPegawai = [];
     if ($idPegawai === NULL) {
       $message = $this->decrypt('sidak.bkpsdmsitubondokab', $request->header('Authorization'));
@@ -37,51 +37,38 @@ class UsulanController extends Controller
         array_push($daftarPegawai, $value['id']);
       }
     }
-    $dataAnak = DB::table('m_data_pribadi')->join('m_data_anak', 'm_data_pribadi.idPegawai', '=', 'm_data_anak.idPegawai')->join('m_usulan', 'm_data_anak.idUsulan', '=', 'm_usulan.id')->whereIn('m_data_pribadi.idPegawai', $idPegawai !== NULL ? [$idPegawai] : $daftarPegawai)->where([
+    $dataAnak = DB::table('m_data_pribadi')->join('m_data_anak', 'm_data_pribadi.idPegawai', '=', 'm_data_anak.idPegawai')->join('m_usulan', 'm_data_anak.idUsulan', '=', 'm_usulan.id')->where([
       ['m_data_anak.idUsulanStatus', '=', $idUsulanStatus]
-    ])->select(DB::raw("'Data Anak' as usulanKriteria, m_data_pribadi.nama as nama, m_data_anak.id as id, m_data_anak.created_at as createdAt, m_usulan.nama as usulan"));
-    $dataDiklat = DB::table('m_data_pribadi')->join('m_data_diklat', 'm_data_pribadi.idPegawai', '=', 'm_data_diklat.idPegawai')->join('m_usulan', 'm_data_diklat.idUsulan', '=', 'm_usulan.id')->whereIn('m_data_pribadi.idPegawai', $idPegawai !== NULL ? [$idPegawai] : $daftarPegawai)->where([
+    ])->select(DB::raw("'Data Anak' as usulanKriteria, m_data_pribadi.idPegawai as idPegawai, m_data_pribadi.nama as nama, m_data_anak.id as id, m_data_anak.created_at as createdAt, m_data_anak.idUsulanHasil as idUsulanHasil, m_usulan.nama as usulan, m_usulan.id as idUsulan"));
+    $dataDiklat = DB::table('m_data_pribadi')->join('m_data_diklat', 'm_data_pribadi.idPegawai', '=', 'm_data_diklat.idPegawai')->join('m_usulan', 'm_data_diklat.idUsulan', '=', 'm_usulan.id')->where([
       ['m_data_diklat.idUsulanStatus', '=', $idUsulanStatus]
-    ])->select(DB::raw("'Data Diklat' as usulanKriteria, m_data_pribadi.nama as nama, m_data_diklat.id as id, m_data_diklat.created_at as createdAt, m_usulan.nama as usulan"))->union($dataAnak);
-    $dataPangkat = DB::table('m_data_pribadi')->join('m_data_pangkat', 'm_data_pribadi.idPegawai', '=', 'm_data_pangkat.idPegawai')->join('m_usulan', 'm_data_pangkat.idUsulan', '=', 'm_usulan.id')->whereIn('m_data_pribadi.idPegawai', $idPegawai !== NULL ? [$idPegawai] : $daftarPegawai)->where([
+    ])->select(DB::raw("'Data Diklat' as usulanKriteria, m_data_pribadi.idPegawai as idPegawai, m_data_pribadi.nama as nama, m_data_diklat.id as id, m_data_diklat.created_at as createdAt, m_data_diklat.idUsulanHasil as idUsulanHasil, m_usulan.nama as usulan, m_usulan.id as idUsulan"));
+    $dataPangkat = DB::table('m_data_pribadi')->join('m_data_pangkat', 'm_data_pribadi.idPegawai', '=', 'm_data_pangkat.idPegawai')->join('m_usulan', 'm_data_pangkat.idUsulan', '=', 'm_usulan.id')->where([
       ['m_data_pangkat.idUsulanStatus', '=', $idUsulanStatus]
-    ])->select(DB::raw("'Data Pangkat' as usulanKriteria, m_data_pribadi.nama as nama, m_data_pangkat.id as id, m_data_pangkat.created_at as createdAt, m_usulan.nama as usulan"))->union($dataDiklat);
-    $dataPasangan = DB::table('m_data_pribadi')->join('m_data_pasangan', 'm_data_pribadi.idPegawai', '=', 'm_data_pasangan.idPegawai')->join('m_usulan', 'm_data_pasangan.idUsulan', '=', 'm_usulan.id')->whereIn('m_data_pribadi.idPegawai', $idPegawai !== NULL ? [$idPegawai] : $daftarPegawai)->where([
+    ])->select(DB::raw("'Data Pangkat' as usulanKriteria, m_data_pribadi.idPegawai as idPegawai, m_data_pribadi.nama as nama, m_data_pangkat.id as id, m_data_pangkat.created_at as createdAt, m_data_pangkat.idUsulanHasil as idUsulanHasil, m_usulan.nama as usulan, m_usulan.id as idUsulan"));
+    $dataPasangan = DB::table('m_data_pribadi')->join('m_data_pasangan', 'm_data_pribadi.idPegawai', '=', 'm_data_pasangan.idPegawai')->join('m_usulan', 'm_data_pasangan.idUsulan', '=', 'm_usulan.id')->where([
       ['m_data_pasangan.idUsulanStatus', '=', $idUsulanStatus]
-    ])->select(DB::raw("'Data Pasangan' as usulanKriteria, m_data_pribadi.nama as nama, m_data_pasangan.id as id, m_data_pasangan.created_at as createdAt, m_usulan.nama as usulan"))->union($dataPangkat);
-    $dataPendidikan = DB::table('m_data_pribadi')->join('m_data_pendidikan', 'm_data_pribadi.idPegawai', '=', 'm_data_pendidikan.idPegawai')->join('m_usulan', 'm_data_pendidikan.idUsulan', '=', 'm_usulan.id')->whereIn('m_data_pribadi.idPegawai', $idPegawai !== NULL ? [$idPegawai] : $daftarPegawai)->where([
+    ])->select(DB::raw("'Data Pasangan' as usulanKriteria, m_data_pribadi.idPegawai as idPegawai, m_data_pribadi.nama as nama, m_data_pasangan.id as id, m_data_pasangan.created_at as createdAt, m_data_pasangan.idUsulanHasil as idUsulanHasil, m_usulan.nama as usulan, m_usulan.id as idUsulan"));
+    $dataPendidikan = DB::table('m_data_pribadi')->join('m_data_pendidikan', 'm_data_pribadi.idPegawai', '=', 'm_data_pendidikan.idPegawai')->join('m_usulan', 'm_data_pendidikan.idUsulan', '=', 'm_usulan.id')->where([
       ['m_data_pendidikan.idUsulanStatus', '=', $idUsulanStatus]
-    ])->select(DB::raw("'Data Pendidikan' as usulanKriteria, m_data_pribadi.nama as nama, m_data_pendidikan.id as id, m_data_pendidikan.created_at as createdAt, m_usulan.nama as usulan"))->union($dataPasangan);
-    $dataJabatan = DB::table('m_data_pribadi')->join('m_data_jabatan', 'm_data_pribadi.idPegawai', '=', 'm_data_jabatan.idPegawai')->join('m_usulan', 'm_data_jabatan.idUsulan', '=', 'm_usulan.id')->whereIn('m_data_pribadi.idPegawai', $idPegawai !== NULL ? [$idPegawai] : $daftarPegawai)->where([
+    ])->select(DB::raw("'Data Pendidikan' as usulanKriteria, m_data_pribadi.idPegawai as idPegawai, m_data_pribadi.nama as nama, m_data_pendidikan.id as id, m_data_pendidikan.created_at as createdAt, m_data_pendidikan.idUsulanHasil as idUsulanHasil, m_usulan.nama as usulan, m_usulan.id as idUsulan"));
+    $dataJabatan = DB::table('m_data_pribadi')->join('m_data_jabatan', 'm_data_pribadi.idPegawai', '=', 'm_data_jabatan.idPegawai')->join('m_usulan', 'm_data_jabatan.idUsulan', '=', 'm_usulan.id')->where([
       ['m_data_jabatan.idUsulanStatus', '=', $idUsulanStatus]
-    ])->select(DB::raw("'Data Jabatan' as usulanKriteria, m_data_pribadi.nama as nama, m_data_jabatan.id as id, m_data_jabatan.created_at as createdAt, m_usulan.nama as usulan"))->union($dataPendidikan);
-    $dataSkp = DB::table('m_data_pribadi')->join('m_data_skp', 'm_data_pribadi.idPegawai', '=', 'm_data_skp.idPegawai')->join('m_usulan', 'm_data_skp.idUsulan', '=', 'm_usulan.id')->whereIn('m_data_pribadi.idPegawai', $idPegawai !== NULL ? [$idPegawai] : $daftarPegawai)->where([
+    ])->select(DB::raw("'Data Jabatan' as usulanKriteria, m_data_pribadi.idPegawai as idPegawai, m_data_pribadi.nama as nama, m_data_jabatan.id as id, m_data_jabatan.created_at as createdAt, m_data_jabatan.idUsulanHasil as idUsulanHasil, m_usulan.nama as usulan, m_usulan.id as idUsulan"));
+    $dataSkp = DB::table('m_data_pribadi')->join('m_data_skp', 'm_data_pribadi.idPegawai', '=', 'm_data_skp.idPegawai')->join('m_usulan', 'm_data_skp.idUsulan', '=', 'm_usulan.id')->where([
       ['m_data_skp.idUsulanStatus', '=', $idUsulanStatus]
-    ])->select(DB::raw("'Data SKP' as usulanKriteria, m_data_pribadi.nama as nama, m_data_skp.id as id, m_data_skp.created_at as createdAt, m_usulan.nama as usulan"))->union($dataJabatan);
-    $dataPenghargaan = DB::table('m_data_pribadi')->join('m_data_penghargaan', 'm_data_pribadi.idPegawai', '=', 'm_data_penghargaan.idPegawai')->join('m_usulan', 'm_data_penghargaan.idUsulan', '=', 'm_usulan.id')->whereIn('m_data_pribadi.idPegawai', $idPegawai !== NULL ? [$idPegawai] : $daftarPegawai)->where([
+    ])->select(DB::raw("'Data SKP' as usulanKriteria, m_data_pribadi.idPegawai as idPegawai, m_data_pribadi.nama as nama, m_data_skp.id as id, m_data_skp.created_at as createdAt, m_data_skp.idUsulanHasil as idUsulanHasil, m_usulan.nama as usulan, m_usulan.id as idUsulan"));
+    $dataPenghargaan = DB::table('m_data_pribadi')->join('m_data_penghargaan', 'm_data_pribadi.idPegawai', '=', 'm_data_penghargaan.idPegawai')->join('m_usulan', 'm_data_penghargaan.idUsulan', '=', 'm_usulan.id')->where([
       ['m_data_penghargaan.idUsulanStatus', '=', $idUsulanStatus]
-    ])->select(DB::raw("'Data Penghargaan' as usulanKriteria, m_data_pribadi.nama as nama, m_data_penghargaan.id as id, m_data_penghargaan.created_at as createdAt, m_usulan.nama as usulan"))->union($dataSkp);
+    ])->select(DB::raw("'Data Penghargaan' as usulanKriteria, m_data_pribadi.idPegawai as idPegawai, m_data_pribadi.nama as nama, m_data_penghargaan.id as id, m_data_penghargaan.created_at as createdAt, m_data_penghargaan.idUsulanHasil as idUsulanHasil, m_usulan.nama as usulan, m_usulan.id as idUsulan"));
+    $dataAngkaKredit = DB::table('m_data_pribadi')->join('m_data_angka_kredit', 'm_data_pribadi.idPegawai', '=', 'm_data_angka_kredit.idPegawai')->join('m_usulan', 'm_data_angka_kredit.idUsulan', '=', 'm_usulan.id')->where([
+      ['m_data_angka_kredit.idUsulanStatus', '=', $idUsulanStatus]
+    ])->select(DB::raw("'Data Angka Kredit' as usulanKriteria, m_data_pribadi.idPegawai as idPegawai, m_data_pribadi.nama as nama, m_data_angka_kredit.id as id, m_data_angka_kredit.created_at as createdAt, m_data_angka_kredit.idUsulanHasil as idUsulanHasil, m_usulan.nama as usulan, m_usulan.id as idUsulan"))->union($dataAnak)->union($dataDiklat)->union($dataPangkat)->union($dataPasangan)->union($dataPendidikan)->union($dataJabatan)->union($dataSkp)->union($dataPenghargaan);
 
     /// Get All Data After Binding On UNION Method
-    $allData = $dataPenghargaan->get();
-    foreach (json_decode($allData, true) as $key => $value) {
-      $val = $value;
-      $val['c'] = strtotime($value['createdAt']);
-      array_push($data, $val);
-    }
-    if (count($data) != 0 && count($data) != 1) {
-      for ($i = 0; $i < count($data) - 1; $i++) {
-        for ($j = $i + 1; $j < count($data); $j++) {
-          if ($data[$i]['c'] > $data[$j]['c']) {
-            $data_ = $data[$i];
-            $data[$i] = $data[$j];
-            $data[$j] = $data_;
-          }
-        }
-      }
-    }
+    $allData = json_decode(DB::table($dataAngkaKredit)->whereIn('idPegawai', $idPegawai !== NULL ? [$idPegawai] : $daftarPegawai)->orderBy('createdAt', 'asc')->get(), true);
     $callback = [
-      'message' => $data,
+      'message' => $allData,
       'status' => 2
     ];
     return $this->encrypt($username, json_encode($callback));
@@ -199,6 +186,16 @@ class UsulanController extends Controller
         ]), true);
         $data[0]['dokumen'] = $this->getBlobDokumen($data[0]['idDokumen'], $data[0]['idDokumen'] == 1 ? '' :  'penghargaan', 'pdf');
         break;
+      case 'Data Angka Kredit':
+        $data = json_decode(DB::table('m_data_angka_kredit')->join('m_daftar_jenis_angka_kredit', 'm_data_angka_kredit.idDaftarJenisAngkaKredit', '=', 'm_daftar_jenis_angka_kredit.id')->join('m_data_jabatan', 'm_data_angka_kredit.idDataJabatan', '=', 'm_data_jabatan.id')->join('m_jabatan', 'm_data_jabatan.idJabatan', '=', 'm_jabatan.id')->where([
+          ['m_data_angka_kredit.id', '=', $idUsulan]
+        ])->get([
+          'm_data_angka_kredit.*',
+          'm_daftar_jenis_angka_kredit.jenisAngkaKredit as jenisAngkaKredit',
+          'm_jabatan.nama as jabatan'
+        ]), true);
+        $data[0]['dokumen'] = $this->getBlobDokumen($data[0]['idDokumen'], $data[0]['idDokumen'] == 1 ? '' :  'pak', 'pdf');
+        break;
       default:
         return $this->encrypt($username, json_encode([
           'message' => 'Data tidak ditemukan.',
@@ -213,7 +210,7 @@ class UsulanController extends Controller
     return $this->encrypt($username, json_encode($callback));
   }
 
-  public function updateUsulan($idUsulan, Request $request)
+  public function updateUsulan($idUsulan, $dataMultipleVerfivication=null, Request $request)
   {
     $authenticated = $this->isAuth($request)['authenticated'];
     $username = $this->isAuth($request)['username'];
@@ -221,20 +218,22 @@ class UsulanController extends Controller
       'message' => $authenticated == true ? 'Authorized' : 'Not Authorized',
       'status' => $authenticated === true ? 1 : 0
     ]));
-    $message = json_decode($this->decrypt($username, $request->message), true);
+    $message = $dataMultipleVerfivication ?? json_decode($this->decrypt($username, $request->message), true);
     switch ($message['usulanKriteria']) {
       case 'Data Anak':
+        $newData = json_decode(DB::table('m_data_anak')->where('id', '=', $idUsulan)->get(), true);
+        $idUpdate = $newData[0]['idDataAnakUpdate'];
         $data = DB::table('m_data_anak')->where('id', '=', $idUsulan)->update([
           'idUsulanStatus' => $message['idUsulanStatus'],
           'idUsulanHasil' => $message['idUsulanHasil'],
           'keteranganUsulan' => $message['keteranganUsulan'],
+          'updated_at' => Carbon::now()->format('Y-m-d H:i:s')
         ]);
-        if ($message['idUpdate'] != null) {
+        if ($idUpdate != null) {
           if ($message['idUsulanHasil'] == 1) {
-            $newData = json_decode(DB::table('m_data_anak')->where('id', '=', $idUsulan)->get(), true);
-            $oldData = json_decode(DB::table('m_data_anak')->where('id', '=', $message['idUpdate'])->get(), true)[0];
+            $oldData = json_decode(DB::table('m_data_anak')->where('id', '=', $idUpdate)->get(), true)[0];
             foreach ($newData as $key => $value) {
-              $data = DB::table('m_data_anak')->where('id', '=', $message['idUpdate'])->update([
+              $data = DB::table('m_data_anak')->where('id', '=', $idUpdate)->update([
                 'nama' => $value['nama'],
                 'tempatLahir' => $value['tempatLahir'],
                 'tanggalLahir' => $value['tanggalLahir'],
@@ -243,7 +242,7 @@ class UsulanController extends Controller
                 'idOrangTua' => $value['idOrangTua'],
                 'idStatusAnak' => $value['idStatusAnak'],
                 'idDokumen' => $value['idDokumen'],
-                'updated_at' => $value['updated_at'],
+                'updated_at' => Carbon::now()->format('Y-m-d H:i:s'),
               ]);
             }
             DB::table('m_data_anak')->where('id', '=', $idUsulan)->update([
@@ -251,9 +250,7 @@ class UsulanController extends Controller
             ]);
             $this->deleteDokumen($oldData['idDokumen'], 'anak', 'pdf');
           } else {
-            $getData = json_decode(DB::table('m_data_anak')->where([
-              ['id', '=', $idUsulan]
-            ])->get(), true)[0];
+            $getData = $newData[0];
             DB::table('m_data_anak')->where('id', '=', $idUsulan)->update([
               'idDokumen' => 1
             ]);
@@ -283,17 +280,19 @@ class UsulanController extends Controller
             (new ApiSiasnController)->insertDokumenRiwayat($request, $response['mapData']['rwDiklatId'] ?? $response['mapData']['rwKursusId'], $usulan['idJenisDiklat'] == 1 ? 874 : 881, 'diklat', $dokumen['nama'], 'pdf');
           }
         }
+        $newData = json_decode(DB::table('m_data_diklat')->where('id', '=', $idUsulan)->get(), true);
+        $idUpdate = $newData[0]['idDataDiklatUpdate'];
         $data = DB::table('m_data_diklat')->where('id', '=', $idUsulan)->update([
           'idUsulanStatus' => $message['idUsulanStatus'],
           'idUsulanHasil' => $message['idUsulanHasil'],
           'keteranganUsulan' => $message['keteranganUsulan'],
+          'updated_at' => Carbon::now()->format('Y-m-d H:i:s')
         ]);
-        if ($message['idUpdate'] != null) {
+        if ($idUpdate != null) {
           if ($message['idUsulanHasil'] == 1) {
-            $newData = json_decode(DB::table('m_data_diklat')->where('id', '=', $idUsulan)->get(), true);
-            $oldData = json_decode(DB::table('m_data_diklat')->where('id', '=', $message['idUpdate'])->get(), true)[0];
+            $oldData = json_decode(DB::table('m_data_diklat')->where('id', '=', $idUpdate)->get(), true)[0];
             foreach ($newData as $key => $value) {
-              $data = DB::table('m_data_diklat')->where('id', '=', $message['idUpdate'])->update([
+              $data = DB::table('m_data_diklat')->where('id', '=', $idUpdate)->update([
                 'idJenisDiklat' => $value['idJenisDiklat'],
                 'idDaftarDiklat' => $value['idDaftarDiklat'],
                 'namaDiklat' => $value['namaDiklat'],
@@ -302,7 +301,7 @@ class UsulanController extends Controller
                 'idDaftarInstansiDiklat' => $value['idDaftarInstansiDiklat'],
                 'institusiPenyelenggara' => $value['institusiPenyelenggara'],
                 'idDokumen' => $value['idDokumen'],
-                'updated_at' => $value['updated_at'],
+                'updated_at' => Carbon::now()->format('Y-m-d H:i:s'),
               ]);
             }
             DB::table('m_data_diklat')->where('id', '=', $idUsulan)->update([
@@ -310,9 +309,7 @@ class UsulanController extends Controller
             ]);
             $this->deleteDokumen($oldData['idDokumen'], 'diklat', 'pdf');
           } else {
-            $getData = json_decode(DB::table('m_data_diklat')->where([
-              ['id', '=', $idUsulan]
-            ])->get(), true)[0];
+            $getData = $newData[0];
             DB::table('m_data_diklat')->where('id', '=', $idUsulan)->update([
               'idDokumen' => 1
             ]);
@@ -321,17 +318,19 @@ class UsulanController extends Controller
         }
         break;
       case 'Data Pangkat':
+        $newData = json_decode(DB::table('m_data_pangkat')->where('id', '=', $idUsulan)->get(), true);
+        $idUpdate = $newData[0]['idDataPangkatUpdate'];
         $data = DB::table('m_data_pangkat')->where('id', '=', $idUsulan)->update([
           'idUsulanStatus' => $message['idUsulanStatus'],
           'idUsulanHasil' => $message['idUsulanHasil'],
           'keteranganUsulan' => $message['keteranganUsulan'],
+          'updated_at' => Carbon::now()->format('Y-m-d H:i:s')
         ]);
-        if ($message['idUpdate'] != null) {
+        if ($idUpdate != null) {
           if ($message['idUsulanHasil'] == 1) {
-            $newData = json_decode(DB::table('m_data_pangkat')->where('id', '=', $idUsulan)->get(), true);
-            $oldData = json_decode(DB::table('m_data_pangkat')->where('id', '=', $message['idUpdate'])->get(), true)[0];
+            $oldData = json_decode(DB::table('m_data_pangkat')->where('id', '=', $idUpdate)->get(), true)[0];
             foreach ($newData as $key => $value) {
-              $data = DB::table('m_data_pangkat')->where('id', '=', $message['idUpdate'])->update([
+              $data = DB::table('m_data_pangkat')->where('id', '=', $idUpdate)->update([
                 'idJenisPangkat' => $value['idJenisPangkat'],
                 'idDaftarPangkat' => $value['idDaftarPangkat'],
                 'masaKerjaTahun' => $value['masaKerjaTahun'],
@@ -342,7 +341,7 @@ class UsulanController extends Controller
                 'nomorBkn' => $value['nomorBkn'],
                 'tanggalBkn' => $value['tanggalBkn'],
                 'idDokumen' => $value['idDokumen'],
-                'updated_at' => $value['updated_at'],
+                'updated_at' => Carbon::now()->format('Y-m-d H:i:s'),
               ]);
             }
             DB::table('m_data_pangkat')->where('id', '=', $idUsulan)->update([
@@ -350,9 +349,7 @@ class UsulanController extends Controller
             ]);
             $this->deleteDokumen($oldData['idDokumen'], 'pangkat', 'pdf');
           } else {
-            $getData = json_decode(DB::table('m_data_pangkat')->where([
-              ['id', '=', $idUsulan]
-            ])->get(), true)[0];
+            $getData = $newData[0];
             DB::table('m_data_pangkat')->where('id', '=', $idUsulan)->update([
               'idDokumen' => 1
             ]);
@@ -361,17 +358,19 @@ class UsulanController extends Controller
         }
         break;
       case 'Data Pasangan':
+        $newData = json_decode(DB::table('m_data_pasangan')->where('id', '=', $idUsulan)->get(), true);
         $data = DB::table('m_data_pasangan')->where('id', '=', $idUsulan)->update([
           'idUsulanStatus' => $message['idUsulanStatus'],
           'idUsulanHasil' => $message['idUsulanHasil'],
           'keteranganUsulan' => $message['keteranganUsulan'],
+          'updated_at' => Carbon::now()->format('Y-m-d H:i:s'),
         ]);
-        if ($message['idUpdate'] != null) {
+        $idUpdate = $newData[0]['idDataPasanganUpdate'];
+        if ($idUpdate != null) {
           if ($message['idUsulanHasil'] == 1) {
-            $newData = json_decode(DB::table('m_data_pasangan')->where('id', '=', $idUsulan)->get(), true);
-            $oldData = json_decode(DB::table('m_data_pasangan')->where('id', '=', $message['idUpdate'])->get(), true)[0];
+            $oldData = json_decode(DB::table('m_data_pasangan')->where('id', '=', $idUpdate)->get(), true)[0];
             foreach ($newData as $key => $value) {
-              $data = DB::table('m_data_pasangan')->where('id', '=', $message['idUpdate'])->update([
+              $data = DB::table('m_data_pasangan')->where('id', '=', $idUpdate)->update([
                 'nama' => $value['nama'],
                 'tempatLahir' => $value['tempatLahir'],
                 'tanggalLahir' => $value['tanggalLahir'],
@@ -380,7 +379,7 @@ class UsulanController extends Controller
                 'tanggalDokumen' => $value['tanggalDokumen'],
                 'idStatusPerkawinan' => $value['idStatusPerkawinan'],
                 'idDokumen' => $value['idDokumen'],
-                'updated_at' => $value['updated_at'],
+                'updated_at' => Carbon::now()->format('Y-m-d H:i:s'),
               ]);
             }
             DB::table('m_data_pasangan')->where('id', '=', $idUsulan)->update([
@@ -388,9 +387,7 @@ class UsulanController extends Controller
             ]);
             $this->deleteDokumen($oldData['idDokumen'], 'pasangan', 'pdf');
           } else {
-            $getData = json_decode(DB::table('m_data_pasangan')->where([
-              ['id', '=', $idUsulan]
-            ])->get(), true)[0];
+            $getData = $newData[0];
             DB::table('m_data_pasangan')->where('id', '=', $idUsulan)->update([
               'idDokumen' => 1
             ]);
@@ -399,18 +396,19 @@ class UsulanController extends Controller
         }
         break;
       case 'Data Pendidikan':
+        $newData = json_decode(DB::table('m_data_pendidikan')->where('id', '=', $idUsulan)->get(), true);
+        $idUpdate = $newData[0]['idDataPendidikanUpdate'];
         $data = DB::table('m_data_pendidikan')->where('id', '=', $idUsulan)->update([
           'idUsulanStatus' => $message['idUsulanStatus'],
           'idUsulanHasil' => $message['idUsulanHasil'],
           'keteranganUsulan' => $message['keteranganUsulan'],
-          'idDataPendidikanUpdate' => null,
+          'updated_at' => Carbon::now()->format('Y-m-d H:i:s'),
         ]);
-        if ($message['idUpdate'] != null) {
+        if ($idUpdate != null) {
           if ($message['idUsulanHasil'] == 1) {
-            $newData = json_decode(DB::table('m_data_pendidikan')->where('id', '=', $idUsulan)->get(), true);
-            $oldData = json_decode(DB::table('m_data_pendidikan')->where('id', '=', $message['idUpdate'])->get(), true)[0];
+            $oldData = json_decode(DB::table('m_data_pendidikan')->where('id', '=', $idUpdate)->get(), true)[0];
             foreach ($newData as $key => $value) {
-              $data = DB::table('m_data_pendidikan')->where('id', '=', $message['idUpdate'])->update([
+              $data = DB::table('m_data_pendidikan')->where('id', '=', $idUpdate)->update([
                 'idJenisPendidikan' => $value['idJenisPendidikan'],
                 'idTingkatPendidikan' => $value['idTingkatPendidikan'],
                 'idDaftarPendidikan' => $value['idDaftarPendidikan'],
@@ -422,7 +420,7 @@ class UsulanController extends Controller
                 'nomorDokumen' => $value['nomorDokumen'],
                 'tanggalDokumen' => $value['tanggalDokumen'],
                 'idDokumen' => $value['idDokumen'],
-                'updated_at' => $value['updated_at'],
+                'updated_at' => Carbon::now()->format('Y-m-d H:i:s'),
               ]);
             }
             DB::table('m_data_pendidikan')->where('id', '=', $idUsulan)->update([
@@ -430,9 +428,7 @@ class UsulanController extends Controller
             ]);
             $this->deleteDokumen($oldData['idDokumen'], 'pendidikan', 'pdf');
           } else {
-            $getData = json_decode(DB::table('m_data_pendidikan')->where([
-              ['id', '=', $idUsulan]
-            ])->get(), true)[0];
+            $getData = $newData[0];
             DB::table('m_data_pendidikan')->where('id', '=', $idUsulan)->update([
               'idDokumen' => 1,
               'idDokumenTranskrip' => 1
@@ -443,17 +439,19 @@ class UsulanController extends Controller
         }
         break;
       case 'Data SKP':
+        $newData = json_decode(DB::table('m_data_skp')->where('id', '=', $idUsulan)->get(), true);
+        $idUpdate = $newData[0]['idDataSkpUpdate'];
         $data = DB::table('m_data_skp')->where('id', '=', $idUsulan)->update([
           'idUsulanStatus' => $message['idUsulanStatus'],
           'idUsulanHasil' => $message['idUsulanHasil'],
           'keteranganUsulan' => $message['keteranganUsulan'],
+          'updated_at' => Carbon::now()->format('Y-m-d H:i:s')
         ]);
-        if ($message['idUpdate'] != null) {
+        if ($idUpdate != null) {
           if ($message['idUsulanHasil'] == 1) {
-            $newData = json_decode(DB::table('m_data_skp')->where('id', '=', $idUsulan)->get(), true);
-            $oldData = json_decode(DB::table('m_data_skp')->where('id', '=', $message['idUpdate'])->get(), true)[0];
+            $oldData = json_decode(DB::table('m_data_skp')->where('id', '=', $idUpdate)->get(), true)[0];
             foreach ($newData as $key => $value) {
-              $data = DB::table('m_data_skp')->where('id', '=', $message['idUpdate'])->update([
+              $data = DB::table('m_data_skp')->where('id', '=', $idUpdate)->update([
                 'idJenisJabatan' => $value['idJenisJabatan'],
                 'tahun' => $value['tahun'],
                 'idJenisPeraturanKinerja' => $value['idJenisPeraturanKinerja'],
@@ -482,7 +480,7 @@ class UsulanController extends Controller
                 'golonganAtasanPejabatPenilai' => $value['golonganAtasanPejabatPenilai'],
                 'tmtGolonganAtasanPejabatPenilai' => $value['tmtGolonganAtasanPejabatPenilai'],
                 'idDokumen' => $value['idDokumen'],
-                'updated_at' => $value['updated_at'],
+                'updated_at' => Carbon::now()->format('Y-m-d H:i:s'),
               ]);
             }
             DB::table('m_data_skp')->where('id', '=', $idUsulan)->update([
@@ -490,9 +488,7 @@ class UsulanController extends Controller
             ]);
             $this->deleteDokumen($oldData['idDokumen'], 'skp', 'pdf');
           } else {
-            $getData = json_decode(DB::table('m_data_skp')->where([
-              ['id', '=', $idUsulan]
-            ])->get(), true)[0];
+            $getData = $newData[0];
             DB::table('m_data_skp')->where('id', '=', $idUsulan)->update([
               'idDokumen' => 1
             ]);
@@ -522,18 +518,19 @@ class UsulanController extends Controller
             (new ApiSiasnController)->insertDokumenRiwayat($request, $response['mapData']['rwJabatanId'], 872, 'jabatan', $dokumen['nama'], 'pdf');
           }
         }
+        $newData = json_decode(DB::table('m_data_jabatan')->where('id', '=', $idUsulan)->get(), true);
+        $idUpdate = $newData[0]['idDataJabatanUpdate'];
         $data = DB::table('m_data_jabatan')->where('id', '=', $idUsulan)->update([
           'idUsulanStatus' => $message['idUsulanStatus'],
           'idUsulanHasil' => $message['idUsulanHasil'],
           'keteranganUsulan' => $message['keteranganUsulan'],
-          'idDataJabatanUpdate' => null,
+          'updated_at' => Carbon::now()->format('Y-m-d H:i:s'),
         ]);
-        if ($message['idUpdate'] != null) {
+        if ($idUpdate != null) {
           if ($message['idUsulanHasil'] == 1) {
-            $newData = json_decode(DB::table('m_data_jabatan')->where('id', '=', $idUsulan)->get(), true);
-            $oldData = json_decode(DB::table('m_data_jabatan')->where('id', '=', $message['idUpdate'])->get(), true)[0];
+            $oldData = json_decode(DB::table('m_data_jabatan')->where('id', '=', $idUpdate)->get(), true)[0];
             foreach ($newData as $key => $value) {
-              $data = DB::table('m_data_jabatan')->where('id', '=', $message['idUpdate'])->update([
+              $data = DB::table('m_data_jabatan')->where('id', '=', $idUpdate)->update([
                 'idJabatan' => $value['idJabatan'],
                 'isPltPlh' => $value['isPltPlh'],
                 'tmt' => $value['tmt'],
@@ -542,7 +539,7 @@ class UsulanController extends Controller
                 'nomorDokumen' => $value['nomorDokumen'],
                 'idJabatanTugasTambahan' => $value['idJabatanTugasTambahan'],
                 'idDokumen' => $value['idDokumen'],
-                'updated_at' => $value['updated_at'],
+                'updated_at' => Carbon::now()->format('Y-m-d H:i:s'),
               ]);
             }
             DB::table('m_data_jabatan')->where('id', '=', $idUsulan)->update([
@@ -550,9 +547,7 @@ class UsulanController extends Controller
             ]);
             $this->deleteDokumen($oldData['idDokumen'], 'jabatan', 'pdf');
           } else {
-            $getData = json_decode(DB::table('m_data_jabatan')->where([
-              ['id', '=', $idUsulan]
-            ])->get(), true)[0];
+            $getData = $newData[0];
             DB::table('m_data_jabatan')->where('id', '=', $idUsulan)->update([
               'idDokumen' => 1
             ]);
@@ -583,24 +578,25 @@ class UsulanController extends Controller
             // (new ApiSiasnController)->insertDokumenRiwayat($request, $response['mapData']['rwPenghargaanId'], 872, 'jabatan', $dokumen['nama'], 'pdf');
           }
         }
+        $newData = json_decode(DB::table('m_data_penghargaan')->where('id', '=', $idUsulan)->get(), true);
+        $idUpdate = $newData[0]['idDataPenghargaanUpdate'];
         $data = DB::table('m_data_penghargaan')->where('id', '=', $idUsulan)->update([
           'idUsulanStatus' => $message['idUsulanStatus'],
           'idUsulanHasil' => $message['idUsulanHasil'],
           'keteranganUsulan' => $message['keteranganUsulan'],
-          'idDataPenghargaanUpdate' => null,
+          'updated_at' => Carbon::now()->format('Y-m-d H:i:s'),
         ]);
-        if ($message['idUpdate'] != null) {
+        if ($idUpdate != null) {
           if ($message['idUsulanHasil'] == 1) {
-            $newData = json_decode(DB::table('m_data_penghargaan')->where('id', '=', $idUsulan)->get(), true);
-            $oldData = json_decode(DB::table('m_data_penghargaan')->where('id', '=', $message['idUpdate'])->get(), true)[0];
+            $oldData = json_decode(DB::table('m_data_penghargaan')->where('id', '=', $idUpdate)->get(), true)[0];
             foreach ($newData as $key => $value) {
-              $data = DB::table('m_data_penghargaan')->where('id', '=', $message['idUpdate'])->update([
+              $data = DB::table('m_data_penghargaan')->where('id', '=', $idUpdate)->update([
                 'tahunPenghargaan' => $value['tahunPenghargaan'],
                 'idDaftarJenisPenghargaan' => $value['idDaftarJenisPenghargaan'],
                 'tanggalDokumen' => $value['tanggalDokumen'],
                 'nomorDokumen' => $value['nomorDokumen'],
                 'idDokumen' => $value['idDokumen'],
-                'updated_at' => $value['updated_at'],
+                'updated_at' => Carbon::now()->format('Y-m-d H:i:s'),
               ]);
             }
             DB::table('m_data_penghargaan')->where('id', '=', $idUsulan)->update([
@@ -608,10 +604,91 @@ class UsulanController extends Controller
             ]);
             $this->deleteDokumen($oldData['idDokumen'], 'penghargaan', 'pdf');
           } else {
-            $getData = json_decode(DB::table('m_data_penghargaan')->where([
-              ['id', '=', $idUsulan]
-            ])->get(), true)[0];
-            DB::table('m_data_jabatan')->where('id', '=', $idUsulan)->update([
+            $getData = $newData[0];
+            DB::table('m_data_penghargaan')->where('id', '=', $idUsulan)->update([
+              'idDokumen' => 1
+            ]);
+            $this->deleteDokumen($getData['idDokumen'], 'penghargaan', 'pdf');
+          }
+        }
+        break;
+      case 'Data Angka Kredit':
+        // $usulan = json_decode(DB::table('m_data_angka_kredit')->where([
+        //   ['id', '=', $idUsulan]
+        // ])->get()->toJson(), true)[0];
+        // if (intval($usulan['idUsulan']) == 1 && intval($message['idUsulanHasil']) == 1) {
+        //   $response = (new ApiSiasnSyncController)->insertRiwayatPenghargaan($request, $idUsulan);
+        //   if (!$response['success']) {
+        //     $callback = [
+        //       'message' => $response['message'],
+        //       'status' => 3
+        //     ];
+        //     return $this->encrypt($username, json_encode($callback));
+        //   } else {
+        //     DB::table('m_data_angka_kredit')->where('id', '=', $idUsulan)->update([
+        //       'idBkn' => $response['mapData']['rwPenghargaanId'],
+        //     ]);
+        //     $dokumen = json_decode(DB::table('m_dokumen')->where([
+        //       ['id', '=', $usulan['idDokumen']]
+        //     ])->get()->toJson(), true)[0];
+        //     /// Belum ada upload dokumennya di WS
+        //     // (new ApiSiasnController)->insertDokumenRiwayat($request, $response['mapData']['rwPenghargaanId'], 872, 'jabatan', $dokumen['nama'], 'pdf');
+        //   }
+        // }
+
+        $newData = json_decode(DB::table('m_data_angka_kredit')->where('id', '=', $idUsulan)->get(), true);
+        $idUpdate = $newData[0]['idDataAngkaKreditUpdate'];
+        $data = DB::table('m_data_angka_kredit')->where('id', '=', $idUsulan)->update([
+          'idUsulanStatus' => $message['idUsulanStatus'],
+          'idUsulanHasil' => $message['idUsulanHasil'],
+          'keteranganUsulan' => $message['keteranganUsulan'],
+          'updated_at' => Carbon::now()->format('Y-m-d H:i:s'),
+        ]);
+        if ($idUpdate != null) {
+          if ($message['idUsulanHasil'] == 1) {
+            $tahun = $message['tahun'];
+            $angkaKreditUtama = $message['angkaKreditUtama'];
+            $angkaKreditPenunjang = $message['angkaKreditPenunjang'];
+            switch (intval($message['idDaftarJenisAngkaKredit'])) {
+              case 1:
+                $tahun = null;
+                break;
+              case 2:
+                $tahun = null;
+                $angkaKreditUtama = null;
+                $angkaKreditPenunjang = null;
+                break;
+              case 3:
+                $angkaKreditUtama = null;
+                $angkaKreditPenunjang = null;
+                break;
+              default:
+                break;
+            }
+            $oldData = json_decode(DB::table('m_data_angka_kredit')->where('id', '=', $idUpdate)->get(), true)[0];
+            foreach ($newData as $key => $value) {
+              $data = DB::table('m_data_angka_kredit')->where('id', '=', $idUpdate)->update([
+                'idDaftarJenisAngkaKredit' => $value['idDaftarJenisAngkaKredit'],
+                'idDataJabatan' => $value['idDataJabatan'],
+                'tahun' => $tahun,
+                'periodePenilaianMulai' => $value['periodePenilaianMulai'],
+                'periodePenilaianSelesai' => $value['periodePenilaianSelesai'],
+                'angkaKreditUtama' => $angkaKreditUtama,
+                'angkaKreditPenunjang' => $angkaKreditPenunjang,
+                'angkaKreditTotal' => $value['angkaKreditTotal'],
+                'tanggalDokumen' => $value['tanggalDokumen'],
+                'nomorDokumen' => $value['nomorDokumen'],
+                'idDokumen' => $value['idDokumen'],
+                'updated_at' => Carbon::now()->format('Y-m-d H:i:s'),
+              ]);
+            }
+            DB::table('m_data_angka_kredit')->where('id', '=', $idUsulan)->update([
+              'idDokumen' => 1
+            ]);
+            $this->deleteDokumen($oldData['idDokumen'], 'penghargaan', 'pdf');
+          } else {
+            $getData = $newData[0];
+            DB::table('m_data_angka_kredit')->where('id', '=', $idUsulan)->update([
               'idDokumen' => 1
             ]);
             $this->deleteDokumen($getData['idDokumen'], 'penghargaan', 'pdf');
@@ -628,6 +705,29 @@ class UsulanController extends Controller
     $callback = [
       'message' => $data == 1 ? 'Data berhasil disimpan.' : 'Data gagal disimpan.',
       'status' => $data == 1 ? 2 : 3
+    ];
+    return $this->encrypt($username, json_encode($callback));
+  }
+
+  public function updateUsulanMultiple(Request $request) {
+    $authenticated = $this->isAuth($request)['authenticated'];
+    $username = $this->isAuth($request)['username'];
+    if (!$authenticated) return $this->encrypt($username, json_encode([
+      'message' => $authenticated == true ? 'Authorized' : 'Not Authorized',
+      'status' => $authenticated === true ? 1 : 0
+    ]));
+    $message = json_decode($this->decrypt($username, $request->message), true);
+    $successCount = 0;
+    foreach ($message['dataMultiple'] as $key => $value) {
+      $dataEach['idUsulanStatus'] = 3;
+      $dataEach['idUsulanHasil'] = intval($message['idUsulanHasil']);
+      $dataEach['keteranganUsulan'] = $message['keteranganUsulan'];
+      $dataEach['usulanKriteria'] = $value['usulanKriteria'];
+      $this->updateUsulan(intval($value['id']), $dataEach, $request);
+    }
+    $callback = [
+      'message' => 'Data berhasil disimpan.',
+      'status' => 2
     ];
     return $this->encrypt($username, json_encode($callback));
   }
