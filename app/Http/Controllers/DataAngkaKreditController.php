@@ -100,12 +100,14 @@ class DataAngkaKreditController extends Controller
     $jabatan = $this->getDataJabatanFungsional($idPegawai);
     $jenisAngkaKredit = $this->getDaftarJenisAngkaKredit();
     $dataAngkaKredit = $this->getDataAngkaKredit($idPegawai, $idUsulan);
+    $dokumenKategori = (new DokumenController)->getDocumentCategory('angka kredit');
 
     $callback = [
       'message' => [
         'jenisAngkaKredit' => $jenisAngkaKredit,
         'jabatan' => $jabatan,
-        'dataAngkaKredit' => $dataAngkaKredit
+        'dataAngkaKredit' => $dataAngkaKredit,
+        'dokumenKategori' => $dokumenKategori
       ],
       'status' => 2
     ];

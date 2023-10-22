@@ -113,4 +113,30 @@ class DataPasanganController extends Controller
     ];
     return $this->encrypt($username, json_encode($callback));
   }
+
+  public function getStatusKawin() {
+    $data = json_decode(DB::table('m_status_perkawinan')->get(), true);
+    return $data;
+  }
+  public function getDataPasanganDetail($idUsulan) {
+    $data = json_decode(DB::table('m_data_pasangan')->where([
+      ['m_data_pasangan.id', '=', $idUsulan],
+    ])->get([
+      'm_data_pasangan.*'
+    ]), true);
+    $data[0]['dokumen'] = $this->getBlobDokumen($data[0]['idDokumen'], 'pasangan', 'pdf');
+    return $data;
+  }
+  public function getDataPasanganList($idPegawai) {
+    $data = json_decode(DB::table('m_pegawai')->join('m_data_pasangan', 'm_pegawai.id', '=', 'm_data_pasangan.idPegawai')->join('m_status_perkawinan', 'm_data_pasangan.idStatusPerkawinan', '=', 'm_status_perkawinan.id')->whereIn('m_data_pasangan.idUsulanStatus', [3, 4])->where([
+      ['m_pegawai.id', '=', $idPegawai],
+      ['m_data_pasangan.idUsulanHasil', '=', 1],
+      ['m_data_pasangan.idUsulan', '=', 1],
+    ])->get([
+      'm_data_pasangan.id',
+      'm_data_pasangan.nama',
+      'm_status_perkawinan.nama as statusPerkawinan'
+    ]), true);
+    return $data;
+  }
 }

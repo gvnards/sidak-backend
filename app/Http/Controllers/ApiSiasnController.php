@@ -220,6 +220,7 @@ class ApiSiasnController extends Controller
     ];
     curl_setopt($curl, CURLOPT_POSTFIELDS, $data_);
     $response = curl_exec($curl);
+    curl_close($curl);
     return $response;
   }
   function getDokumenRiwayat(Request $request) {
@@ -254,15 +255,15 @@ class ApiSiasnController extends Controller
     return json_decode($response, true);
   }
   function getRiwayatJabatanASN(Request $request, $nipBaru) {
-    $authenticated = $this->isAuth($request)['authenticated'];
-    $username = $this->isAuth($request)['username'];
-    if(!$authenticated) return $this->encrypt($username, json_encode([
-      'message' => $authenticated == true ? 'Authorized' : 'Not Authorized',
-      'status' => $authenticated === true ? 1 : 0
-    ]));
+    // $authenticated = $this->isAuth($request)['authenticated'];
+    // $username = $this->isAuth($request)['username'];
+    // if(!$authenticated) return $this->encrypt($username, json_encode([
+    //   'message' => $authenticated == true ? 'Authorized' : 'Not Authorized',
+    //   'status' => $authenticated === true ? 1 : 0
+    // ]));
     $token = $this->getAllToken();
     // format url --> /jabatan/pns/{nipBaru}
-    $url = $this->initialUrl() . "/jabatan/pns/$nipBaru";
+    $url = $this->initialUrl() . "/pns/rw-jabatan/$nipBaru";
     $response = Http::withHeaders($token)->get($url, []);
     return json_decode($response, true);
   }
@@ -369,6 +370,32 @@ class ApiSiasnController extends Controller
     $response = Http::withHeaders($token)->get($url, []);
     return json_decode($response, true);
   }
+  // function insertRiwayatHukdisASN(/*$data*/) {
+  //   $token = $this->getAllToken();
+
+  //   $url = $this->initialUrl() . "/hukdis/save";
+  //   $response = Http::withHeaders($token)->post($url, [
+  //     'akhirHukumanTanggal' => '17-10-2023',
+  //     'nomorPp' => '05',
+  //     'alasanHukumanDisiplinId' => 'A4689E6D5CA78920E050640A29032EE8',
+  //     'hukumanTanggal' => '17-10-2023',
+  //     'jenisTingkatHukumanId' => 'S',
+  //     'jenisHukumanId' => '8',
+  //     'keterangan' => 'gak ada',
+  //     'masaBulan' => '1',
+  //     'masaTahun' => '0',
+  //     'skNomor' => 'SK/Nomor/Coba',
+  //     'skPembatalanNomor' => '',
+  //     'skPembatalanTanggal' => '',
+  //     'skTanggal' => '17-10-2023',
+  //     'pnsOrangId' => '7E85A2741FFFBD8DE050640A3C036B36',
+  //     'kedudukanHukumId' => '15',
+  //     'golonganId' => '31',
+  //     // 'golonganLama' => 'string',
+  //     // 'hukdisYangDiberhentikanId' => 'string',
+  //   ]);
+  //   return json_decode($response, true);
+  // }
 
   // ANGKA KREDIT
   function getRiwayatAngkaKreditASN(Request $request, $nipBaru) {
@@ -383,6 +410,59 @@ class ApiSiasnController extends Controller
     $url = $this->initialUrl() . "/pns/rw-angkakredit/$nipBaru";
     $response = Http::withHeaders($token)->get($url, []);
     return json_decode($response, true);
+  }
+  function insertRiwayatAngkaKreditASN(Request $request, $data) {
+    // $authenticated = $this->isAuth($request)['authenticated'];
+    // $username = $this->isAuth($request)['username'];
+    // if(!$authenticated) return $this->encrypt($username, json_encode([
+    //   'message' => $authenticated == true ? 'Authorized' : 'Not Authorized',
+    //   'status' => $authenticated === true ? 1 : 0
+    // ]));
+    $token = $this->getAllToken();
+    // format url --> /angkakredit/save
+    // "id" dan "path", tidak perlu diisi dulu tidak masalah
+    // untuk "path", itu harus upload dokumen terlebih dahulu, nanti kita dapat callback dari dokumennya,
+    // lalu dari callback dokumen, nanti ditaruh di path
+
+    $url = $this->initialUrl() . "/angkakredit/save";
+    $response = Http::withHeaders($token)->post($url, [
+      'bulanMulaiPenailan' => $data['bulanMulaiPenailan'],
+      'bulanSelesaiPenailan' => $data['bulanSelesaiPenailan'],
+      'tahunMulaiPenailan' => $data['tahunMulaiPenailan'],
+      'tahunSelesaiPenailan' => $data['tahunSelesaiPenailan'],
+      'isAngkaKreditPertama' => $data['isAngkaKreditPertama'],
+      'isIntegrasi' => $data['isIntegrasi'],
+      'isKonversi' => $data['isKonversi'],
+      'kreditBaruTotal' => $data['kreditBaruTotal'],
+      'kreditPenunjangBaru' => $data['kreditPenunjangBaru'],
+      'kreditUtamaBaru' => $data['kreditUtamaBaru'],
+      'nomorSk' => $data['nomorSk'],
+      'pnsId' => $data['pnsId'],
+      'rwJabatanId' => $data['rwJabatanId'],
+      'tanggalSk' => $data['tanggalSk']
+    ]);
+    return json_decode($response, true);
+
+    ///////////// return success
+    // {
+    //   "success": true,
+    //   "mapData": {
+    //       "rwAngkaKreditId": "d533557b-6202-11ee-a43a-0a580a830060"
+    //   },
+    //   "message": "success"
+    // }
+    ///////////// return failed (jika field mandatory isinya salah atau isinya tidak ada di table referensi)
+    // {
+    //   "success": false,
+    //   "mapData": null,
+    //   "message": "nomor sk tidak valid/mengandung spesial karakter"
+    // }
+    /////////// return error (jika field mandatory tidak terisi)
+    // {
+    //   "code": 0,
+    //   "data": null,
+    //   "message": "1 error occurred:\n\t* PnsID is required\n\n"
+    // }
   }
 
   // DATA UTAMA

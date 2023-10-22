@@ -613,28 +613,27 @@ class UsulanController extends Controller
         }
         break;
       case 'Data Angka Kredit':
-        // $usulan = json_decode(DB::table('m_data_angka_kredit')->where([
-        //   ['id', '=', $idUsulan]
-        // ])->get()->toJson(), true)[0];
-        // if (intval($usulan['idUsulan']) == 1 && intval($message['idUsulanHasil']) == 1) {
-        //   $response = (new ApiSiasnSyncController)->insertRiwayatPenghargaan($request, $idUsulan);
-        //   if (!$response['success']) {
-        //     $callback = [
-        //       'message' => $response['message'],
-        //       'status' => 3
-        //     ];
-        //     return $this->encrypt($username, json_encode($callback));
-        //   } else {
-        //     DB::table('m_data_angka_kredit')->where('id', '=', $idUsulan)->update([
-        //       'idBkn' => $response['mapData']['rwPenghargaanId'],
-        //     ]);
-        //     $dokumen = json_decode(DB::table('m_dokumen')->where([
-        //       ['id', '=', $usulan['idDokumen']]
-        //     ])->get()->toJson(), true)[0];
-        //     /// Belum ada upload dokumennya di WS
-        //     // (new ApiSiasnController)->insertDokumenRiwayat($request, $response['mapData']['rwPenghargaanId'], 872, 'jabatan', $dokumen['nama'], 'pdf');
-        //   }
-        // }
+        $usulan = json_decode(DB::table('m_data_angka_kredit')->where([
+          ['id', '=', $idUsulan]
+        ])->get()->toJson(), true)[0];
+        if (intval($usulan['idUsulan']) == 1 && intval($message['idUsulanHasil']) == 1) {
+          $response = $response = (new ApiSiasnSyncController)->insertRiwayatAngkaKredit($request, $idUsulan);
+          if (!$response['success']) {
+            $callback = [
+              'message' => $response['message'],
+              'status' => 3
+            ];
+            return $this->encrypt($username, json_encode($callback));
+          } else {
+            DB::table('m_data_angka_kredit')->where('id', '=', $idUsulan)->update([
+              'idBkn' => $response['mapData']['rwAngkaKreditId'],
+            ]);
+            $dokumen = json_decode(DB::table('m_dokumen')->where([
+              ['id', '=', $usulan['idDokumen']]
+            ])->get()->toJson(), true)[0];
+            (new ApiSiasnController)->insertDokumenRiwayat($request, $response['mapData']['rwAngkaKreditId'], 879, 'pak', $dokumen['nama'], 'pdf');
+          }
+        }
 
         $newData = json_decode(DB::table('m_data_angka_kredit')->where('id', '=', $idUsulan)->get(), true);
         $idUpdate = $newData[0]['idDataAngkaKreditUpdate'];

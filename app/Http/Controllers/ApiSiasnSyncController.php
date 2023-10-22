@@ -10,6 +10,122 @@ use Illuminate\Support\Facades\Http;
 
 class ApiSiasnSyncController extends ApiSiasnController
 {
+
+  public function syncAngkaKreditASN(Request $request, $idPegawai) {
+    $authenticated = $this->isAuth($request)['authenticated'];
+    $username = $this->isAuth($request)['username'];
+    if(!$authenticated) return $this->encrypt($username, json_encode([
+      'message' => $authenticated == true ? 'Authorized' : 'Not Authorized',
+      'status' => $authenticated === true ? 1 : 0
+    ]));
+
+    $getAsn = json_decode(DB::table('m_pegawai')->where([
+      ['id', '=', $idPegawai]
+    ])->get(), true);
+    if (count($getAsn) === 0) {
+      return $this->encrypt($username, json_encode([
+        'message' => 'Data ASN tidak ditemukan.',
+        'status' => 3
+      ]));
+    }
+    $nipBaru = $getAsn[0]['nip'];
+
+    $angkaKreditFromSiasn = $this->getRiwayatAngkaKreditASN($request, $nipBaru);
+
+    if (!isset($angkaKreditFromSiasn['data'])) {
+      return $this->encrypt($username, json_encode([
+        'message' => "Data Angka Kredit tidak dapat ditarik dari MySAPK.\nMasalah ini sedang ditangani oleh BKN.",
+        'status' => 3
+      ]));
+    } else if (gettype($angkaKreditFromSiasn['data']) != "array") {
+      return $this->encrypt($username, json_encode([
+        'message' => "Data angka kredit sudah berhasil disinkronisasi dari MySAPK.\nJika terdapat ketidaksesuaian data, dapat menghubungi Admin BKPSDM.",
+        'status' => 2
+      ]));
+    }
+    $angkaKreditFromSiasn = $angkaKreditFromSiasn['data'];
+
+    $angkaKreditFromSidak = json_decode(DB::table('m_data_angka_kredit')->where([
+      ['idPegawai', '=', $idPegawai]
+    ])->get(), true);
+
+    ///// cek apakah angka kredit dari sidak (yang ada idBkn nya), itu masih ada atau tidak di siasn, jika tidak, hapus
+    for($i = 0; $i < count($angkaKreditFromSidak); $i++) {
+      if ($angkaKreditFromSidak[$i]['idBkn'] != '' && $angkaKreditFromSidak[$i]['idBkn'] != null) {
+        $isFind = false;
+        for($j=0; $j<count($angkaKreditFromSiasn); $j++) {
+          if ($angkaKreditFromSidak[$i]['idBkn'] == $angkaKreditFromSiasn[$j]['id']) {
+            $isFind = true;
+          }
+        }
+        if (!$isFind) {
+          DB::table('m_data_angka_kredit')->where([
+            ['id', '=', $angkaKreditFromSidak[$i]['id']]
+          ])->delete();
+        }
+      }
+    }
+
+    ///// cek apakah jabatan yang dari siasn sudah ada di sidak, jika belum, kumpulkan ke dalam variabel newJabatanFromSiasn
+    $newAngkaKreditFromSiasn = [];
+    for($i=0; $i<count($angkaKreditFromSiasn); $i++) {
+      $isFind = false;
+      for($j=0; $j<count($angkaKreditFromSidak); $j++) {
+        // cek
+        if ($angkaKreditFromSiasn[$i]['id'] == $angkaKreditFromSidak[$j]['idBkn']) {
+          $isFind = true;
+        }
+      }
+      if (!$isFind) {
+        array_push($newAngkaKreditFromSiasn, $angkaKreditFromSiasn[$i]);
+      }
+    }
+
+    // insert to database
+    $affected = '';
+    for($i = 0; $i < count($newAngkaKreditFromSiasn); $i++) {
+      if ($newAngkaKreditFromSiasn[$i]['rwJabatan'] !== '' || $newAngkaKreditFromSiasn[$i]['rwJabatan'] !== null) {
+        $dataJabatanSidak = json_decode(DB::table('m_data_jabatan')->where([
+          ['idBkn', '=', $newAngkaKreditFromSiasn[$i]['rwJabatan']]
+        ])->get(), true);
+        if (count($dataJabatanSidak) > 0) {
+          $idDaftarJenisAngkaKredit = NULL;
+          if ($newAngkaKreditFromSiasn[$i]['isAngkaKreditPertama'] == '1') $idDaftarJenisAngkaKredit = 1;
+          else if ($newAngkaKreditFromSiasn[$i]['isIntegrasi'] == '1') $idDaftarJenisAngkaKredit = 2;
+          else if ($newAngkaKreditFromSiasn[$i]['isKonversi'] == '1') $idDaftarJenisAngkaKredit = 3;
+          DB::table('m_data_angka_kredit')->insert([
+            'id' => NULL,
+            'idDaftarJenisAngkaKredit' => $idDaftarJenisAngkaKredit,
+            'idDataJabatan' => $dataJabatanSidak[0]['id'],
+            'tahun' => $idDaftarJenisAngkaKredit == 3 ? $newAngkaKreditFromSiasn[$i]['tahunSelesaiPenailan'] : NULL,
+            'periodePenilaianMulai' => date("Y-m-d", strtotime($newAngkaKreditFromSiasn[$i]['tahunMulaiPenailan']."-".$newAngkaKreditFromSiasn[$i]['bulanMulaiPenailan']."-01")),
+            'periodePenilaianSelesai' => date("Y-m-t", strtotime($newAngkaKreditFromSiasn[$i]['tahunSelesaiPenailan']."-".$newAngkaKreditFromSiasn[$i]['bulanSelesaiPenailan']."-01")),
+            'angkaKreditUtama' => $newAngkaKreditFromSiasn[$i]['kreditUtamaBaru'] === '' ? NULL : $newAngkaKreditFromSiasn[$i]['kreditUtamaBaru'],
+            'angkaKreditPenunjang' => $newAngkaKreditFromSiasn[$i]['kreditPenunjangBaru'] === '' ? NULL : $newAngkaKreditFromSiasn[$i]['kreditPenunjangBaru'],
+            'angkaKreditTotal' => $newAngkaKreditFromSiasn[$i]['kreditBaruTotal'],
+            'tanggalDokumen' => $newAngkaKreditFromSiasn[$i]['tanggalSk'] == NULL || $newAngkaKreditFromSiasn[$i]['tanggalSk'] == '' ? NULL : date('Y-m-d', strtotime($newAngkaKreditFromSiasn[$i]['tanggalSk'])),
+            'nomorDokumen' => $newAngkaKreditFromSiasn[$i]['nomorSk'],
+            'idDokumen' => NULL,
+            'idPegawai' => intval($idPegawai),
+            'idUsulan' => 1,
+            'idUsulanStatus' => 4,
+            'idUsulanHasil' => 1,
+            'idDataAngkaKreditUpdate' => NULL,
+            'keteranganUsulan' => 'Data sinkron dengan SIASN/MySAPK',
+            'created_at' => Carbon::now()->format('Y-m-d H:i:s'),
+            'updated_at' => Carbon::now()->format('Y-m-d H:i:s'),
+            'idBkn' => $newAngkaKreditFromSiasn[$i]['id'],
+          ]);
+        }
+      }
+    }
+
+    $callback = [
+      'message' => "Data angka kredit sudah berhasil disinkronisasi dari MySAPK.\nJika setelah sinkronisasi tidak ada angka kredit yang muncul, silahkan tambahkan angka kredit sesuai dengan dasar Sertifikat yang dimiliki.\n Dan jika terdapat ketidaksesuaian angka kredit, dapat menghubungi Admin BKPSDM.",
+      'status' => 2
+    ];
+    return $this->encrypt($username, json_encode($callback));
+  }
   public function syncJabatanASN(Request $request, $idPegawai) {
     $authenticated = $this->isAuth($request)['authenticated'];
     $username = $this->isAuth($request)['username'];
@@ -91,7 +207,27 @@ class ApiSiasnSyncController extends ApiSiasnController
         ['idBkn', '=', $newJabatanFromSiasn[$i]['unorId']]
       ])->get()->toJson(), true);
       // cek unorId ada dalam SOTK sekarang atau tidak
-      if (count($unorSidak) > 0) {
+      if (count($unorSidak) === 0) {
+        $newId = DB::table('m_unit_organisasi')->insertGetId([
+          'id' => NULL,
+          'nama' => $newJabatanFromSiasn[$i]['unorNama'],
+          'kodeKomponen' => '',
+          'digunakanSotkSekarang' => 0,
+          'created_at' => Carbon::now()->format('Y-m-d H:i:s'),
+          'updated_at' => Carbon::now()->format('Y-m-d H:i:s'),
+          'idBkn' => $newJabatanFromSiasn[$i]['unorId'],
+          'idBknAtasan' => $newJabatanFromSiasn[$i]['unorIndukId'],
+        ]);
+        DB::table('m_unit_organisasi')->where([
+          ['id', '=', $newId]
+        ])->update([
+          'kodeKomponen' => '-'.$newId
+        ]);
+        $unorSidak = json_decode(DB::table('m_unit_organisasi')->where([
+          ['idBkn', '=', $newJabatanFromSiasn[$i]['unorId']]
+        ])->get()->toJson(), true);
+      }
+      else {
         $jabatanId = '';
         switch (intval($newJabatanFromSiasn[$i]['jenisJabatan'])) {
           case 1:
@@ -822,12 +958,32 @@ class ApiSiasnSyncController extends ApiSiasnController
     return $response;
   }
   public function insertRiwayatAngkaKredit(Request $request, $idUsulan) {
-    $usulan = json_decode(DB::table('m_data_angka_kredit')->where([
-      ['id', '=', $idUsulan]
-    ])->get(), true)[0];
-    $asn = json_decode(DB::table('m_pegawai')->where([
-      ['id', '=', $usulan['idPegawai']]
-    ])->get()->toJson(), true)[0];
-    /// belum
+    $usulan = json_decode(DB::table('m_data_angka_kredit')->join('m_pegawai', 'm_data_angka_kredit.idPegawai', '=', 'm_pegawai.id')->join('m_data_jabatan', 'm_data_angka_kredit.idDataJabatan', '=', 'm_data_jabatan.id')->where([
+      ['m_data_jabatan.idBkn', '!=', ''],
+      ['m_pegawai.idBkn', '!=', ''],
+      ['m_data_angka_kredit.id', '=', $idUsulan]
+    ])->get([
+      'm_data_angka_kredit.*',
+      'm_pegawai.idBkn as idBknAsn',
+      'm_data_jabatan.idBkn as idBknJabatan'
+    ]), true)[0];
+    $dataToSiasn = [
+      'bulanMulaiPenailan' => date_parse_from_format('Y-m-d', $usulan['periodePenilaianMulai'])['month'].'',
+      'bulanSelesaiPenailan' => date_parse_from_format('Y-m-d', $usulan['periodePenilaianSelesai'])['month'].'',
+      'tahunMulaiPenailan' => date_parse_from_format('Y-m-d', $usulan['periodePenilaianMulai'])['year'].'',
+      'tahunSelesaiPenailan' => date_parse_from_format('Y-m-d', $usulan['periodePenilaianSelesai'])['year'].'',
+      'isAngkaKreditPertama' => intval($usulan['idDaftarJenisAngkaKredit']) === 1 ? '1' : '0',
+      'isIntegrasi' => intval($usulan['idDaftarJenisAngkaKredit']) === 2 ? '1' : '0',
+      'isKonversi' => intval($usulan['idDaftarJenisAngkaKredit']) === 3 ? '1' : '0',
+      'kreditBaruTotal' => $usulan['angkaKreditTotal'],
+      'kreditPenunjangBaru' => $usulan['angkaKreditPenunjang'] ?? '0',
+      'kreditUtamaBaru' => $usulan['angkaKreditUtama'] ?? '0',
+      'nomorSk' => $usulan['nomorDokumen'],
+      'pnsId' => $usulan['idBknAsn'],
+      'rwJabatanId' => $usulan['idBknJabatan'],
+      'tanggalSk' => date('d-m-Y', strtotime($usulan['tanggalDokumen']))
+    ];
+    $response = $this->insertRiwayatAngkaKreditASN($request, $dataToSiasn);
+    return $response;
   }
 }
