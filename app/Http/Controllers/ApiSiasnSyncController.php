@@ -33,15 +33,17 @@ class ApiSiasnSyncController extends ApiSiasnController
     $angkaKreditFromSiasn = $this->getRiwayatAngkaKreditASN($request, $nipBaru);
 
     if (!isset($angkaKreditFromSiasn['data'])) {
-      return $this->encrypt($username, json_encode([
-        'message' => "Data Angka Kredit tidak dapat ditarik dari MySAPK.\nMasalah ini sedang ditangani oleh BKN.",
-        'status' => 3
-      ]));
+      $angkaKreditFromSiasn['data'] = [];
+      // return $this->encrypt($username, json_encode([
+      //   'message' => "Data Angka Kredit tidak dapat ditarik dari MySAPK.\nMasalah ini sedang ditangani oleh BKN.",
+      //   'status' => 3
+      // ]));
     } else if (gettype($angkaKreditFromSiasn['data']) != "array") {
-      return $this->encrypt($username, json_encode([
-        'message' => "Data angka kredit sudah berhasil disinkronisasi dari MySAPK.\nJika terdapat ketidaksesuaian data, dapat menghubungi Admin BKPSDM.",
-        'status' => 2
-      ]));
+      $angkaKreditFromSiasn['data'] = [];
+      // return $this->encrypt($username, json_encode([
+      //   'message' => "Data angka kredit sudah berhasil disinkronisasi dari MySAPK.\nJika terdapat ketidaksesuaian data, dapat menghubungi Admin BKPSDM.",
+      //   'status' => 2
+      // ]));
     }
     $angkaKreditFromSiasn = $angkaKreditFromSiasn['data'];
 
@@ -150,15 +152,17 @@ class ApiSiasnSyncController extends ApiSiasnController
     ///// get data riwayat jabatan dari siasn
     $jabatanFromSiasn = $this->getRiwayatJabatanASN($request, $nipBaru);
     if (!isset($jabatanFromSiasn['data'])) {
-      return $this->encrypt($username, json_encode([
-        'message' => "Data Jabatan tidak dapat ditarik dari MySAPK.\nMasalah ini sedang ditangani oleh BKN.",
-        'status' => 3
-      ]));
+      $jabatanFromSiasn['data'] = [];
+      // return $this->encrypt($username, json_encode([
+      //   'message' => "Data Jabatan tidak dapat ditarik dari MySAPK.\nMasalah ini sedang ditangani oleh BKN.",
+      //   'status' => 3
+      // ]));
     } else if (gettype($jabatanFromSiasn['data']) != "array") {
-      return $this->encrypt($username, json_encode([
-        'message' => "Data Jabatan tidak dapat ditarik dari MySAPK.\nMasalah ini sedang ditangani oleh BKN.",
-        'status' => 3
-      ]));
+      $jabatanFromSiasn['data'] = [];
+      // return $this->encrypt($username, json_encode([
+      //   'message' => "Data Jabatan tidak dapat ditarik dari MySAPK.\nMasalah ini sedang ditangani oleh BKN.",
+      //   'status' => 3
+      // ]));
     }
     $jabatanFromSiasn = $jabatanFromSiasn['data'];
 

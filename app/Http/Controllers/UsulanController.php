@@ -222,6 +222,12 @@ class UsulanController extends Controller
     switch ($message['usulanKriteria']) {
       case 'Data Anak':
         $newData = json_decode(DB::table('m_data_anak')->where('id', '=', $idUsulan)->get(), true);
+        if (intval($newData[0]['idUsulanStatus']) !== 1) {
+          return $this->encrypt($username, json_encode([
+            'message' => 'Data sudah diverifikasi oleh admin. Silahkan refresh atau verifikasi yang data lain.',
+            'status' => 3
+          ]));
+        }
         $idUpdate = $newData[0]['idDataAnakUpdate'];
         $data = DB::table('m_data_anak')->where('id', '=', $idUsulan)->update([
           'idUsulanStatus' => $message['idUsulanStatus'],
@@ -230,7 +236,7 @@ class UsulanController extends Controller
           'updated_at' => Carbon::now()->format('Y-m-d H:i:s')
         ]);
         if ($idUpdate != null) {
-          if ($message['idUsulanHasil'] == 1) {
+          if (intval($message['idUsulanHasil']) == 1) {
             $oldData = json_decode(DB::table('m_data_anak')->where('id', '=', $idUpdate)->get(), true)[0];
             foreach ($newData as $key => $value) {
               $data = DB::table('m_data_anak')->where('id', '=', $idUpdate)->update([
@@ -248,7 +254,9 @@ class UsulanController extends Controller
             DB::table('m_data_anak')->where('id', '=', $idUsulan)->update([
               'idDokumen' => 1
             ]);
-            $this->deleteDokumen($oldData['idDokumen'], 'anak', 'pdf');
+            if ($oldData['idDokumen'] !== null) {
+              $this->deleteDokumen($oldData['idDokumen'], 'anak', 'pdf');
+            }
           } else {
             $getData = $newData[0];
             DB::table('m_data_anak')->where('id', '=', $idUsulan)->update([
@@ -262,6 +270,12 @@ class UsulanController extends Controller
         $usulan = json_decode(DB::table('m_data_diklat')->where([
           ['id', '=', $idUsulan]
         ])->get()->toJson(), true)[0];
+        if (intval($usulan['idUsulanStatus']) !== 1) {
+          return $this->encrypt($username, json_encode([
+            'message' => 'Data sudah diverifikasi oleh admin. Silahkan refresh atau verifikasi yang data lain.',
+            'status' => 3
+          ]));
+        }
         if (intval($usulan['idUsulan']) == 1 && $message['idUsulanHasil'] == 1) {
           $response = (new ApiSiasnSyncController)->insertRiwayatDiklatKursus($request, $idUsulan);
           if (!$response['success']) {
@@ -289,7 +303,7 @@ class UsulanController extends Controller
           'updated_at' => Carbon::now()->format('Y-m-d H:i:s')
         ]);
         if ($idUpdate != null) {
-          if ($message['idUsulanHasil'] == 1) {
+          if (intval($message['idUsulanHasil']) == 1) {
             $oldData = json_decode(DB::table('m_data_diklat')->where('id', '=', $idUpdate)->get(), true)[0];
             foreach ($newData as $key => $value) {
               $data = DB::table('m_data_diklat')->where('id', '=', $idUpdate)->update([
@@ -307,7 +321,9 @@ class UsulanController extends Controller
             DB::table('m_data_diklat')->where('id', '=', $idUsulan)->update([
               'idDokumen' => 1
             ]);
-            $this->deleteDokumen($oldData['idDokumen'], 'diklat', 'pdf');
+            if ($oldData['idDokumen'] !== null) {
+              $this->deleteDokumen($oldData['idDokumen'], 'diklat', 'pdf');
+            }
           } else {
             $getData = $newData[0];
             DB::table('m_data_diklat')->where('id', '=', $idUsulan)->update([
@@ -319,6 +335,12 @@ class UsulanController extends Controller
         break;
       case 'Data Pangkat':
         $newData = json_decode(DB::table('m_data_pangkat')->where('id', '=', $idUsulan)->get(), true);
+        if (intval($newData[0]['idUsulanStatus']) !== 1) {
+          return $this->encrypt($username, json_encode([
+            'message' => 'Data sudah diverifikasi oleh admin. Silahkan refresh atau verifikasi yang data lain.',
+            'status' => 3
+          ]));
+        }
         $idUpdate = $newData[0]['idDataPangkatUpdate'];
         $data = DB::table('m_data_pangkat')->where('id', '=', $idUsulan)->update([
           'idUsulanStatus' => $message['idUsulanStatus'],
@@ -327,7 +349,7 @@ class UsulanController extends Controller
           'updated_at' => Carbon::now()->format('Y-m-d H:i:s')
         ]);
         if ($idUpdate != null) {
-          if ($message['idUsulanHasil'] == 1) {
+          if (intval($message['idUsulanHasil']) == 1) {
             $oldData = json_decode(DB::table('m_data_pangkat')->where('id', '=', $idUpdate)->get(), true)[0];
             foreach ($newData as $key => $value) {
               $data = DB::table('m_data_pangkat')->where('id', '=', $idUpdate)->update([
@@ -347,7 +369,9 @@ class UsulanController extends Controller
             DB::table('m_data_pangkat')->where('id', '=', $idUsulan)->update([
               'idDokumen' => 1
             ]);
-            $this->deleteDokumen($oldData['idDokumen'], 'pangkat', 'pdf');
+            if ($oldData['idDokumen'] !== null) {
+              $this->deleteDokumen($oldData['idDokumen'], 'pangkat', 'pdf');
+            }
           } else {
             $getData = $newData[0];
             DB::table('m_data_pangkat')->where('id', '=', $idUsulan)->update([
@@ -359,6 +383,12 @@ class UsulanController extends Controller
         break;
       case 'Data Pasangan':
         $newData = json_decode(DB::table('m_data_pasangan')->where('id', '=', $idUsulan)->get(), true);
+        if (intval($newData[0]['idUsulanStatus']) !== 1) {
+          return $this->encrypt($username, json_encode([
+            'message' => 'Data sudah diverifikasi oleh admin. Silahkan refresh atau verifikasi yang data lain.',
+            'status' => 3
+          ]));
+        }
         $data = DB::table('m_data_pasangan')->where('id', '=', $idUsulan)->update([
           'idUsulanStatus' => $message['idUsulanStatus'],
           'idUsulanHasil' => $message['idUsulanHasil'],
@@ -367,7 +397,7 @@ class UsulanController extends Controller
         ]);
         $idUpdate = $newData[0]['idDataPasanganUpdate'];
         if ($idUpdate != null) {
-          if ($message['idUsulanHasil'] == 1) {
+          if (intval($message['idUsulanHasil']) == 1) {
             $oldData = json_decode(DB::table('m_data_pasangan')->where('id', '=', $idUpdate)->get(), true)[0];
             foreach ($newData as $key => $value) {
               $data = DB::table('m_data_pasangan')->where('id', '=', $idUpdate)->update([
@@ -385,7 +415,9 @@ class UsulanController extends Controller
             DB::table('m_data_pasangan')->where('id', '=', $idUsulan)->update([
               'idDokumen' => 1
             ]);
-            $this->deleteDokumen($oldData['idDokumen'], 'pasangan', 'pdf');
+            if ($oldData['idDokumen'] !== null) {
+              $this->deleteDokumen($oldData['idDokumen'], 'pasangan', 'pdf');
+            }
           } else {
             $getData = $newData[0];
             DB::table('m_data_pasangan')->where('id', '=', $idUsulan)->update([
@@ -397,6 +429,12 @@ class UsulanController extends Controller
         break;
       case 'Data Pendidikan':
         $newData = json_decode(DB::table('m_data_pendidikan')->where('id', '=', $idUsulan)->get(), true);
+        if (intval($newData[0]['idUsulanStatus']) !== 1) {
+          return $this->encrypt($username, json_encode([
+            'message' => 'Data sudah diverifikasi oleh admin. Silahkan refresh atau verifikasi yang data lain.',
+            'status' => 3
+          ]));
+        }
         $idUpdate = $newData[0]['idDataPendidikanUpdate'];
         $data = DB::table('m_data_pendidikan')->where('id', '=', $idUsulan)->update([
           'idUsulanStatus' => $message['idUsulanStatus'],
@@ -405,7 +443,7 @@ class UsulanController extends Controller
           'updated_at' => Carbon::now()->format('Y-m-d H:i:s'),
         ]);
         if ($idUpdate != null) {
-          if ($message['idUsulanHasil'] == 1) {
+          if (intval($message['idUsulanHasil']) == 1) {
             $oldData = json_decode(DB::table('m_data_pendidikan')->where('id', '=', $idUpdate)->get(), true)[0];
             foreach ($newData as $key => $value) {
               $data = DB::table('m_data_pendidikan')->where('id', '=', $idUpdate)->update([
@@ -426,7 +464,9 @@ class UsulanController extends Controller
             DB::table('m_data_pendidikan')->where('id', '=', $idUsulan)->update([
               'idDokumen' => 1
             ]);
-            $this->deleteDokumen($oldData['idDokumen'], 'pendidikan', 'pdf');
+            if ($oldData['idDokumen'] !== null) {
+              $this->deleteDokumen($oldData['idDokumen'], 'pendidikan', 'pdf');
+            }
           } else {
             $getData = $newData[0];
             DB::table('m_data_pendidikan')->where('id', '=', $idUsulan)->update([
@@ -440,6 +480,12 @@ class UsulanController extends Controller
         break;
       case 'Data SKP':
         $newData = json_decode(DB::table('m_data_skp')->where('id', '=', $idUsulan)->get(), true);
+        if (intval($newData[0]['idUsulanStatus']) !== 1) {
+          return $this->encrypt($username, json_encode([
+            'message' => 'Data sudah diverifikasi oleh admin. Silahkan refresh atau verifikasi yang data lain.',
+            'status' => 3
+          ]));
+        }
         $idUpdate = $newData[0]['idDataSkpUpdate'];
         $data = DB::table('m_data_skp')->where('id', '=', $idUsulan)->update([
           'idUsulanStatus' => $message['idUsulanStatus'],
@@ -448,7 +494,7 @@ class UsulanController extends Controller
           'updated_at' => Carbon::now()->format('Y-m-d H:i:s')
         ]);
         if ($idUpdate != null) {
-          if ($message['idUsulanHasil'] == 1) {
+          if (intval($message['idUsulanHasil']) == 1) {
             $oldData = json_decode(DB::table('m_data_skp')->where('id', '=', $idUpdate)->get(), true)[0];
             foreach ($newData as $key => $value) {
               $data = DB::table('m_data_skp')->where('id', '=', $idUpdate)->update([
@@ -486,7 +532,9 @@ class UsulanController extends Controller
             DB::table('m_data_skp')->where('id', '=', $idUsulan)->update([
               'idDokumen' => 1
             ]);
-            $this->deleteDokumen($oldData['idDokumen'], 'skp', 'pdf');
+            if ($oldData['idDokumen'] !== null) {
+              $this->deleteDokumen($oldData['idDokumen'], 'skp', 'pdf');
+            }
           } else {
             $getData = $newData[0];
             DB::table('m_data_skp')->where('id', '=', $idUsulan)->update([
@@ -500,6 +548,12 @@ class UsulanController extends Controller
         $usulan = json_decode(DB::table('m_data_jabatan')->where([
           ['id', '=', $idUsulan]
         ])->get()->toJson(), true)[0];
+        if (intval($usulan['idUsulanStatus']) !== 1) {
+          return $this->encrypt($username, json_encode([
+            'message' => 'Data sudah diverifikasi oleh admin. Silahkan refresh atau verifikasi yang data lain.',
+            'status' => 3
+          ]));
+        }
         if (intval($usulan['idUsulan']) == 1 && intval($message['idUsulanHasil']) == 1) {
           $response = (new ApiSiasnSyncController)->insertRiwayatJabatan($request, $idUsulan);
           if (!$response['success']) {
@@ -527,7 +581,7 @@ class UsulanController extends Controller
           'updated_at' => Carbon::now()->format('Y-m-d H:i:s'),
         ]);
         if ($idUpdate != null) {
-          if ($message['idUsulanHasil'] == 1) {
+          if (intval($message['idUsulanHasil']) == 1) {
             $oldData = json_decode(DB::table('m_data_jabatan')->where('id', '=', $idUpdate)->get(), true)[0];
             foreach ($newData as $key => $value) {
               $data = DB::table('m_data_jabatan')->where('id', '=', $idUpdate)->update([
@@ -545,7 +599,9 @@ class UsulanController extends Controller
             DB::table('m_data_jabatan')->where('id', '=', $idUsulan)->update([
               'idDokumen' => 1
             ]);
-            $this->deleteDokumen($oldData['idDokumen'], 'jabatan', 'pdf');
+            if ($oldData['idDokumen'] !== null) {
+              $this->deleteDokumen($oldData['idDokumen'], 'jabatan', 'pdf');
+            }
           } else {
             $getData = $newData[0];
             DB::table('m_data_jabatan')->where('id', '=', $idUsulan)->update([
@@ -559,6 +615,12 @@ class UsulanController extends Controller
         $usulan = json_decode(DB::table('m_data_penghargaan')->where([
           ['id', '=', $idUsulan]
         ])->get()->toJson(), true)[0];
+        if (intval($usulan['idUsulanStatus']) !== 1) {
+          return $this->encrypt($username, json_encode([
+            'message' => 'Data sudah diverifikasi oleh admin. Silahkan refresh atau verifikasi yang data lain.',
+            'status' => 3
+          ]));
+        }
         if (intval($usulan['idUsulan']) == 1 && intval($message['idUsulanHasil']) == 1) {
           $response = (new ApiSiasnSyncController)->insertRiwayatPenghargaan($request, $idUsulan);
           if (!$response['success']) {
@@ -587,7 +649,7 @@ class UsulanController extends Controller
           'updated_at' => Carbon::now()->format('Y-m-d H:i:s'),
         ]);
         if ($idUpdate != null) {
-          if ($message['idUsulanHasil'] == 1) {
+          if (intval($message['idUsulanHasil']) == 1) {
             $oldData = json_decode(DB::table('m_data_penghargaan')->where('id', '=', $idUpdate)->get(), true)[0];
             foreach ($newData as $key => $value) {
               $data = DB::table('m_data_penghargaan')->where('id', '=', $idUpdate)->update([
@@ -602,7 +664,9 @@ class UsulanController extends Controller
             DB::table('m_data_penghargaan')->where('id', '=', $idUsulan)->update([
               'idDokumen' => 1
             ]);
-            $this->deleteDokumen($oldData['idDokumen'], 'penghargaan', 'pdf');
+            if ($oldData['idDokumen'] !== null) {
+              $this->deleteDokumen($oldData['idDokumen'], 'penghargaan', 'pdf');
+            }
           } else {
             $getData = $newData[0];
             DB::table('m_data_penghargaan')->where('id', '=', $idUsulan)->update([
@@ -616,6 +680,12 @@ class UsulanController extends Controller
         $usulan = json_decode(DB::table('m_data_angka_kredit')->where([
           ['id', '=', $idUsulan]
         ])->get()->toJson(), true)[0];
+        if (intval($usulan['idUsulanStatus']) !== 1) {
+          return $this->encrypt($username, json_encode([
+            'message' => 'Data sudah diverifikasi oleh admin. Silahkan refresh atau verifikasi yang data lain.',
+            'status' => 3
+          ]));
+        }
         if (intval($usulan['idUsulan']) == 1 && intval($message['idUsulanHasil']) == 1) {
           $response = $response = (new ApiSiasnSyncController)->insertRiwayatAngkaKredit($request, $idUsulan);
           if (!$response['success']) {
@@ -644,7 +714,7 @@ class UsulanController extends Controller
           'updated_at' => Carbon::now()->format('Y-m-d H:i:s'),
         ]);
         if ($idUpdate != null) {
-          if ($message['idUsulanHasil'] == 1) {
+          if (intval($message['idUsulanHasil']) == 1) {
             $tahun = $message['tahun'];
             $angkaKreditUtama = $message['angkaKreditUtama'];
             $angkaKreditPenunjang = $message['angkaKreditPenunjang'];
@@ -684,7 +754,9 @@ class UsulanController extends Controller
             DB::table('m_data_angka_kredit')->where('id', '=', $idUsulan)->update([
               'idDokumen' => 1
             ]);
-            $this->deleteDokumen($oldData['idDokumen'], 'penghargaan', 'pdf');
+            if ($oldData['idDokumen'] !== null) {
+              $this->deleteDokumen($oldData['idDokumen'], 'penghargaan', 'pdf');
+            }
           } else {
             $getData = $newData[0];
             DB::table('m_data_angka_kredit')->where('id', '=', $idUsulan)->update([

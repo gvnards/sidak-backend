@@ -54,6 +54,7 @@ Route::post('data-penghargaan', 'DataPenghargaanController@insertDataPenghargaan
 Route::post('data-penghargaan/{id}', 'DataPenghargaanController@insertDataPenghargaan');
 Route::post('angka-kredit', 'DataAngkaKreditController@insertDataAngkaKredit');
 Route::post('angka-kredit/{id}', 'DataAngkaKreditController@insertDataAngkaKredit');
+Route::post('dokumen-elektronik', 'DataDokumenElektronikController@insertDataDokumenElektronik');
 
 Route::put('data-pribadi/{id}', 'DataPribadiController@updateDataPribadi');
 Route::put('data-cpns-pns/{id}', 'DataCpnsPnsController@updateDataCpnsPns');
@@ -131,6 +132,7 @@ Route::get('jenis-penghargaan', 'DataPenghargaanController@getDaftarJenisPenghar
 Route::get('angka-kredit/created/{idPegawai}', 'DataAngkaKreditController@getDataCreated');
 Route::get('angka-kredit/updated/{idPegawai}/{idUsulan}', 'DataAngkaKreditController@getDataUpdated');
 Route::get('angka-kredit/list/{idPegawai}', 'DataAngkaKreditController@getListDataAngkaKredit');
+Route::get('dokumen-elektronik/created/{idPegawai}', 'DataDokumenElektronikController@getDataCreated');
 
 Route::get('list-pegawai', 'ListPegawaiController@getListPegawai');
 Route::get('total-pegawai', 'ListPegawaiController@getTotalPegawai');
@@ -182,3 +184,14 @@ Route::get('siasn/angka-kredit/riwayat/sync/{idPegawai}', 'ApiSiasnSyncControlle
 // Route::post('jajal/{id}', 'ApiSiasnController@insertRiwayatAngkaKreditASN');
 // Route::get('acc', 'ApiSiasnController@getAllToken');
 // Route::post('jajal-hukdis', 'ApiSiasnController@insertRiwayatHukdisASN');
+/// DATA SKP DAN SKP 2022
+Route::get('siasn/get/skp/{nipBaru}', 'ApiSiasnController@getRiwayatSkpASN');
+
+
+
+/// REST
+// Route::post('create-rest-user', 'RestApiController@createRestUser');
+// Route::get('get-rest-token/{username}', 'RestApiController@getRestTokenAdmin');
+Route::post('rest/login', 'RestApiController@restLogin');
+Route::get('rest/get/dokumen/{namaDokumen}', 'RestApiController@restGetDocument');
+Route::get('rest/get/datapangkat/{nipBaru}/{periode}', 'RestApiToAppPangkatPensiunController@restGet');

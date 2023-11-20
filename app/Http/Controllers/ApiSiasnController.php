@@ -522,22 +522,22 @@ class ApiSiasnController extends Controller
     return json_decode($response, true);
   }
 
-  // function getRiwayatSkp2022ASN(Request $request, $nipBaru) {
-  //   // $authenticated = $this->isAuth($request)['authenticated'];
-  //   // $username = $this->isAuth($request)['username'];
-  //   // if(!$authenticated) return $this->encrypt($username, json_encode([
-  //   //   'message' => $authenticated == true ? 'Authorized' : 'Not Authorized',
-  //   //   'status' => $authenticated === true ? 1 : 0
-  //   // ]));
-  //   $token = $this->getAllToken();
-  //   // format url --> /pns/rw-skp22/{nipBaru}
-  //   $url = $this->initialUrl() . "/pns/rw-skp22/$nipBaru";
-  //   $skp22 = json_decode(Http::withHeaders($token)->get($url, []), true);
-  //   $url = $this->initialUrl() . "/pns/rw-skp/$nipBaru";
-  //   $skp = json_decode(Http::withHeaders($token)->get($url, []), true);
-  //   return [
-  //     'skp' => $skp,
-  //     'skp22' => $skp22
-  //   ];
-  // }
+  function getRiwayatSkpASN(Request $request, $nipBaru) {
+    // $authenticated = $this->isAuth($request)['authenticated'];
+    // $username = $this->isAuth($request)['username'];
+    // if(!$authenticated) return $this->encrypt($username, json_encode([
+    //   'message' => $authenticated == true ? 'Authorized' : 'Not Authorized',
+    //   'status' => $authenticated === true ? 1 : 0
+    // ]));
+    $token = $this->getAllToken();
+    // format url --> /pns/rw-skp22/{nipBaru}
+    $url = $this->initialUrl() . "/pns/rw-skp22/$nipBaru";
+    $skp22 = json_decode(Http::withHeaders($token)->get($url, []), true);
+    $url = $this->initialUrl() . "/pns/rw-skp/$nipBaru";
+    $skp = json_decode(Http::withHeaders($token)->get($url, []), true);
+    return [
+      'skp' => $skp,
+      'skp22' => $skp22
+    ];
+  }
 }

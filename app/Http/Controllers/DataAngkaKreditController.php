@@ -59,7 +59,7 @@ class DataAngkaKreditController extends Controller
       $data = json_decode(DB::table('m_data_angka_kredit')->where([
         ['id', '=', $idUsulan]
       ])->get(), true);
-      $data[0]['dokumen'] = $this->getBlobDokumen($data[0]['idDokumen'], 'kredit', 'pdf');
+      $data[0]['dokumen'] = $this->getBlobDokumen($data[0]['idDokumen'], 'pak', 'pdf');
     }
 
     return $data;
