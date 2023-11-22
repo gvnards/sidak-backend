@@ -108,7 +108,6 @@ class DataDokumenElektronikController extends Controller
       'status' => 2,
       'message' => $data
     ];
-
     return $this->encrypt($username, json_encode($callback));
   }
 }
