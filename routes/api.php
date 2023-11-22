@@ -65,6 +65,7 @@ Route::put('jabatan-detail/{id}', 'JabatanUnitOrganisasiController@updateJabatan
 Route::put('usulan/{id}', 'UsulanController@updateUsulan');
 Route::put('usulan-multiple', 'UsulanController@updateUsulanMultiple');
 Route::put('change-password', 'LoginController@changePassword');
+Route::put('dokumen-elektronik', 'DataDokumenElektronikController@updateDataDokumenElektronik');
 
 Route::get('main-menu', 'MenuController@getMainMenu');
 Route::get('pegawai-menu', 'MenuController@getPegawaiMenu');

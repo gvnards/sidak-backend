@@ -96,6 +96,42 @@ class DataDokumenElektronikController extends Controller
     ];
     return $this->encrypt($username, json_encode($callback));
   }
+  public function updateDataDokumenElektronik(Request $request) {
+    $authenticated = $this->isAuth($request)['authenticated'];
+    $username = $this->isAuth($request)['username'];
+    if(!$authenticated) return $this->encrypt($username, json_encode([
+      'message' => $authenticated == true ? 'Authorized' : 'Not Authorized',
+      'status' => $authenticated === true ? 1 : 0
+    ]));
+    $message = json_decode($this->decrypt($username, $request->message), true);
+
+    $dataDokumen = json_decode(DB::table('m_data_dokumen_elektronik')->join('m_dokumen', 'm_data_dokumen_elektronik.idDokumen', '=', 'm_dokumen.id')->join('m_daftar_dokumen_elektronik', 'm_data_dokumen_elektronik.idDaftarDokEl', '=', 'm_daftar_dokumen_elektronik.id')->where([
+      ['m_data_dokumen_elektronik.idPegawai', '=', intval($message['idPegawai'])],
+      ['m_data_dokumen_elektronik.idDaftarDokEl', '=', intval($message['idDaftarDokumen'])]
+    ])->get([
+      'm_dokumen.*',
+      'm_daftar_dokumen_elektronik.kategori'
+    ]), true)[0];
+
+    // $dokumen = json_decode(DB::table())
+    $this->deleteDokumen(intval($dataDokumen['id']), "elektronik/".$dataDokumen['kategori'], 'pdf', false);
+    $this->uploadDokumen($dataDokumen['nama'],$message['dokumen'], 'pdf', "elektronik/".$dataDokumen['kategori']);
+
+    $affected = DB::table('m_data_dokumen_elektronik')->where([
+      ['m_data_dokumen_elektronik.idPegawai', '=', $message['idPegawai']],
+      ['m_data_dokumen_elektronik.idDaftarDokEl', '=', $message['idDaftarDokumen']]
+    ])->update([
+      'tanggalDokumen' => $message['tanggalDokumen'],
+      'nomorDokumen' => $message['nomorDokumen'],
+      'updated_at' => Carbon::now()->format('Y-m-d H:i:s')
+    ]);
+
+    $callback = [
+      'message' => $affected == 1 ? "Data berhasil diubah." : "Data gagal diubah.",
+      'status' => $affected == 1 ? 2 : 3
+    ];
+    return $this->encrypt($username, json_encode($callback));
+  }
   public function getDataDokumenElektronikDetail(Request $request, $idPegawai, $idDaftarDokumen) {
     $authenticated = $this->isAuth($request)['authenticated'];
     $username = $this->isAuth($request)['username'];

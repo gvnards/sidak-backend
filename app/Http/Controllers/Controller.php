@@ -118,16 +118,18 @@ class Controller extends BaseController
     return $blob;
   }
 
-  function deleteDokumen($idDokumen, $folderDokumen, $ekstensiDokumen) {
+  function deleteDokumen($idDokumen, $folderDokumen, $ekstensiDokumen, $deleteFromDb=true) {
     if ($idDokumen == NULL) return;
     $dokumen = json_decode(DB::table('m_dokumen')->where([
       ['id', '=', $idDokumen]
     ])->get(), true)[0];
     Storage::delete('dokumen/'.$folderDokumen.'/'.$dokumen['nama'].'.'.$ekstensiDokumen);
-    DB::table('m_dokumen')->delete($idDokumen);
-    DB::table('m_dokumen')->where([
-      ['id', '=', $idDokumen]
-    ])->delete();
+    if ($deleteFromDb) {
+      DB::table('m_dokumen')->delete($idDokumen);
+      DB::table('m_dokumen')->where([
+        ['id', '=', $idDokumen]
+      ])->delete();
+    }
   }
 
   function uploadDokumen($namaDokumen, $blobDokumen, $ekstensiDokumen, $folderDokumen) {
