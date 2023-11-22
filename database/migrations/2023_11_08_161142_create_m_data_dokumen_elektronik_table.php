@@ -22,6 +22,8 @@ class CreateMDataDokumenElektronikTable extends Migration
       $table->foreign('idPegawai')->references('id')->on('m_pegawai');
       $table->foreign('idDaftarDokEl')->references('id')->on('m_daftar_dokumen_elektronik');
       $table->foreign('idDokumen')->references('id')->on('m_dokumen');
+      $table->date('tanggalDokumen');
+      $table->string('nomorDokumen', 100);
       $table->timestamps();
     });
   }

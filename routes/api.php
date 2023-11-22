@@ -132,7 +132,8 @@ Route::get('jenis-penghargaan', 'DataPenghargaanController@getDaftarJenisPenghar
 Route::get('angka-kredit/created/{idPegawai}', 'DataAngkaKreditController@getDataCreated');
 Route::get('angka-kredit/updated/{idPegawai}/{idUsulan}', 'DataAngkaKreditController@getDataUpdated');
 Route::get('angka-kredit/list/{idPegawai}', 'DataAngkaKreditController@getListDataAngkaKredit');
-Route::get('dokumen-elektronik/created/{idPegawai}', 'DataDokumenElektronikController@getDataCreated');
+Route::get('dokumen-elektronik/list/{idPegawai}', 'DataDokumenElektronikController@getDataCreated');
+Route::get('dokumen-elektronik/detail/{idPegawai}/{idDaftarDokumen}', 'DataDokumenElektronikController@getDataDokumenElektronikDetail');
 
 Route::get('list-pegawai', 'ListPegawaiController@getListPegawai');
 Route::get('total-pegawai', 'ListPegawaiController@getTotalPegawai');
