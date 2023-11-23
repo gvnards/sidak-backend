@@ -467,12 +467,12 @@ class ApiSiasnController extends Controller
 
   // DATA UTAMA
   function getDataUtamaASN(Request $request, $nipBaru) {
-    $authenticated = $this->isAuth($request)['authenticated'];
-    $username = $this->isAuth($request)['username'];
-    if(!$authenticated) return $this->encrypt($username, json_encode([
-      'message' => $authenticated == true ? 'Authorized' : 'Not Authorized',
-      'status' => $authenticated === true ? 1 : 0
-    ]));
+    // $authenticated = $this->isAuth($request)['authenticated'];
+    // $username = $this->isAuth($request)['username'];
+    // if(!$authenticated) return $this->encrypt($username, json_encode([
+    //   'message' => $authenticated == true ? 'Authorized' : 'Not Authorized',
+    //   'status' => $authenticated === true ? 1 : 0
+    // ]));
     $token = $this->getAllToken();
     // format url --> /pns/data-utama/{nipBaru}
     $url = $this->initialUrl() . "/pns/data-utama/$nipBaru";
