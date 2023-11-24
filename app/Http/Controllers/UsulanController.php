@@ -458,6 +458,7 @@ class UsulanController extends Controller
                 'nomorDokumen' => $value['nomorDokumen'],
                 'tanggalDokumen' => $value['tanggalDokumen'],
                 'idDokumen' => $value['idDokumen'],
+                'idDokumenTranskrip' => $value['idDokumenTranskrip'],
                 'updated_at' => Carbon::now()->format('Y-m-d H:i:s'),
               ]);
             }

@@ -78,6 +78,7 @@ class DataPendidikanController extends Controller
         'm_data_pendidikan.*'
       ]), true);
       $data[0]['dokumen'] = $this->getBlobDokumen($data[0]['idDokumen'], 'pendidikan', 'pdf');
+      $data[0]['dokumenTranskrip'] = $this->getBlobDokumen($data[0]['idDokumenTranskrip'], 'pendidikan', 'pdf');
     }
     $callback = [
       'message' => $data,
