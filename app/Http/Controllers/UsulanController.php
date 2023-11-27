@@ -93,6 +93,17 @@ class UsulanController extends Controller
           'm_status_anak.nama as statusAnak'
         ]), true);
         $data[0]['dokumen'] = $this->getBlobDokumen($data[0]['idDokumen'], $data[0]['idDokumen'] == 1 ? '' :  'anak', 'pdf');
+        if ($data[0]['idDataAnakUpdate'] !== null) {
+          $dataBeforeUpdate = json_decode(DB::table('m_data_anak')->join('m_data_pasangan', 'm_data_anak.idOrangTua', '=', 'm_data_pasangan.id')->join('m_status_anak', 'm_data_anak.idStatusAnak', '=', 'm_status_anak.id')->where([
+            ['m_data_anak.id', '=', $data[0]['idDataAnakUpdate']]
+          ])->get([
+            'm_data_anak.*',
+            'm_data_pasangan.nama as namaOrangTua',
+            'm_status_anak.nama as statusAnak'
+          ]), true);
+          $dataBeforeUpdate[0]['dokumen'] = $this->getBlobDokumen($dataBeforeUpdate[0]['idDokumen'], $dataBeforeUpdate[0]['idDokumen'] == 1 ? '' :  'anak', 'pdf');
+          array_push($data, $dataBeforeUpdate[0]);
+        }
         break;
       case 'Data Pasangan':
         $data = json_decode(DB::table('m_data_pasangan')->join('m_status_perkawinan', 'm_data_pasangan.idStatusPerkawinan', '=', 'm_status_perkawinan.id')->where([
@@ -102,6 +113,16 @@ class UsulanController extends Controller
           'm_status_perkawinan.nama as statusPerkawinan'
         ]), true);
         $data[0]['dokumen'] = $this->getBlobDokumen($data[0]['idDokumen'], $data[0]['idDokumen'] == 1 ? '' :  'pasangan', 'pdf');
+        if ($data[0]['idDataPasanganUpdate'] !== null) {
+          $dataBeforeUpdate = json_decode(DB::table('m_data_pasangan')->join('m_status_perkawinan', 'm_data_pasangan.idStatusPerkawinan', '=', 'm_status_perkawinan.id')->where([
+            ['m_data_pasangan.id', '=', $data[0]['idDataPasanganUpdate']]
+          ])->get([
+            'm_data_pasangan.*',
+            'm_status_perkawinan.nama as statusPerkawinan'
+          ]), true);
+          $dataBeforeUpdate[0]['dokumen'] = $this->getBlobDokumen($dataBeforeUpdate[0]['idDokumen'], $dataBeforeUpdate[0]['idDokumen'] == 1 ? '' :  'pasangan', 'pdf');
+          array_push($data, $dataBeforeUpdate[0]);
+        }
         break;
       case 'Data Pendidikan':
         $data = json_decode(DB::table('m_data_pendidikan')->join('m_jenis_pendidikan', 'm_data_pendidikan.idJenisPendidikan', '=', 'm_jenis_pendidikan.id')->join('m_tingkat_pendidikan', 'm_data_pendidikan.idTingkatPendidikan', '=', 'm_tingkat_pendidikan.id')->join('m_daftar_pendidikan', 'm_data_pendidikan.idDaftarPendidikan', '=', 'm_daftar_pendidikan.id')->where([
@@ -114,6 +135,19 @@ class UsulanController extends Controller
         ]), true);
         $data[0]['dokumen'] = $this->getBlobDokumen($data[0]['idDokumen'], $data[0]['idDokumen'] == 1 ? '' :  'pendidikan', 'pdf');
         $data[0]['dokumenTranskrip'] = $this->getBlobDokumen($data[0]['idDokumenTranskrip'], $data[0]['idDokumenTranskrip'] == 1 || $data[0]['idDokumenTranskrip'] == null ? '' :  'pendidikan', 'pdf');
+        if ($data[0]['idDataPendidikanUpdate'] !== null) {
+          $dataBeforeUpdate = json_decode(DB::table('m_data_pendidikan')->join('m_jenis_pendidikan', 'm_data_pendidikan.idJenisPendidikan', '=', 'm_jenis_pendidikan.id')->join('m_tingkat_pendidikan', 'm_data_pendidikan.idTingkatPendidikan', '=', 'm_tingkat_pendidikan.id')->join('m_daftar_pendidikan', 'm_data_pendidikan.idDaftarPendidikan', '=', 'm_daftar_pendidikan.id')->where([
+            ['m_data_pendidikan.id', '=', $data[0]['idDataPendidikanUpdate']]
+          ])->get([
+            'm_data_pendidikan.*',
+            'm_jenis_pendidikan.nama as jenisPendidikan',
+            'm_tingkat_pendidikan.nama as tingkatPendidikan',
+            'm_daftar_pendidikan.nama as pendidikan'
+          ]), true);
+          $dataBeforeUpdate[0]['dokumen'] = $this->getBlobDokumen($dataBeforeUpdate[0]['idDokumen'], $dataBeforeUpdate[0]['idDokumen'] == 1 ? '' :  'pendidikan', 'pdf');
+          $dataBeforeUpdate[0]['dokumenTranskrip'] = $this->getBlobDokumen($dataBeforeUpdate[0]['idDokumenTranskrip'], $dataBeforeUpdate[0]['idDokumenTranskrip'] == 1 || $dataBeforeUpdate[0]['idDokumenTranskrip'] == null ? '' :  'pendidikan', 'pdf');
+          array_push($data, $dataBeforeUpdate[0]);
+        }
         break;
       case 'Data Jabatan':
         $unitOrganisasi = [];
@@ -142,6 +176,35 @@ class UsulanController extends Controller
           array_push($data, $val);
         }
         $data[0]['dokumen'] = $this->getBlobDokumen($data[0]['idDokumen'], $data[0]['idDokumen'] == 1 ? '' : 'jabatan', 'pdf');
+        if ($data[0]['idDataJabatanUpdate'] !== null) {
+          $unitOrganisasi = [];
+          $kodeKomponen = [];
+          $data_ = DB::table('m_data_jabatan')->join('m_jabatan', 'm_data_jabatan.idJabatan', '=', 'm_jabatan.id')->leftJoin('m_jabatan_tugas_tambahan', 'm_data_jabatan.idJabatanTugasTambahan', '=', 'm_jabatan_tugas_tambahan.id')->where([
+            ['m_data_jabatan.id', '=', $data[0]['idDataJabatanUpdate']]
+          ])->get([
+            'm_data_jabatan.*',
+            'm_jabatan.kodeKomponen as kodeKomponen',
+            'm_jabatan.nama as jabatan',
+            'm_jabatan_tugas_tambahan.nama as tugasTambahan'
+          ]);
+          foreach(json_decode($data_, true) as $key => $value) {
+            $kodeKomponen = explode(".",$value['kodeKomponen']);
+          }
+          for($i=0; $i<count($kodeKomponen); $i++) {
+            if($kodeKomponen[$i] != '431') {
+              array_push($unitOrganisasi, join(".", array_slice($kodeKomponen, 0, $i+1)));
+            }
+          }
+          $unitOrganisasi = DB::table('m_unit_organisasi')->whereIn('kodeKomponen', $unitOrganisasi)->get('nama as unitOrganisasi');
+          $dataBeforeUpdate = [];
+          foreach(json_decode($data_, true) as $key => $value) {
+            $val = $value;
+            $val['unitOrganisasi'] = $unitOrganisasi;
+            array_push($dataBeforeUpdate, $val);
+          }
+          $dataBeforeUpdate[0]['dokumen'] = $this->getBlobDokumen($dataBeforeUpdate[0]['idDokumen'], $dataBeforeUpdate[0]['idDokumen'] == 1 ? '' : 'jabatan', 'pdf');
+          array_push($data, $dataBeforeUpdate[0]);
+        }
         break;
       case 'Data Pangkat':
         $data = json_decode(DB::table('m_data_pangkat')->join('m_jenis_pangkat', 'm_data_pangkat.idJenisPangkat', '=', 'm_jenis_pangkat.id')->join('m_daftar_pangkat', 'm_data_pangkat.idDaftarPangkat', '=', 'm_daftar_pangkat.id')->where([
@@ -153,6 +216,18 @@ class UsulanController extends Controller
           'm_daftar_pangkat.pangkat as pangkat'
         ]), true);
         $data[0]['dokumen'] = $this->getBlobDokumen($data[0]['idDokumen'], $data[0]['idDokumen'] == 1 ? '' : 'pangkat', 'pdf');
+        if ($data[0]['idDataPangkatUpdate'] !== null) {
+          $dataBeforeUpdate = json_decode(DB::table('m_data_pangkat')->join('m_jenis_pangkat', 'm_data_pangkat.idJenisPangkat', '=', 'm_jenis_pangkat.id')->join('m_daftar_pangkat', 'm_data_pangkat.idDaftarPangkat', '=', 'm_daftar_pangkat.id')->where([
+            ['m_data_pangkat.id', '=', $data[0]['idDataPangkatUpdate']]
+          ])->get([
+            'm_data_pangkat.*',
+            'm_jenis_pangkat.nama as jenisPangkat',
+            'm_daftar_pangkat.golongan as golongan',
+            'm_daftar_pangkat.pangkat as pangkat'
+          ]), true);
+          $dataBeforeUpdate[0]['dokumen'] = $this->getBlobDokumen($dataBeforeUpdate[0]['idDokumen'], $dataBeforeUpdate[0]['idDokumen'] == 1 ? '' : 'pangkat', 'pdf');
+          array_push($data, $dataBeforeUpdate[0]);
+        }
         break;
       case 'Data Diklat':
         $data = json_decode(DB::table('m_data_diklat')->join('m_jenis_diklat', 'm_data_diklat.idJenisDiklat', '=', 'm_jenis_diklat.id')->join('m_daftar_diklat', 'm_data_diklat.idDaftarDiklat', '=', 'm_daftar_diklat.id')->join('m_daftar_instansi_diklat', 'm_data_diklat.idDaftarInstansiDiklat', '=', 'm_daftar_instansi_diklat.id')->where([
@@ -164,6 +239,18 @@ class UsulanController extends Controller
           'm_daftar_diklat.nama as diklat',
         ]), true);
         $data[0]['dokumen'] = $this->getBlobDokumen($data[0]['idDokumen'], $data[0]['idDokumen'] == 1 ? '' : 'diklat', 'pdf');
+        if ($data[0]['idDataDiklatUpdate'] !== null) {
+          $dataBeforeUpdate = json_decode(DB::table('m_data_diklat')->join('m_jenis_diklat', 'm_data_diklat.idJenisDiklat', '=', 'm_jenis_diklat.id')->join('m_daftar_diklat', 'm_data_diklat.idDaftarDiklat', '=', 'm_daftar_diklat.id')->join('m_daftar_instansi_diklat', 'm_data_diklat.idDaftarInstansiDiklat', '=', 'm_daftar_instansi_diklat.id')->where([
+            ['m_data_diklat.id', '=', $data[0]['idDataDiklatUpdate']]
+          ])->get([
+            'm_data_diklat.*',
+            'm_daftar_instansi_diklat.nama as instansi',
+            'm_jenis_diklat.nama as jenisDiklat',
+            'm_daftar_diklat.nama as diklat',
+          ]), true);
+          $dataBeforeUpdate[0]['dokumen'] = $this->getBlobDokumen($dataBeforeUpdate[0]['idDokumen'], $dataBeforeUpdate[0]['idDokumen'] == 1 ? '' :  'diklat', 'pdf');
+          array_push($data, $dataBeforeUpdate[0]);
+        }
         break;
       case 'Data SKP':
         $data = json_decode(DB::table('m_data_skp')->join('m_jenis_jabatan', 'm_data_skp.idJenisJabatan', '=', 'm_jenis_jabatan.id')->join('m_jenis_peraturan_kinerja', 'm_data_skp.idJenisPeraturanKinerja', '=', 'm_jenis_peraturan_kinerja.id')->join('m_status_pejabat_atasan_penilai as status_pejabat_penilai', 'm_data_skp.idStatusPejabatPenilai', '=', 'status_pejabat_penilai.id')->join('m_status_pejabat_atasan_penilai as status_atasan_pejabat_penilai', 'm_data_skp.idStatusAtasanPejabatPenilai', '=', 'status_atasan_pejabat_penilai.id')->where([
@@ -175,7 +262,20 @@ class UsulanController extends Controller
           'status_pejabat_penilai.nama as statusPejabatPenilai',
           'status_atasan_pejabat_penilai.nama as statusAtasanPejabatPenilai'
         ]), true);
-        $data[0]['dokumen'] = $this->getBlobDokumen($data[0]['idDokumen'], $data[0]['idDokumen'] == 1 ? '' :  'jabatan', 'pdf');
+        $data[0]['dokumen'] = $this->getBlobDokumen($data[0]['idDokumen'], $data[0]['idDokumen'] == 1 ? '' :  'skp', 'pdf');
+        if ($data[0]['idDataSkpUpdate'] !== null) {
+          $dataBeforeUpdate = json_decode(DB::table('m_data_skp')->join('m_jenis_jabatan', 'm_data_skp.idJenisJabatan', '=', 'm_jenis_jabatan.id')->join('m_jenis_peraturan_kinerja', 'm_data_skp.idJenisPeraturanKinerja', '=', 'm_jenis_peraturan_kinerja.id')->join('m_status_pejabat_atasan_penilai as status_pejabat_penilai', 'm_data_skp.idStatusPejabatPenilai', '=', 'status_pejabat_penilai.id')->join('m_status_pejabat_atasan_penilai as status_atasan_pejabat_penilai', 'm_data_skp.idStatusAtasanPejabatPenilai', '=', 'status_atasan_pejabat_penilai.id')->where([
+            ['m_data_skp.id', '=', $data[0]['idDataSkpUpdate']]
+          ])->get([
+            'm_data_skp.*',
+            'm_jenis_jabatan.nama as jenisJabatan',
+            'm_jenis_peraturan_kinerja.nama as peraturanKinerja',
+            'status_pejabat_penilai.nama as statusPejabatPenilai',
+            'status_atasan_pejabat_penilai.nama as statusAtasanPejabatPenilai'
+          ]), true);
+          $dataBeforeUpdate[0]['dokumen'] = $this->getBlobDokumen($dataBeforeUpdate[0]['idDokumen'], $dataBeforeUpdate[0]['idDokumen'] == 1 ? '' :  'skp', 'pdf');
+          array_push($data, $dataBeforeUpdate[0]);
+        }
         break;
       case 'Data Penghargaan':
         $data = json_decode(DB::table('m_data_penghargaan')->join('m_daftar_jenis_penghargaan', 'm_data_penghargaan.idDaftarJenisPenghargaan', '=', 'm_daftar_jenis_penghargaan.id')->where([
@@ -185,6 +285,16 @@ class UsulanController extends Controller
           'm_daftar_jenis_penghargaan.jenisPenghargaan as jenisPenghargaan'
         ]), true);
         $data[0]['dokumen'] = $this->getBlobDokumen($data[0]['idDokumen'], $data[0]['idDokumen'] == 1 ? '' :  'penghargaan', 'pdf');
+        if ($data[0]['idDataPenghargaanUpdate'] !== null) {
+          $dataBeforeUpdate = json_decode(DB::table('m_data_penghargaan')->join('m_daftar_jenis_penghargaan', 'm_data_penghargaan.idDaftarJenisPenghargaan', '=', 'm_daftar_jenis_penghargaan.id')->where([
+            ['m_data_penghargaan.id', '=', $data[0]['idDataPenghargaanUpdate']]
+          ])->get([
+            'm_data_penghargaan.*',
+            'm_daftar_jenis_penghargaan.jenisPenghargaan as jenisPenghargaan'
+          ]), true);
+          $dataBeforeUpdate[0]['dokumen'] = $this->getBlobDokumen($dataBeforeUpdate[0]['idDokumen'], $dataBeforeUpdate[0]['idDokumen'] == 1 ? '' :  'penghargaan', 'pdf');
+          array_push($data, $dataBeforeUpdate[0]);
+        }
         break;
       case 'Data Angka Kredit':
         $data = json_decode(DB::table('m_data_angka_kredit')->join('m_daftar_jenis_angka_kredit', 'm_data_angka_kredit.idDaftarJenisAngkaKredit', '=', 'm_daftar_jenis_angka_kredit.id')->join('m_data_jabatan', 'm_data_angka_kredit.idDataJabatan', '=', 'm_data_jabatan.id')->join('m_jabatan', 'm_data_jabatan.idJabatan', '=', 'm_jabatan.id')->where([
@@ -195,6 +305,17 @@ class UsulanController extends Controller
           'm_jabatan.nama as jabatan'
         ]), true);
         $data[0]['dokumen'] = $this->getBlobDokumen($data[0]['idDokumen'], $data[0]['idDokumen'] == 1 ? '' :  'pak', 'pdf');
+        if ($data[0]['idDataAngkaKreditUpdate'] !== null) {
+          $dataBeforeUpdate = json_decode(DB::table('m_data_angka_kredit')->join('m_daftar_jenis_angka_kredit', 'm_data_angka_kredit.idDaftarJenisAngkaKredit', '=', 'm_daftar_jenis_angka_kredit.id')->join('m_data_jabatan', 'm_data_angka_kredit.idDataJabatan', '=', 'm_data_jabatan.id')->join('m_jabatan', 'm_data_jabatan.idJabatan', '=', 'm_jabatan.id')->where([
+            ['m_data_angka_kredit.id', '=', $data[0]['idDataAngkaKreditUpdate']]
+          ])->get([
+            'm_data_angka_kredit.*',
+            'm_daftar_jenis_angka_kredit.jenisAngkaKredit as jenisAngkaKredit',
+            'm_jabatan.nama as jabatan'
+          ]), true);
+          $dataBeforeUpdate[0]['dokumen'] = $this->getBlobDokumen($dataBeforeUpdate[0]['idDokumen'], $dataBeforeUpdate[0]['idDokumen'] == 1 ? '' :  'pak', 'pdf');
+          array_push($data, $dataBeforeUpdate[0]);
+        }
         break;
       default:
         return $this->encrypt($username, json_encode([
