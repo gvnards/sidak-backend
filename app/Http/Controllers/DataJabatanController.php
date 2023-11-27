@@ -48,6 +48,7 @@ class DataJabatanController extends Controller
       'message' => $authenticated == true ? 'Authorized' : 'Not Authorized',
       'status' => $authenticated === true ? 1 : 0
     ]));
+    $message = json_decode($this->decrypt($username, $request->message), true);
     if ($id !== NULL) {
       $countIsAny = count(json_decode(DB::table('m_data_jabatan')->where([
         ['idDataJabatanUpdate', '=', $id],
@@ -59,8 +60,20 @@ class DataJabatanController extends Controller
           'status' => 3
         ]));
       }
+    } else {
+      // check ketika sudah ada data yg ditambahkan dan belum diapprove, return info tunggu disahkan
+      $countIsAny = count(json_decode(DB::table('m_data_jabatan')->where([
+        ['m_data_jabatan.idPegawai', '=', intval($message['idPegawai'])],
+        ['m_data_jabatan.idUsulan', '=', 1],
+        ['m_data_jabatan.idUsulanHasil', '=', 3]
+      ])->get()));
+      if ($countIsAny > 0) {
+        return $this->encrypt($username, json_encode([
+          'message' => "Maaf, Data Jabatan sudah ada yang ditambahkan tetapi belum diverifikasi.\nSilahkan menunggu data terverifikasi terlebih dahulu.",
+          'status' => 3
+        ]));
+      }
     }
-    $message = json_decode($this->decrypt($username, $request->message), true);
     $jabatanCount = json_decode(DB::table('m_jabatan')->where([
       ['id', '=', $message['idJabatan']],
       ['kodeKomponen', '=', $message['kodeKomponen']]

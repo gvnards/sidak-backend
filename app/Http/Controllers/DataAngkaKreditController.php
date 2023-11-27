@@ -142,6 +142,8 @@ class DataAngkaKreditController extends Controller
       'message' => $authenticated == true ? 'Authorized' : 'Not Authorized',
       'status' => $authenticated === true ? 1 : 0
     ]));
+
+    $message = json_decode($this->decrypt($username, $request->message), true);
     if ($id !== NULL) {
       $countIsAny = count(json_decode(DB::table('m_data_angka_kredit')->where([
         ['idDataAngkaKreditUpdate', '=', $id],
@@ -153,9 +155,20 @@ class DataAngkaKreditController extends Controller
           'status' => 3
         ]));
       }
+    } else {
+      // check ketika sudah ada data yg ditambahkan dan belum diapprove, return info tunggu disahkan
+      $countIsAny = count(json_decode(DB::table('m_data_angka_kredit')->where([
+        ['m_data_angka_kredit.idPegawai', '=', intval($message['idPegawai'])],
+        ['m_data_angka_kredit.idUsulan', '=', 1],
+        ['m_data_angka_kredit.idUsulanHasil', '=', 3]
+      ])->get()));
+      if ($countIsAny > 0) {
+        return $this->encrypt($username, json_encode([
+          'message' => "Maaf, Data Angka Kredit sudah ada yang ditambahkan tetapi belum diverifikasi.\nSilahkan menunggu data terverifikasi terlebih dahulu.",
+          'status' => 3
+        ]));
+      }
     }
-
-    $message = json_decode($this->decrypt($username, $request->message), true);
 
     $nip_ = DB::table('m_pegawai')->where([['id', '=', $message['idPegawai']]])->get();
     foreach ($nip_ as $key => $value) {
