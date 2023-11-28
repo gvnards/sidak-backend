@@ -30,6 +30,7 @@ class DataJabatanController extends Controller
         ['m_data_jabatan.id', '=', $idDataJabatan],
       ])->get([
         'm_data_jabatan.*',
+        'm_jabatan.nama as jabatan',
         'm_jabatan.kodeKomponen as kodeKomponen'
       ]), true);
       $data[0]['dokumen'] = $this->getBlobDokumen($data[0]['idDokumen'], 'jabatan', 'pdf');
