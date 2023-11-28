@@ -23,6 +23,7 @@ class DataJabatanController extends Controller
       ])->orderBy('m_data_jabatan.tmt', 'desc')->get([
         'm_data_jabatan.id as id',
         'm_jabatan.nama as jabatan',
+        'm_jabatan.kodeKomponen as kodeKomponen',
         'm_jenis_jabatan.nama as jenisJabatan'
       ]);
     } else {
@@ -31,7 +32,8 @@ class DataJabatanController extends Controller
       ])->get([
         'm_data_jabatan.*',
         'm_jabatan.nama as jabatan',
-        'm_jabatan.kodeKomponen as kodeKomponen'
+        'm_jabatan.kodeKomponen as kodeKomponen',
+        'm_unit_organisasi.nama as unitOrganisasi'
       ]), true);
       $data[0]['dokumen'] = $this->getBlobDokumen($data[0]['idDokumen'], 'jabatan', 'pdf');
     }

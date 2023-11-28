@@ -693,6 +693,16 @@ class UsulanController extends Controller
             ])->get()->toJson(), true)[0];
             (new ApiSiasnController)->insertDokumenRiwayat($request, $response['mapData']['rwJabatanId'], 872, 'jabatan', $dokumen['nama'], 'pdf');
           }
+        } else if (intval($usulan['idUsulan']) === 2 && intval($message['idUsulanHasil']) == 1) {
+          $checkData = json_decode(DB::table('m_data_jabatan')->where([
+            ['id', '=', $idUsulan]
+          ])->get(), true);
+          $checkData = json_decode(DB::table('m_data_jabatan')->join('m_jabatan', 'm_data_jabatan.idJabatan', '=', 'm_jabatan.id')->where([
+            ['m_data_jabatan.id', '=', $checkData[0]['idDataJabatanUpdate']]
+          ])->get(['m_jabatan.*']), true);
+          // if (str_contains($checkData[0]['kodeKomponen'], '-')) {
+            $response = (new ApiSiasnSyncController)->insertRiwayatJabatan($request, $idUsulan);
+          // }
         }
         $newData = json_decode(DB::table('m_data_jabatan')->where('id', '=', $idUsulan)->get(), true);
         $idUpdate = $newData[0]['idDataJabatanUpdate'];
