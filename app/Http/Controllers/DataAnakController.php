@@ -8,14 +8,14 @@ use Illuminate\Support\Facades\DB;
 
 class DataAnakController extends Controller
 {
-  public function getDataAnak($idPegawai, $idDataAnak=null, Request $request) {
-    $authenticated = $this->isAuth($request)['authenticated'];
-    $username = $this->isAuth($request)['username'];
-    if(!$authenticated) return $this->encrypt($username, json_encode([
-      'message' => $authenticated == true ? 'Authorized' : 'Not Authorized',
-      'status' => $authenticated === true ? 1 : 0
-    ]));
+  public function getDataAnak(Request $request, $idPegawai, $idDataAnak=null) {
     if($idDataAnak === null) {
+      $authenticated = $this->isAuth($request)['authenticated'];
+      $username = $this->isAuth($request)['username'];
+      if(!$authenticated) return $this->encrypt($username, json_encode([
+        'message' => $authenticated == true ? 'Authorized' : 'Not Authorized',
+        'status' => $authenticated === true ? 1 : 0
+      ]));
       $data = DB::table('m_pegawai')->join('m_data_anak', 'm_pegawai.id', '=', 'm_data_anak.idPegawai')->join('m_status_anak', 'm_data_anak.idStatusAnak', '=', 'm_status_anak.id')->whereIn('m_data_anak.idUsulanStatus', [3, 4])->where([
         ['m_pegawai.id', '=', $idPegawai],
         ['m_data_anak.idUsulanHasil', '=', 1],
@@ -32,6 +32,7 @@ class DataAnakController extends Controller
         'm_data_anak.*'
       ]), true);
       $data[0]['dokumen'] = $this->getBlobDokumen($data[0]['idDokumen'], 'anak', 'pdf');
+      return $data;
     }
     $callback = [
       'message' => $data,
@@ -40,43 +41,21 @@ class DataAnakController extends Controller
     return $this->encrypt($username, json_encode($callback));
   }
 
-  public function getStatusAnak(Request $request) {
-    $authenticated = $this->isAuth($request)['authenticated'];
-    $username = $this->isAuth($request)['username'];
-    if(!$authenticated) return $this->encrypt($username, json_encode([
-      'message' => $authenticated == true ? 'Authorized' : 'Not Authorized',
-      'status' => $authenticated === true ? 1 : 0
-    ]));
-    $data = DB::table('m_status_anak')->get();
-    $callback = [
-      'message' => $data,
-      'status' => 2
-    ];
-    return $this->encrypt($username, json_encode($callback));
+  public function getStatusAnak() {
+    $data = json_decode(DB::table('m_status_anak')->get(), true);
+    return $data;
   }
 
-  public function getDataOrangTua($idPegawai, Request $request) {
-    $authenticated = $this->isAuth($request)['authenticated'];
-    $username = $this->isAuth($request)['username'];
-    if(!$authenticated) return $this->encrypt($username, json_encode([
-      'message' => $authenticated == true ? 'Authorized' : 'Not Authorized',
-      'status' => $authenticated === true ? 1 : 0
-    ]));
-
-    $data = DB::table('m_pegawai')->join('m_data_pasangan', 'm_pegawai.id', '=', 'm_data_pasangan.idPegawai')->join('m_status_perkawinan', 'm_data_pasangan.idStatusPerkawinan', '=', 'm_status_perkawinan.id')->whereIn('m_data_pasangan.idUsulanStatus', [3, 4])->where([
+  public function getDataOrangTua($idPegawai) {
+    $data = json_decode(DB::table('m_pegawai')->join('m_data_pasangan', 'm_pegawai.id', '=', 'm_data_pasangan.idPegawai')->join('m_status_perkawinan', 'm_data_pasangan.idStatusPerkawinan', '=', 'm_status_perkawinan.id')->whereIn('m_data_pasangan.idUsulanStatus', [3, 4])->where([
       ['m_pegawai.id', '=', $idPegawai],
       ['m_data_pasangan.idUsulan', '=', 1],
       ['m_data_pasangan.idUsulanHasil', '=', 1],
     ])->get([
       'm_data_pasangan.id',
       'm_data_pasangan.nama',
-    ]);
-
-    $callback = [
-      'message' => $data,
-      'status' => 2
-    ];
-    return $this->encrypt($username, json_encode($callback));
+    ]), true);
+    return $data;
   }
 
   public function insertDataAnak($id=NULL, Request $request) {
@@ -148,6 +127,54 @@ class DataAnakController extends Controller
       'message' => $data == 1 ? "Data berhasil diusulkan untuk $method.\nSilahkan cek status usulan secara berkala pada Menu Usulan." : "Data gagal diusulkan untuk $method.",
       'status' => $data == 1 ? 2 : 3
     ];
+    return $this->encrypt($username, json_encode($callback));
+  }
+
+  public function getDataAnakCreated(Request $request, $idPegawai) {
+    $authenticated = $this->isAuth($request)['authenticated'];
+    $username = $this->isAuth($request)['username'];
+    if(!$authenticated) return $this->encrypt($username, json_encode([
+      'message' => $authenticated == true ? 'Authorized' : 'Not Authorized',
+      'status' => $authenticated === true ? 1 : 0
+    ]));
+
+    $dataOrangTua = $this->getDataOrangTua($idPegawai);
+    $dataStatusAnak = $this->getStatusAnak();
+    $dokumenKategori = (new DokumenController)->getDocumentCategory('kelahiran anak');
+    $callback = [
+      'message' => [
+        'dataOrangTua' => $dataOrangTua,
+        'dataStatusAnak' => $dataStatusAnak,
+        'dokumenKategori' => $dokumenKategori
+      ],
+      'status' => 2
+    ];
+
+    return $this->encrypt($username, json_encode($callback));
+  }
+
+  public function getDataAnakDetail(Request $request, $idPegawai, $idDataAnak) {
+    $authenticated = $this->isAuth($request)['authenticated'];
+    $username = $this->isAuth($request)['username'];
+    if(!$authenticated) return $this->encrypt($username, json_encode([
+      'message' => $authenticated == true ? 'Authorized' : 'Not Authorized',
+      'status' => $authenticated === true ? 1 : 0
+    ]));
+
+    $dataOrangTua = $this->getDataOrangTua($idPegawai);
+    $dataStatusAnak = $this->getStatusAnak();
+    $dokumenKategori = (new DokumenController)->getDocumentCategory('kelahiran anak');
+    $dataAnak = $this->getDataAnak($request, $idPegawai, $idDataAnak);
+    $callback = [
+      'message' => [
+        'dataOrangTua' => $dataOrangTua,
+        'dataStatusAnak' => $dataStatusAnak,
+        'dokumenKategori' => $dokumenKategori,
+        'dataAnak' => $dataAnak
+      ],
+      'status' => 2
+    ];
+
     return $this->encrypt($username, json_encode($callback));
   }
 }
