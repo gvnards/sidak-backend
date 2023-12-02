@@ -8,43 +8,23 @@ use Illuminate\Support\Facades\DB;
 
 class DataGolonganPangkatController extends Controller
 {
-  public function getJenisGolPang(Request $request) {
-    $authenticated = $this->isAuth($request)['authenticated'];
-    $username = $this->isAuth($request)['username'];
-    if(!$authenticated) return $this->encrypt($username, json_encode([
-      'message' => $authenticated == true ? 'Authorized' : 'Not Authorized',
-      'status' => $authenticated === true ? 1 : 0
-    ]));
+  public function getJenisGolPang() {
     $data = DB::table('m_jenis_pangkat')->get();
-    $callback = [
-      'message' => $data,
-      'status' => 2
-    ];
-    return $this->encrypt($username, json_encode($callback));
+    return $data;
   }
-  public function getDaftarGolPang(Request $request) {
-    $authenticated = $this->isAuth($request)['authenticated'];
-    $username = $this->isAuth($request)['username'];
-    if(!$authenticated) return $this->encrypt($username, json_encode([
-      'message' => $authenticated == true ? 'Authorized' : 'Not Authorized',
-      'status' => $authenticated === true ? 1 : 0
-    ]));
+  public function getDaftarGolPang() {
     $data = DB::table('m_daftar_pangkat')->get();
-    $callback = [
-      'message' => $data,
-      'status' => 2
-    ];
-    return $this->encrypt($username, json_encode($callback));
+    return $data;
   }
 
-  public function getDataGolPang($idPegawai, $idDataGolPang=null, Request $request) {
-    $authenticated = $this->isAuth($request)['authenticated'];
-    $username = $this->isAuth($request)['username'];
-    if(!$authenticated) return $this->encrypt($username, json_encode([
-      'message' => $authenticated == true ? 'Authorized' : 'Not Authorized',
-      'status' => $authenticated === true ? 1 : 0
-    ]));
+  public function getDataGolPang(Request $request, $idPegawai, $idDataGolPang=null) {
     if($idDataGolPang === null) {
+      $authenticated = $this->isAuth($request)['authenticated'];
+      $username = $this->isAuth($request)['username'];
+      if(!$authenticated) return $this->encrypt($username, json_encode([
+        'message' => $authenticated == true ? 'Authorized' : 'Not Authorized',
+        'status' => $authenticated === true ? 1 : 0
+      ]));
       $data = DB::table('m_pegawai')->join('m_data_pangkat', 'm_pegawai.id', '=', 'm_data_pangkat.idPegawai')->join('m_daftar_pangkat', 'm_data_pangkat.idDaftarPangkat', '=', 'm_daftar_pangkat.id')->whereIn('m_data_pangkat.idUsulanStatus', [3, 4])->where([
         ['m_pegawai.id', '=', $idPegawai],
         ['m_data_pangkat.idUsulanHasil', '=', 1],
@@ -61,6 +41,7 @@ class DataGolonganPangkatController extends Controller
         'm_data_pangkat.*'
       ]), true);
       $data[0]['dokumen'] = $this->getBlobDokumen($data[0]['idDokumen'], 'pangkat', 'pdf');
+      return $data[0];
     }
     $callback = [
       'message' => $data,
@@ -126,6 +107,50 @@ class DataGolonganPangkatController extends Controller
     $callback = [
       'message' => $data == 1 ? "Data berhasil diusulkan untuk $method.\nSilahkan cek status usulan secara berkala pada Menu Usulan." : "Data gagal diusulkan untuk $method.",
       'status' => $data == 1 ? 2 : 3
+    ];
+    return $this->encrypt($username, json_encode($callback));
+  }
+
+  public function getDataGolPangCreated(Request $request) {
+    $authenticated = $this->isAuth($request)['authenticated'];
+    $username = $this->isAuth($request)['username'];
+    if(!$authenticated) return $this->encrypt($username, json_encode([
+      'message' => $authenticated == true ? 'Authorized' : 'Not Authorized',
+      'status' => $authenticated === true ? 1 : 0
+    ]));
+    $jenisGolonganPangkat = $this->getJenisGolPang();
+    $daftarGolonganPangkat = $this->getDaftarGolPang();
+    $dokumenKategori = (new DokumenController)->getDocumentCategory('pangkat');
+    $callback = [
+      'message' => [
+        'jenisGolonganPangkat' => $jenisGolonganPangkat,
+        'daftarGolonganPangkat' => $daftarGolonganPangkat,
+        'dokumenKategori' => $dokumenKategori
+      ],
+      'status' => 2
+    ];
+    return $this->encrypt($username, json_encode($callback));
+  }
+
+  public function getDataGolPangDetail(Request $request, $idPegawai, $idDataGolPang) {
+    $authenticated = $this->isAuth($request)['authenticated'];
+    $username = $this->isAuth($request)['username'];
+    if(!$authenticated) return $this->encrypt($username, json_encode([
+      'message' => $authenticated == true ? 'Authorized' : 'Not Authorized',
+      'status' => $authenticated === true ? 1 : 0
+    ]));
+    $jenisGolonganPangkat = $this->getJenisGolPang();
+    $daftarGolonganPangkat = $this->getDaftarGolPang();
+    $dokumenKategori = (new DokumenController)->getDocumentCategory('pangkat');
+    $dataGolonganPangkat = $this->getDataGolPang($request, $idPegawai, $idDataGolPang);
+    $callback = [
+      'message' => [
+        'jenisGolonganPangkat' => $jenisGolonganPangkat,
+        'daftarGolonganPangkat' => $daftarGolonganPangkat,
+        'dataGolonganPangkat' => $dataGolonganPangkat,
+        'dokumenKategori' => $dokumenKategori
+      ],
+      'status' => 2
     ];
     return $this->encrypt($username, json_encode($callback));
   }

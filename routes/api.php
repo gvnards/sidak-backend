@@ -95,10 +95,9 @@ Route::get('jabatan/{kodeKomponen}', 'JabatanUnitOrganisasiController@getJabatan
 Route::get('jabatan-detail/{idJabatan}', 'JabatanUnitOrganisasiController@getJabatanDetail');
 Route::get('jabatan-all-group/{kodeKomponen}', 'JabatanUnitOrganisasiController@getJabatanAllGroup');
 Route::get('tugas-tambahan', 'JabatanUnitOrganisasiController@getTugasTambahan');
-Route::get('jenis-golpang', 'DataGolonganPangkatController@getJenisGolPang');
-Route::get('daftar-golpang', 'DataGolonganPangkatController@getDaftarGolPang');
+Route::get('data-golpang/created', 'DataGolonganPangkatController@getDataGolPangCreated');
 Route::get('data-golpang/{idPegawai}', 'DataGolonganPangkatController@getDataGolPang');
-Route::get('data-golpang/{idPegawai}/{id}', 'DataGolonganPangkatController@getDataGolPang');
+Route::get('data-golpang/detail/{idPegawai}/{id}', 'DataGolonganPangkatController@getDataGolPangDetail');
 Route::get('data-skp/{idPegawai}', 'DataSkpController@getDataSkp');
 Route::get('data-skp/{idPegawai}/{id}', 'DataSkpController@getDataSkp');
 Route::get('jenis-jabatan', 'DataSkpController@getJenisJabatan');
