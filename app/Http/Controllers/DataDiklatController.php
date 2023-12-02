@@ -8,59 +8,29 @@ use Illuminate\Support\Facades\DB;
 
 class DataDiklatController extends Controller
 {
-  public function getJenisDiklat(Request $request) {
-    $authenticated = $this->isAuth($request)['authenticated'];
-    $username = $this->isAuth($request)['username'];
-    if(!$authenticated) return $this->encrypt($username, json_encode([
-      'message' => $authenticated == true ? 'Authorized' : 'Not Authorized',
-      'status' => $authenticated === true ? 1 : 0
-    ]));
+  public function getJenisDiklat() {
     $data = DB::table('m_jenis_diklat')->get();
-    $callback = [
-      'message' => $data,
-      'status' => 2
-    ];
-    return $this->encrypt($username, json_encode($callback));
+    return $data;
   }
 
-  public function getDaftarDiklat(Request $request) {
-    $authenticated = $this->isAuth($request)['authenticated'];
-    $username = $this->isAuth($request)['username'];
-    if(!$authenticated) return $this->encrypt($username, json_encode([
-      'message' => $authenticated == true ? 'Authorized' : 'Not Authorized',
-      'status' => $authenticated === true ? 1 : 0
-    ]));
+  public function getDaftarDiklat() {
     $data = DB::table('m_daftar_diklat')->get();
-    $callback = [
-      'message' => $data,
-      'status' => 2
-    ];
-    return $this->encrypt($username, json_encode($callback));
+    return $data;
   }
 
-  public function getDaftarInstansiDiklat(Request $request) {
-    $authenticated = $this->isAuth($request)['authenticated'];
-    $username = $this->isAuth($request)['username'];
-    if(!$authenticated) return $this->encrypt($username, json_encode([
-      'message' => $authenticated == true ? 'Authorized' : 'Not Authorized',
-      'status' => $authenticated === true ? 1 : 0
-    ]));
+  public function getDaftarInstansiDiklat() {
     $data = DB::table('m_daftar_instansi_diklat')->get();
-    $callback = [
-      'message' => $data,
-      'status' => 2
-    ];
-    return $this->encrypt($username, json_encode($callback));
+    return $data;
   }
 
-  public function getDataDiklat($idPegawai, $idDataDiklat=null, Request $request) {
-    $authenticated = $this->isAuth($request)['authenticated'];
-    $username = $this->isAuth($request)['username'];
-    if(!$authenticated) return $this->encrypt($username, json_encode([
-      'message' => $authenticated == true ? 'Authorized' : 'Not Authorized',
-      'status' => $authenticated === true ? 1 : 0
-    ]));
+  public function getDataDiklat(Request $request, $idPegawai, $idDataDiklat=null) {
     if($idDataDiklat === null) {
+      $authenticated = $this->isAuth($request)['authenticated'];
+      $username = $this->isAuth($request)['username'];
+      if(!$authenticated) return $this->encrypt($username, json_encode([
+        'message' => $authenticated == true ? 'Authorized' : 'Not Authorized',
+        'status' => $authenticated === true ? 1 : 0
+      ]));
       $data = DB::table('m_pegawai')->join('m_data_diklat', 'm_pegawai.id', '=', 'm_data_diklat.idPegawai')->join('m_jenis_diklat', 'm_data_diklat.idJenisDiklat', '=', 'm_jenis_diklat.id')->join('m_daftar_diklat', 'm_data_diklat.idDaftarDiklat', '=', 'm_daftar_diklat.id')->whereIn('m_data_diklat.idUsulanStatus', [3, 4])->where([
         ['m_pegawai.id', '=', $idPegawai],
         ['m_data_diklat.idUsulanHasil', '=', 1],
@@ -78,6 +48,7 @@ class DataDiklatController extends Controller
         'm_data_diklat.*'
       ]), true);
       $data[0]['dokumen'] = $this->getBlobDokumen($data[0]['idDokumen'], 'diklat', 'pdf');
+      return $data;
     }
     $callback = [
       'message' => $data,
@@ -144,6 +115,58 @@ class DataDiklatController extends Controller
       'message' => $data == 1 ? "Data berhasil diusulkan untuk $method.\nSilahkan cek status usulan secara berkala pada Menu Usulan." : "Data gagal diusulkan untuk $method.",
       'status' => $data == 1 ? 2 : 3
     ];
+    return $this->encrypt($username, json_encode($callback));
+  }
+
+  public function getDataDiklatCreated(Request $request) {
+    $authenticated = $this->isAuth($request)['authenticated'];
+    $username = $this->isAuth($request)['username'];
+    if(!$authenticated) return $this->encrypt($username, json_encode([
+      'message' => $authenticated == true ? 'Authorized' : 'Not Authorized',
+      'status' => $authenticated === true ? 1 : 0
+    ]));
+
+    $jenisDiklat = $this->getJenisDiklat();
+    $daftarDiklat = $this->getDaftarDiklat();
+    $daftarInstansiDiklat = $this->getDaftarInstansiDiklat();
+    $dokumenKategori = (new DokumenController)->getDocumentCategory('diklat/kursus');
+    $callback = [
+      'message' => [
+        'jenisDiklat' => $jenisDiklat,
+        'daftarDiklat' => $daftarDiklat,
+        'daftarInstansiDiklat' => $daftarInstansiDiklat,
+        'dokumenKategori' => $dokumenKategori,
+      ],
+      'status' => 2
+    ];
+
+    return $this->encrypt($username, json_encode($callback));
+  }
+
+  public function getDataDiklatDetail(Request $request, $idPegawai, $idDataDiklat) {
+    $authenticated = $this->isAuth($request)['authenticated'];
+    $username = $this->isAuth($request)['username'];
+    if(!$authenticated) return $this->encrypt($username, json_encode([
+      'message' => $authenticated == true ? 'Authorized' : 'Not Authorized',
+      'status' => $authenticated === true ? 1 : 0
+    ]));
+
+    $jenisDiklat = $this->getJenisDiklat();
+    $daftarDiklat = $this->getDaftarDiklat();
+    $daftarInstansiDiklat = $this->getDaftarInstansiDiklat();
+    $dokumenKategori = (new DokumenController)->getDocumentCategory('diklat/kursus');
+    $dataDiklat = $this->getDataDiklat($request, $idPegawai, $idDataDiklat);
+    $callback = [
+      'message' => [
+        'jenisDiklat' => $jenisDiklat,
+        'daftarDiklat' => $daftarDiklat,
+        'daftarInstansiDiklat' => $daftarInstansiDiklat,
+        'dataDiklat' => $dataDiklat,
+        'dokumenKategori' => $dokumenKategori,
+      ],
+      'status' => 2
+    ];
+
     return $this->encrypt($username, json_encode($callback));
   }
 }
