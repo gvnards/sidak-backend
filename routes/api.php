@@ -82,10 +82,9 @@ Route::get('data-anak/detail/{idPegawai}/{id}', 'DataAnakController@getDataAnakD
 Route::get('data-anak/{idPegawai}', 'DataAnakController@getDataAnak');
 Route::get('status-anak', 'DataAnakController@getStatusAnak');
 Route::get('orang-tua/{idPegawai}', 'DataAnakController@getDataOrangTua');
-Route::get('jenis-pendidikan', 'DataPendidikanController@getJenisPendidikan');
-Route::get('tingkat-pendidikan', 'DataPendidikanController@getTingkatPendidikan');
+Route::get('data-pendidikan/created', 'DataPendidikanController@getDataPendidikanCreated');
 Route::get('data-pendidikan/{idPegawai}', 'DataPendidikanController@getDataPendidikan');
-Route::get('data-pendidikan/{idPegawai}/{id}', 'DataPendidikanController@getDataPendidikan');
+Route::get('data-pendidikan/{idPegawai}/{id}', 'DataPendidikanController@getDataPendidikanDetail');
 Route::get('unit-organisasi', 'JabatanUnitOrganisasiController@getUnitOrganisasi');
 Route::get('unit-organisasi/{kodeKomponen}', 'JabatanUnitOrganisasiController@getUnitOrganisasi');
 Route::get('filter-opd', 'JabatanUnitOrganisasiController@getFilterOpd');

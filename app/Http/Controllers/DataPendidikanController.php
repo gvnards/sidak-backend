@@ -8,60 +8,28 @@ use Illuminate\Http\Request;
 
 class DataPendidikanController extends Controller
 {
-  public function getDaftarPendidikan($idTingkatPendidikan, Request $request) {
-    $authenticated = $this->isAuth($request)['authenticated'];
-    $username = $this->isAuth($request)['username'];
-    if(!$authenticated) return $this->encrypt($username, json_encode([
-      'message' => $authenticated == true ? 'Authorized' : 'Not Authorized',
-      'status' => $authenticated === true ? 1 : 0
-    ]));
-    $data = DB::table('m_daftar_pendidikan')->where([
-      ['m_daftar_pendidikan.idTingkatPendidikan', '=', $idTingkatPendidikan]
-      ])->get();
-    $callback = [
-      'message' => $data,
-      'status' => 2
-    ];
-    return $this->encrypt($username, json_encode($callback));
+  public function getDaftarPendidikan() {
+    $data = json_decode(DB::table('m_daftar_pendidikan')->get(), true);
+    return $data;
   }
-  public function getJenisPendidikan(Request $request) {
-    $authenticated = $this->isAuth($request)['authenticated'];
-    $username = $this->isAuth($request)['username'];
-    if(!$authenticated) return $this->encrypt($username, json_encode([
-      'message' => $authenticated == true ? 'Authorized' : 'Not Authorized',
-      'status' => $authenticated === true ? 1 : 0
-    ]));
-    $data = DB::table('m_jenis_pendidikan')->get();
-    $callback = [
-      'message' => $data,
-      'status' => 2
-    ];
-    return $this->encrypt($username, json_encode($callback));
+  public function getJenisPendidikan() {
+    $data = json_decode(DB::table('m_jenis_pendidikan')->get(), true);
+    return $data;
   }
 
-  public function getTingkatPendidikan(Request $request) {
-    $authenticated = $this->isAuth($request)['authenticated'];
-    $username = $this->isAuth($request)['username'];
-    if(!$authenticated) return $this->encrypt($username, json_encode([
-      'message' => $authenticated == true ? 'Authorized' : 'Not Authorized',
-      'status' => $authenticated === true ? 1 : 0
-    ]));
-    $data = DB::table('m_tingkat_pendidikan')->get();
-    $callback = [
-      'message' => $data,
-      'status' => 2
-    ];
-    return $this->encrypt($username, json_encode($callback));
+  public function getTingkatPendidikan() {
+    $data = json_decode(DB::table('m_tingkat_pendidikan')->get(), true);
+    return $data;
   }
 
-  public function getDataPendidikan($idPegawai, $idDataPendidikan=NULL, Request $request) {
-    $authenticated = $this->isAuth($request)['authenticated'];
-    $username = $this->isAuth($request)['username'];
-    if(!$authenticated) return $this->encrypt($username, json_encode([
-      'message' => $authenticated == true ? 'Authorized' : 'Not Authorized',
-      'status' => $authenticated === true ? 1 : 0
-    ]));
+  public function getDataPendidikan(Request $request, $idPegawai, $idDataPendidikan=NULL) {
     if($idDataPendidikan === null) {
+      $authenticated = $this->isAuth($request)['authenticated'];
+      $username = $this->isAuth($request)['username'];
+      if(!$authenticated) return $this->encrypt($username, json_encode([
+        'message' => $authenticated == true ? 'Authorized' : 'Not Authorized',
+        'status' => $authenticated === true ? 1 : 0
+      ]));
       $data = DB::table('m_pegawai')->join('m_data_pendidikan', 'm_pegawai.id', '=', 'm_data_pendidikan.idPegawai')->join('m_tingkat_pendidikan', 'm_data_pendidikan.idTingkatPendidikan', '=', 'm_tingkat_pendidikan.id')->whereIn('m_data_pendidikan.idUsulanStatus', [3, 4])->where([
         ['m_pegawai.id', '=', $idPegawai],
         ['m_data_pendidikan.idUsulanHasil', '=', 1],
@@ -79,6 +47,7 @@ class DataPendidikanController extends Controller
       ]), true);
       $data[0]['dokumen'] = $this->getBlobDokumen($data[0]['idDokumen'], 'pendidikan', 'pdf');
       $data[0]['dokumenTranskrip'] = $this->getBlobDokumen($data[0]['idDokumenTranskrip'], 'pendidikan', 'pdf');
+      return $data;
     }
     $callback = [
       'message' => $data,
@@ -155,6 +124,54 @@ class DataPendidikanController extends Controller
     $callback = [
       'message' => $data == 1 ? "Data berhasil diusulkan untuk $method.\nSilahkan cek status usulan secara berkala pada Menu Usulan." : "Data gagal diusulkan untuk $method.",
       'status' => $data == 1 ? 2 : 3
+    ];
+    return $this->encrypt($username, json_encode($callback));
+  }
+
+  public function getDataPendidikanCreated(Request $request) {
+    $authenticated = $this->isAuth($request)['authenticated'];
+    $username = $this->isAuth($request)['username'];
+    if(!$authenticated) return $this->encrypt($username, json_encode([
+      'message' => $authenticated == true ? 'Authorized' : 'Not Authorized',
+      'status' => $authenticated === true ? 1 : 0
+    ]));
+    $daftarPendidikan = $this->getDaftarPendidikan();
+    $jenisPendidikan = $this->getJenisPendidikan();
+    $tingkatPendidikan = $this->getTingkatPendidikan();
+    $dokumenKategori = (new DokumenController)->getDocumentCategory('pendidikan');
+    $callback = [
+      'message' => [
+        'daftarPendidikan' => $daftarPendidikan,
+        'jenisPendidikan' => $jenisPendidikan,
+        'tingkatPendidikan' => $tingkatPendidikan,
+        'dokumenKategori' => $dokumenKategori,
+      ],
+      'status' => 1
+    ];
+    return $this->encrypt($username, json_encode($callback));
+  }
+
+  public function getDataPendidikanDetail(Request $request, $idPegawai, $idDataPendidikan) {
+    $authenticated = $this->isAuth($request)['authenticated'];
+    $username = $this->isAuth($request)['username'];
+    if(!$authenticated) return $this->encrypt($username, json_encode([
+      'message' => $authenticated == true ? 'Authorized' : 'Not Authorized',
+      'status' => $authenticated === true ? 1 : 0
+    ]));
+    $daftarPendidikan = $this->getDaftarPendidikan();
+    $jenisPendidikan = $this->getJenisPendidikan();
+    $tingkatPendidikan = $this->getTingkatPendidikan();
+    $dokumenKategori = (new DokumenController)->getDocumentCategory('pendidikan');
+    $dataPendidikan = $this->getDataPendidikan($request, $idPegawai, $idDataPendidikan);
+    $callback = [
+      'message' => [
+        'daftarPendidikan' => $daftarPendidikan,
+        'jenisPendidikan' => $jenisPendidikan,
+        'tingkatPendidikan' => $tingkatPendidikan,
+        'dataPendidikan' => $dataPendidikan,
+        'dokumenKategori' => $dokumenKategori,
+      ],
+      'status' => 1
     ];
     return $this->encrypt($username, json_encode($callback));
   }
