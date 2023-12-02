@@ -73,8 +73,9 @@ Route::get('dokumen-kategori/{keterangan}', 'DokumenController@getDokumenKategor
 Route::get('data-pribadi/{idPegawai}', 'DataPribadiController@getDataPribadi');
 Route::get('data-short-brief/{idPegawai}', 'DataShortBriefController@getDataShortBrief');
 Route::get('data-cpns-pns/{idPegawai}', 'DataCpnsPnsController@getDataCpnsPns');
+Route::get('data-pasangan/created/{idPegawai}', 'DataPasanganController@getDataPasanganCreated');
+Route::get('data-pasangan/detail/{idPegawai}/{id}', 'DataPasanganController@getDataPasanganDetail');
 Route::get('data-pasangan/{idPegawai}', 'DataPasanganController@getDataPasangan');
-Route::get('data-pasangan/{idPegawai}/{id}', 'DataPasanganController@getDataPasangan');
 Route::get('status-perkawinan', 'DataPasanganController@getStatusPerkawinan');
 Route::get('data-anak/created/{idPegawai}', 'DataAnakController@getDataAnakCreated');
 Route::get('data-anak/detail/{idPegawai}/{id}', 'DataAnakController@getDataAnakDetail');

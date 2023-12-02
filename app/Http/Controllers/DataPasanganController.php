@@ -8,14 +8,14 @@ use Illuminate\Support\Facades\DB;
 
 class DataPasanganController extends Controller
 {
-  public function getDataPasangan($idPegawai, $idDataPasangan=null, Request $request) {
-    $authenticated = $this->isAuth($request)['authenticated'];
-    $username = $this->isAuth($request)['username'];
-    if(!$authenticated) return $this->encrypt($username, json_encode([
-      'message' => $authenticated == true ? 'Authorized' : 'Not Authorized',
-      'status' => $authenticated === true ? 1 : 0
-    ]));
+  public function getDataPasangan(Request $request, $idPegawai, $idDataPasangan=null) {
     if($idDataPasangan === null) {
+      $authenticated = $this->isAuth($request)['authenticated'];
+      $username = $this->isAuth($request)['username'];
+      if(!$authenticated) return $this->encrypt($username, json_encode([
+        'message' => $authenticated == true ? 'Authorized' : 'Not Authorized',
+        'status' => $authenticated === true ? 1 : 0
+      ]));
       $data = DB::table('m_pegawai')->join('m_data_pasangan', 'm_pegawai.id', '=', 'm_data_pasangan.idPegawai')->join('m_status_perkawinan', 'm_data_pasangan.idStatusPerkawinan', '=', 'm_status_perkawinan.id')->whereIn('m_data_pasangan.idUsulanStatus', [3, 4])->where([
         ['m_pegawai.id', '=', $idPegawai],
         ['m_data_pasangan.idUsulanHasil', '=', 1],
@@ -32,6 +32,7 @@ class DataPasanganController extends Controller
         'm_data_pasangan.*'
       ]), true);
       $data[0]['dokumen'] = $this->getBlobDokumen($data[0]['idDokumen'], 'pasangan', 'pdf');
+      return $data;
     }
     $callback = [
       'message' => $data,
@@ -40,19 +41,9 @@ class DataPasanganController extends Controller
     return $this->encrypt($username, json_encode($callback));
   }
 
-  public function getStatusPerkawinan(Request $request) {
-    $authenticated = $this->isAuth($request)['authenticated'];
-    $username = $this->isAuth($request)['username'];
-    if(!$authenticated) return $this->encrypt($username, json_encode([
-      'message' => $authenticated == true ? 'Authorized' : 'Not Authorized',
-      'status' => $authenticated === true ? 1 : 0
-    ]));
-    $data = DB::table('m_status_perkawinan')->get();
-    $callback = [
-      'message' => $data,
-      'status' => 2
-    ];
-    return $this->encrypt($username, json_encode($callback));
+  public function getStatusPerkawinan() {
+    $data = json_decode(DB::table('m_status_perkawinan')->get(), true);
+    return $data;
   }
 
   public function insertDataPasangan($id=NULL, Request $request) {
@@ -127,29 +118,47 @@ class DataPasanganController extends Controller
     return $this->encrypt($username, json_encode($callback));
   }
 
-  public function getStatusKawin() {
-    $data = json_decode(DB::table('m_status_perkawinan')->get(), true);
-    return $data;
+  public function getDataPasanganCreated(Request $request, $idPegawai) {
+    $authenticated = $this->isAuth($request)['authenticated'];
+    $username = $this->isAuth($request)['username'];
+    if(!$authenticated) return $this->encrypt($username, json_encode([
+      'message' => $authenticated == true ? 'Authorized' : 'Not Authorized',
+      'status' => $authenticated === true ? 1 : 0
+    ]));
+
+    $dataStatusPerkawinan = $this->getStatusPerkawinan();
+    $dokumenKategori = (new DokumenController)->getDocumentCategory('perkawinan');
+    $callback = [
+      'message' => [
+        'dataStatusPerkawinan' => $dataStatusPerkawinan,
+        'dokumenKategori' => $dokumenKategori
+      ],
+      'status' => 2
+    ];
+
+    return $this->encrypt($username, json_encode($callback));
   }
-  public function getDataPasanganDetail($idUsulan) {
-    $data = json_decode(DB::table('m_data_pasangan')->where([
-      ['m_data_pasangan.id', '=', $idUsulan],
-    ])->get([
-      'm_data_pasangan.*'
-    ]), true);
-    $data[0]['dokumen'] = $this->getBlobDokumen($data[0]['idDokumen'], 'pasangan', 'pdf');
-    return $data;
-  }
-  public function getDataPasanganList($idPegawai) {
-    $data = json_decode(DB::table('m_pegawai')->join('m_data_pasangan', 'm_pegawai.id', '=', 'm_data_pasangan.idPegawai')->join('m_status_perkawinan', 'm_data_pasangan.idStatusPerkawinan', '=', 'm_status_perkawinan.id')->whereIn('m_data_pasangan.idUsulanStatus', [3, 4])->where([
-      ['m_pegawai.id', '=', $idPegawai],
-      ['m_data_pasangan.idUsulanHasil', '=', 1],
-      ['m_data_pasangan.idUsulan', '=', 1],
-    ])->get([
-      'm_data_pasangan.id',
-      'm_data_pasangan.nama',
-      'm_status_perkawinan.nama as statusPerkawinan'
-    ]), true);
-    return $data;
+
+  public function getDataPasanganDetail(Request $request, $idPegawai, $idDataPasangan) {
+    $authenticated = $this->isAuth($request)['authenticated'];
+    $username = $this->isAuth($request)['username'];
+    if(!$authenticated) return $this->encrypt($username, json_encode([
+      'message' => $authenticated == true ? 'Authorized' : 'Not Authorized',
+      'status' => $authenticated === true ? 1 : 0
+    ]));
+
+    $dataStatusPerkawinan = $this->getStatusPerkawinan();
+    $dokumenKategori = (new DokumenController)->getDocumentCategory('perkawinan');
+    $dataPasangan = $this->getDataPasangan($request, $idPegawai, $idDataPasangan);
+    $callback = [
+      'message' => [
+        'dataStatusPerkawinan' => $dataStatusPerkawinan,
+        'dokumenKategori' => $dokumenKategori,
+        'dataPasangan' => $dataPasangan
+      ],
+      'status' => 2
+    ];
+
+    return $this->encrypt($username, json_encode($callback));
   }
 }
