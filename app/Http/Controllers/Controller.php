@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use Exception;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Foundation\Bus\DispatchesJobs;
 use Illuminate\Foundation\Validation\ValidatesRequests;
@@ -111,9 +112,13 @@ class Controller extends BaseController
       ])->get(), true)[0];
       $filename = $dokumen['nama'];
       $path = storage_path('app/dokumen/'.$folderDokumen.'/'.$filename.".".$ekstensiDokumen);
-      $mimeType = mime_content_type($path);
-      $getPdfFromServerFolder = base64_encode(file_get_contents($path));
-      $blob = 'data:'.$mimeType.';base64,'.$getPdfFromServerFolder;
+      try {
+        $mimeType = mime_content_type($path);
+        $getPdfFromServerFolder = base64_encode(file_get_contents($path));
+        $blob = 'data:'.$mimeType.';base64,'.$getPdfFromServerFolder;
+      } catch (Exception $ex) {
+        $blob = '';
+      }
     }
     return $blob;
   }
@@ -123,9 +128,10 @@ class Controller extends BaseController
     $dokumen = json_decode(DB::table('m_dokumen')->where([
       ['id', '=', $idDokumen]
     ])->get(), true)[0];
-    Storage::delete('dokumen/'.$folderDokumen.'/'.$dokumen['nama'].'.'.$ekstensiDokumen);
+    try {
+      Storage::delete('dokumen/'.$folderDokumen.'/'.$dokumen['nama'].'.'.$ekstensiDokumen);
+    } catch (Exception $ex) {}
     if ($deleteFromDb) {
-      DB::table('m_dokumen')->delete($idDokumen);
       DB::table('m_dokumen')->where([
         ['id', '=', $idDokumen]
       ])->delete();
