@@ -8,32 +8,22 @@ use Illuminate\Support\Facades\DB;
 
 class DataPenghargaanController extends Controller
 {
-  function getDaftarJenisPenghargaan(Request $request) {
-    $authenticated = $this->isAuth($request)['authenticated'];
-    $username = $this->isAuth($request)['username'];
-    if(!$authenticated) return $this->encrypt($username, json_encode([
-      'message' => $authenticated == true ? 'Authorized' : 'Not Authorized',
-      'status' => $authenticated === true ? 1 : 0
-    ]));
+  public function getDaftarJenisPenghargaan() {
     $data = DB::table('m_daftar_jenis_penghargaan')->get([
       'id',
       'jenisPenghargaan'
     ]);
-    $callback = [
-      'message' => $data,
-      'status' => 2
-    ];
-    return $this->encrypt($username, json_encode($callback));
+    return $data;
   }
 
-  function getDataPenghargaan(Request $request, $idPegawai, $idDataPenghargaan=NULL) {
-    $authenticated = $this->isAuth($request)['authenticated'];
-    $username = $this->isAuth($request)['username'];
-    if(!$authenticated) return $this->encrypt($username, json_encode([
-      'message' => $authenticated == true ? 'Authorized' : 'Not Authorized',
-      'status' => $authenticated === true ? 1 : 0
-    ]));
+  public function getDataPenghargaan(Request $request, $idPegawai, $idDataPenghargaan=NULL) {
     if ($idDataPenghargaan == NULL) {
+      $authenticated = $this->isAuth($request)['authenticated'];
+      $username = $this->isAuth($request)['username'];
+      if(!$authenticated) return $this->encrypt($username, json_encode([
+        'message' => $authenticated == true ? 'Authorized' : 'Not Authorized',
+        'status' => $authenticated === true ? 1 : 0
+      ]));
       $data = DB::table('m_data_penghargaan')->join('m_daftar_jenis_penghargaan', 'm_data_penghargaan.idDaftarJenisPenghargaan', '=', 'm_daftar_jenis_penghargaan.id')->whereIn('m_data_penghargaan.idUsulanStatus', [3, 4])->where([
         ['m_data_penghargaan.idPegawai', '=', $idPegawai],
         ['m_data_penghargaan.idUsulanHasil', '=', 1],
@@ -48,6 +38,7 @@ class DataPenghargaanController extends Controller
         ['id', '=', $idDataPenghargaan]
       ])->get(), true);
       $data[0]['dokumen'] = $this->getBlobDokumen($data[0]['idDokumen'], 'penghargaan', 'pdf');
+      return $data;
     }
     $callback = [
       'message' => $data,
@@ -56,7 +47,7 @@ class DataPenghargaanController extends Controller
     return $this->encrypt($username, json_encode($callback));
   }
 
-  function insertDataPenghargaan(Request $request, $idDataPenghargaan=NULL) {
+  public function insertDataPenghargaan(Request $request, $idDataPenghargaan=NULL) {
     $authenticated = $this->isAuth($request)['authenticated'];
     $username = $this->isAuth($request)['username'];
     if(!$authenticated) return $this->encrypt($username, json_encode([
@@ -108,6 +99,48 @@ class DataPenghargaanController extends Controller
       'message' => $data == 1 ? "Data berhasil diusulkan untuk $method.\nSilahkan cek status usulan secara berkala pada Menu Usulan." : "Data gagal diusulkan untuk $method.",
       'status' => $data == 1 ? 2 : 3
     ];
+    return $this->encrypt($username, json_encode($callback));
+  }
+
+  public function getDataPenghargaanCreated(Request $request) {
+    $authenticated = $this->isAuth($request)['authenticated'];
+    $username = $this->isAuth($request)['username'];
+    if(!$authenticated) return $this->encrypt($username, json_encode([
+      'message' => $authenticated == true ? 'Authorized' : 'Not Authorized',
+      'status' => $authenticated === true ? 1 : 0
+    ]));
+    $jenisPenghargaan = $this->getDaftarJenisPenghargaan();
+    $dokumenKategori = (new DokumenController)->getDocumentCategory('penghargaan');
+    $callback = [
+      'message' => [
+        'jenisPenghargaan' => $jenisPenghargaan,
+        'dokumenKategori' => $dokumenKategori
+      ],
+      'status' => 2
+    ];
+
+    return $this->encrypt($username, json_encode($callback));
+  }
+
+  public function getDataPenghargaanDetail(Request $request, $idPegawai, $idDataPenghargaan) {
+    $authenticated = $this->isAuth($request)['authenticated'];
+    $username = $this->isAuth($request)['username'];
+    if(!$authenticated) return $this->encrypt($username, json_encode([
+      'message' => $authenticated == true ? 'Authorized' : 'Not Authorized',
+      'status' => $authenticated === true ? 1 : 0
+    ]));
+    $jenisPenghargaan = $this->getDaftarJenisPenghargaan();
+    $dokumenKategori = (new DokumenController)->getDocumentCategory('penghargaan');
+    $dataPenghargaan = $this->getDataPenghargaan($request, $idPegawai, $idDataPenghargaan);
+    $callback = [
+      'message' => [
+        'jenisPenghargaan' => $jenisPenghargaan,
+        'dokumenKategori' => $dokumenKategori,
+        'dataPenghargaan' => $dataPenghargaan
+      ],
+      'status' => 2
+    ];
+
     return $this->encrypt($username, json_encode($callback));
   }
 }

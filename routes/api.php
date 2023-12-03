@@ -125,9 +125,9 @@ Route::get('data-status-kepegawaian/{idPegawai}', 'DataStatusKepegawaianControll
 Route::get('daftar-atasan', 'DataAtasanController@getDaftarAtasan');
 Route::get('data-atasan/{idPegawai}', 'DataAtasanController@getDataAtasan');
 Route::get('data-bawahan/{idAtasan}', 'DataAtasanController@getDataBawahan');
+Route::get('data-penghargaan/created', 'DataPenghargaanController@getDataPenghargaanCreated');
 Route::get('data-penghargaan/{idPegawai}', 'DataPenghargaanController@getDataPenghargaan');
-Route::get('data-penghargaan/{idPegawai}/{idUsulan}', 'DataPenghargaanController@getDataPenghargaan');
-Route::get('jenis-penghargaan', 'DataPenghargaanController@getDaftarJenisPenghargaan');
+Route::get('data-penghargaan/detail/{idPegawai}/{idUsulan}', 'DataPenghargaanController@getDataPenghargaanDetail');
 Route::get('angka-kredit/created/{idPegawai}', 'DataAngkaKreditController@getDataCreated');
 Route::get('angka-kredit/updated/{idPegawai}/{idUsulan}', 'DataAngkaKreditController@getDataUpdated');
 Route::get('angka-kredit/list/{idPegawai}', 'DataAngkaKreditController@getListDataAngkaKredit');
