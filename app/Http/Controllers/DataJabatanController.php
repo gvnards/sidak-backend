@@ -8,14 +8,14 @@ use Illuminate\Support\Facades\DB;
 
 class DataJabatanController extends Controller
 {
-  public function getDataJabatan($idPegawai, $idDataJabatan=null, Request $request) {
-    $authenticated = $this->isAuth($request)['authenticated'];
-    $username = $this->isAuth($request)['username'];
-    if(!$authenticated) return $this->encrypt($username, json_encode([
-      'message' => $authenticated == true ? 'Authorized' : 'Not Authorized',
-      'status' => $authenticated === true ? 1 : 0
-    ]));
+  public function getDataJabatan(Request $request, $idPegawai, $idDataJabatan=null) {
     if($idDataJabatan === null) {
+      $authenticated = $this->isAuth($request)['authenticated'];
+      $username = $this->isAuth($request)['username'];
+      if(!$authenticated) return $this->encrypt($username, json_encode([
+        'message' => $authenticated == true ? 'Authorized' : 'Not Authorized',
+        'status' => $authenticated === true ? 1 : 0
+      ]));
       $data = DB::table('m_pegawai')->join('m_data_jabatan', 'm_pegawai.id', '=', 'm_data_jabatan.idPegawai')->join('m_jabatan', 'm_data_jabatan.idJabatan', '=', 'm_jabatan.id')->join('m_jenis_jabatan', 'm_jabatan.idJenisJabatan', '=', 'm_jenis_jabatan.id')->where([
         ['m_pegawai.id', '=', $idPegawai],
         ['m_data_jabatan.idUsulanHasil', '=', 1],
@@ -36,6 +36,7 @@ class DataJabatanController extends Controller
         'm_unit_organisasi.nama as unitOrganisasi'
       ]), true);
       $data[0]['dokumen'] = $this->getBlobDokumen($data[0]['idDokumen'], 'jabatan', 'pdf');
+      return $data;
     }
     $callback = [
       'message' => $data,
@@ -135,6 +136,94 @@ class DataJabatanController extends Controller
     $callback = [
       'message' => $data == 1 ? "Data berhasil diusulkan untuk $method.\nSilahkan cek status usulan secara berkala pada Menu Usulan." : "Data gagal diusulkan untuk $method.",
       'status' => $data == 1 ? 2 : 3
+    ];
+    return $this->encrypt($username, json_encode($callback));
+  }
+
+  private function getAllJabatan() {
+    // $data = json_decode(DB::table('m_jabatan')->get(), true);
+    $data = json_decode(DB::table('v_m_daftar_jabatan')->join('m_kelas_jabatan', 'v_m_daftar_jabatan.idKelasJabatan', '=', 'm_kelas_jabatan.id')->join('m_uang_kinerja', 'm_kelas_jabatan.idUangKinerja', '=', 'm_uang_kinerja.id')->get([
+      'v_m_daftar_jabatan.id as id',
+      'v_m_daftar_jabatan.nama as nama',
+      'v_m_daftar_jabatan.kebutuhan as kebutuhan',
+      'v_m_daftar_jabatan.kodeKomponen as kodeKomponen',
+      'v_m_daftar_jabatan.terisi as jabatanTerisi',
+    ])->toJson(), true);
+    $jabatanGroup = json_decode(DB::table('v_m_daftar_jabatan')->join('m_kelas_jabatan', 'v_m_daftar_jabatan.idKelasJabatan', '=', 'm_kelas_jabatan.id')->join('m_uang_kinerja', 'm_kelas_jabatan.idUangKinerja', '=', 'm_uang_kinerja.id')->where([
+      ['v_m_daftar_jabatan.terisi', '>', 0]
+    ])->orWhere([
+      ['v_m_daftar_jabatan.kebutuhan', '>', -1]
+    ])->groupBy('v_m_daftar_jabatan.nama')->get([
+      'v_m_daftar_jabatan.id as id',
+      'v_m_daftar_jabatan.nama as nama',
+      'v_m_daftar_jabatan.kodeKomponen as kodeKomponen',
+    ])->toJson(), true);
+    for($i=0; $i<count($jabatanGroup); $i++) {
+      $jabatanGroup[$i]['kebutuhan'] = -1;
+      $jabatanGroup[$i]['jabatanTerisi'] = 0;
+      $jabatanGroup[$i]['nama'] = $jabatanGroup[$i]['nama']." (Tidak ada di dalam Peta Jabatan Unit Organisasi)";
+      array_push($data, $jabatanGroup[$i]);
+    }
+    return [
+      'jabatan' => $data,
+      'jabatanGroup' => $jabatanGroup
+    ];
+  }
+
+  private function getAllUnitOrganisasi() {
+    $data = json_decode(DB::table('m_unit_organisasi')->get(), true);
+    return $data;
+  }
+
+  private function getAllTugasTambahan() {
+    $data = json_decode(DB::table('m_jabatan_tugas_tambahan')->get(), true);
+    return $data;
+  }
+
+  public function getDataJabatanCreated(Request $request) {
+    $authenticated = $this->isAuth($request)['authenticated'];
+    $username = $this->isAuth($request)['username'];
+    if(!$authenticated) return $this->encrypt($username, json_encode([
+      'message' => $authenticated == true ? 'Authorized' : 'Not Authorized',
+      'status' => $authenticated === true ? 1 : 0
+    ]));
+    $jabatan = $this->getAllJabatan();
+    $unitOrganisasi = $this->getAllUnitOrganisasi();
+    $tugasTambahan = $this->getAllTugasTambahan();
+    $dokumenKategori = (new DokumenController)->getDocumentCategory('jabatan');
+    $callback = [
+      'message' => [
+        'jabatan' => $jabatan,
+        'unitOrganisasi' => $unitOrganisasi,
+        'tugasTambahan' => $tugasTambahan,
+        'dokumenKategori' => $dokumenKategori,
+      ],
+      'status' => 2
+    ];
+    return $this->encrypt($username, json_encode($callback));
+  }
+
+  public function getDataJabatanDetail(Request $request, $idPegawai, $idDataJabatan) {
+    $authenticated = $this->isAuth($request)['authenticated'];
+    $username = $this->isAuth($request)['username'];
+    if(!$authenticated) return $this->encrypt($username, json_encode([
+      'message' => $authenticated == true ? 'Authorized' : 'Not Authorized',
+      'status' => $authenticated === true ? 1 : 0
+    ]));
+    $jabatan = $this->getAllJabatan();
+    $unitOrganisasi = $this->getAllUnitOrganisasi();
+    $tugasTambahan = $this->getAllTugasTambahan();
+    $dataJabatanUnitOrganisasi = $this->getDataJabatan($request, $idPegawai, $idDataJabatan);
+    $dokumenKategori = (new DokumenController)->getDocumentCategory('jabatan');
+    $callback = [
+      'message' => [
+        'jabatan' => $jabatan,
+        'unitOrganisasi' => $unitOrganisasi,
+        'tugasTambahan' => $tugasTambahan,
+        'dokumenKategori' => $dokumenKategori,
+        'dataJabatanUnitOrganisasi' => $dataJabatanUnitOrganisasi
+      ],
+      'status' => 2
     ];
     return $this->encrypt($username, json_encode($callback));
   }
