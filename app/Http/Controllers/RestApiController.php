@@ -167,20 +167,32 @@ class RestApiController extends Controller
   }
 
   public function restGetDocument(Request $request, $namaDokumen=NULL) {
-    $authentication = $this->isRestAuth($request->header('Auth'));
-    if (!$authentication['status']) {
-      return $authentication;
-    }
+    // $authentication = $this->isRestAuth($request->header('Auth'));
+    // if (!$authentication['status']) {
+    //   return $authentication;
+    // }
     $dokumen = '';
     if ($namaDokumen !== NULL && str_contains($namaDokumen, 'DOK_')) {
       $folderDokumen = '';
-      if (str_contains($namaDokumen, '_JABATAN_')) $folderDokumen = 'jabatan';
+      if (str_contains($namaDokumen, '_ELEKTRONIK_')) {
+        if (str_contains($namaDokumen, '_IJAZAH_')) $folderDokumen = 'pendidikan';
+        else if (str_contains($namaDokumen, '_IBEL_')) $folderDokumen = 'ibel';
+        else if (str_contains($namaDokumen, '_AKREDITASI_')) $folderDokumen = 'akreditasi';
+      }
+      else if (str_contains($namaDokumen, '_JABATAN_')) $folderDokumen = 'jabatan';
       else if (str_contains($namaDokumen, '_PAK_')) $folderDokumen = 'pak';
       else if (str_contains($namaDokumen, '_IJAZAH_')) $folderDokumen = 'pendidikan';
       else if (str_contains($namaDokumen, '_TRANSKRIP_')) $folderDokumen = 'pendidikan';
       else if (str_contains($namaDokumen, '_SKP_')) $folderDokumen = 'skp';
       else if (str_contains($namaDokumen, '_HUKUMAN_DISIPLIN_')) $folderDokumen = 'hukdis';
       else if (str_contains($namaDokumen, '_PANGKAT_')) $folderDokumen = 'pangkat';
+      else if (str_contains($namaDokumen, '_CPNS_')) $folderDokumen = 'cpns';
+      else if (str_contains($namaDokumen, '_PNS_')) $folderDokumen = 'pns';
+      else if (str_contains($namaDokumen, '_PERKAWINAN_')) $folderDokumen = 'pasangan';
+      else if (str_contains($namaDokumen, '_ANAK_')) $folderDokumen = 'anak';
+      else if (str_contains($namaDokumen, '_DIKLAT_')) $folderDokumen = 'diklat';
+      else if (str_contains($namaDokumen, '_HUKUMAN_DISIPLIN_')) $folderDokumen = 'hukdis';
+      else if (str_contains($namaDokumen, '_PENGHARGAAN_')) $folderDokumen = 'penghargaan';
 
       // $dokumen = base64_encode(file_get_contents(storage_path('app/dokumen/'.$folderDokumen.'/'.$namaDokumen.'.pdf')));
       $dokumen = file_get_contents(storage_path('app/dokumen/'.$folderDokumen.'/'.$namaDokumen.".pdf"));
