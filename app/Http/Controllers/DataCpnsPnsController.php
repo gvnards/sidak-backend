@@ -29,7 +29,7 @@ class DataCpnsPnsController extends Controller
     return $this->encrypt($username, json_encode($callback));
   }
 
-  public function updateDataCpnsPns($idPegawai, Request $request) {
+  public function updateDataCpnsPns($id, Request $request) {
     $authenticated = $this->isAuth($request)['authenticated'];
     $username = $this->isAuth($request)['username'];
     if(!$authenticated) return $this->encrypt($username, json_encode([
@@ -37,6 +37,10 @@ class DataCpnsPnsController extends Controller
       'status' => $authenticated === true ? 1 : 0
     ]));
     $message = json_decode($this->decrypt($username, $request->message), true);
+    $dataCpnsPns = json_decode(DB::table('m_data_cpns_pns')->where([
+      ['id', '=', $id]
+    ])->get(),true);
+    $idPegawai = $dataCpnsPns[0]['idPegawai'];
     $nip_ = DB::table('m_pegawai')->where([['id', '=', $idPegawai]])->get();
     foreach ($nip_ as $key => $value) {
       $nip = $value->nip;
@@ -68,7 +72,7 @@ class DataCpnsPnsController extends Controller
       $this->uploadDokumen("DOK_SK_PNS_".$nip, $skPns_, 'pdf', 'pns');
     }
     $data = DB::table('m_data_cpns_pns')->where([
-      ['id', '=', $idPegawai]
+      ['id', '=', $id]
     ])->update([
       'tmtCpns' => $message['tmtCpns'],
       'tglSkCpns' => $message['tglSkCpns'],
