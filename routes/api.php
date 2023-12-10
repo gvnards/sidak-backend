@@ -194,3 +194,4 @@ Route::get('siasn/get/skp/{nipBaru}', 'ApiSiasnController@getRiwayatSkpASN');
 Route::post('rest/login', 'RestApiController@restLogin');
 Route::get('rest/get/dokumen/{namaDokumen}', 'RestApiController@restGetDocument');
 Route::get('rest/get/datapangkat/{nipBaru}/{periode}', 'RestApiToAppPangkatPensiunController@restGet');
+Route::get('rest/get/dataslks/{nipBaru}', 'RestApiToAppSlksController@restGet');
