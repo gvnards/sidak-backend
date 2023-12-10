@@ -50,37 +50,25 @@ class DataCpnsPnsController extends Controller
     $skCpns_ = $message['dokumenSkCpns'];
     $skPns_ = $message['dokumenSkPns'];
     if ($skCpns_ != '') {
-      if ($idDokumenSkCpns != null) {
-        DB::table('m_data_cpns_pns')->where([
-          ['id', '=', $id]
-        ])->update([
-          'idDokumenSkPns' => NULL
+      if ($idDokumenSkCpns == null) {
+        $idDokumenSkCpns = DB::table('m_dokumen')->insertGetId([
+          'id' => NULL,
+          'nama' => "DOK_SK_CPNS_$nip",
+          'created_at' => Carbon::now()->format('Y-m-d H:i:s'),
+          'updated_at' => Carbon::now()->format('Y-m-d H:i:s')
         ]);
-        $this->deleteDokumen($idDokumenSkPns, 'cpns', 'pdf');
       }
-      $idDokumenSkCpns = DB::table('m_dokumen')->insertGetId([
-        'id' => NULL,
-        'nama' => "DOK_SK_CPNS_$nip",
-        'created_at' => Carbon::now()->format('Y-m-d H:i:s'),
-        'updated_at' => Carbon::now()->format('Y-m-d H:i:s')
-      ]);
       $this->uploadDokumen("DOK_SK_CPNS_".$nip, $skCpns_, 'pdf', 'cpns');
     }
     if ($skPns_ != '') {
-      if ($idDokumenSkPns != null) {
-        DB::table('m_data_cpns_pns')->where([
-          ['id', '=', $id]
-        ])->update([
-          'idDokumenSkPns' => NULL
+      if ($idDokumenSkPns == null) {
+        $idDokumenSkPns = DB::table('m_dokumen')->insertGetId([
+          'id' => NULL,
+          'nama' => "DOK_SK_PNS_$nip",
+          'created_at' => Carbon::now()->format('Y-m-d H:i:s'),
+          'updated_at' => Carbon::now()->format('Y-m-d H:i:s')
         ]);
-        $this->deleteDokumen($idDokumenSkPns, 'pns', 'pdf');
       }
-      $idDokumenSkPns = DB::table('m_dokumen')->insertGetId([
-        'id' => NULL,
-        'nama' => "DOK_SK_PNS_$nip",
-        'created_at' => Carbon::now()->format('Y-m-d H:i:s'),
-        'updated_at' => Carbon::now()->format('Y-m-d H:i:s')
-      ]);
       $this->uploadDokumen("DOK_SK_PNS_".$nip, $skPns_, 'pdf', 'pns');
     }
     $data = DB::table('m_data_cpns_pns')->where([
