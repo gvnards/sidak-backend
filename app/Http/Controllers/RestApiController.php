@@ -175,9 +175,9 @@ class RestApiController extends Controller
     if ($namaDokumen !== NULL && str_contains($namaDokumen, 'DOK_')) {
       $folderDokumen = '';
       if (str_contains($namaDokumen, '_ELEKTRONIK_')) {
-        if (str_contains($namaDokumen, '_IJAZAH_')) $folderDokumen = 'pendidikan';
-        else if (str_contains($namaDokumen, '_IBEL_')) $folderDokumen = 'ibel';
-        else if (str_contains($namaDokumen, '_AKREDITASI_')) $folderDokumen = 'akreditasi';
+        if (str_contains($namaDokumen, '_IJAZAH_')) $folderDokumen = 'elektronik/pendidikan';
+        else if (str_contains($namaDokumen, '_IBEL_')) $folderDokumen = 'elektronik/ibel';
+        else if (str_contains($namaDokumen, '_AKREDITASI_')) $folderDokumen = 'elektronik/akreditasi';
       }
       else if (str_contains($namaDokumen, '_JABATAN_')) $folderDokumen = 'jabatan';
       else if (str_contains($namaDokumen, '_PAK_')) $folderDokumen = 'pak';
