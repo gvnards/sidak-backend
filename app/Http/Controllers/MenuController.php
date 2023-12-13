@@ -10,10 +10,10 @@ class MenuController extends Controller
   public function getMainMenu(Request $request) {
     $authenticated = $this->isAuth($request)['authenticated'];
     $username = $this->isAuth($request)['username'];
-    if(!$authenticated) return $this->encrypt($username, json_encode([
+    if(!$authenticated) return [
       'message' => $authenticated == true ? 'Authorized' : 'Not Authorized',
       'status' => $authenticated === true ? 1 : 0
-    ]));
+    ];
     $mainMenu = [];
     if(!str_contains($username, 'admin')) {
       $mainMenu = DB::table('m_pegawai')->join('m_app_role_user_mainmenu', 'm_pegawai.idAppRoleUser', '=', 'm_app_role_user_mainmenu.idAppRoleUser')->join('m_app_mainmenu', 'm_app_mainmenu.id', '=', 'm_app_role_user_mainmenu.idAppMainmenu')->where([
@@ -40,16 +40,16 @@ class MenuController extends Controller
       'message' => count($mainMenu) == 0 ? 'Data tidak ditemukan.' : $mainMenu,
       'status' => count($mainMenu) == 0 ? 3 : 2
     ];
-    return $this->encrypt($username, json_encode($callback));
+    return $callback;
   }
 
   public function getPegawaiMenu(Request $request) {
     $authenticated = $this->isAuth($request)['authenticated'];
     $username = $this->isAuth($request)['username'];
-    if(!$authenticated) return $this->encrypt($username, json_encode([
+    if(!$authenticated) return [
       'message' => $authenticated == true ? 'Authorized' : 'Not Authorized',
       'status' => $authenticated === true ? 1 : 0
-    ]));
+    ];
     $pegawaiMenu = [];
     if(!str_contains($username, 'admin')) {
       $pegawaiMenu = DB::table('m_pegawai')->join('m_app_role_user_pegawaimenu', 'm_pegawai.idAppRoleUser', '=', 'm_app_role_user_pegawaimenu.idAppRoleUser')->join('m_app_pegawaimenu', 'm_app_pegawaimenu.id', '=', 'm_app_role_user_pegawaimenu.idAppPegawaimenu')->where([
@@ -72,6 +72,6 @@ class MenuController extends Controller
       'message' => count($pegawaiMenu) == 0 ? 'Data tidak ditemukan.' : $pegawaiMenu,
       'status' => count($pegawaiMenu) == 0 ? 3 : 2
     ];
-    return $this->encrypt($username, json_encode($callback));
+    return $callback;
   }
 }
