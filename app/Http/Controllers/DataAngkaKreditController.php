@@ -68,10 +68,10 @@ class DataAngkaKreditController extends Controller
   public function getDataCreated(Request $request, $idPegawai) {
     $authenticated = $this->isAuth($request)['authenticated'];
     $username = $this->isAuth($request)['username'];
-    if(!$authenticated) return $this->encrypt($username, json_encode([
+    if(!$authenticated) return [
       'message' => $authenticated == true ? 'Authorized' : 'Not Authorized',
       'status' => $authenticated === true ? 1 : 0
-    ]));
+    ];
 
     $jenisAngkaKredit = $this->getDaftarJenisAngkaKredit();
     $jabatan = $this->getDataJabatanFungsional($idPegawai);
@@ -86,16 +86,16 @@ class DataAngkaKreditController extends Controller
       'status' => 2
     ];
 
-    return $this->encrypt($username, json_encode($callback));
+    return $callback;
   }
 
   public function getDataUpdated(Request $request, $idPegawai, $idUsulan) {
     $authenticated = $this->isAuth($request)['authenticated'];
     $username = $this->isAuth($request)['username'];
-    if(!$authenticated) return $this->encrypt($username, json_encode([
+    if(!$authenticated) return [
       'message' => $authenticated == true ? 'Authorized' : 'Not Authorized',
       'status' => $authenticated === true ? 1 : 0
-    ]));
+    ];
 
     $jabatan = $this->getDataJabatanFungsional($idPegawai);
     $jenisAngkaKredit = $this->getDaftarJenisAngkaKredit();
@@ -112,16 +112,16 @@ class DataAngkaKreditController extends Controller
       'status' => 2
     ];
 
-    return $this->encrypt($username, json_encode($callback));
+    return $callback;
   }
 
   public function getListDataAngkaKredit(Request $request, $idPegawai) {
     $authenticated = $this->isAuth($request)['authenticated'];
     $username = $this->isAuth($request)['username'];
-    if(!$authenticated) return $this->encrypt($username, json_encode([
+    if(!$authenticated) return [
       'message' => $authenticated == true ? 'Authorized' : 'Not Authorized',
       'status' => $authenticated === true ? 1 : 0
-    ]));
+    ];
 
     $data = $this->getDataAngkaKredit($idPegawai, NULL);
 
@@ -132,16 +132,16 @@ class DataAngkaKreditController extends Controller
       'status' => 2
     ];
 
-    return $this->encrypt($username, json_encode($callback));
+    return $callback;
   }
 
   public function insertDataAngkaKredit(Request $request, $id=NULL) {
     $authenticated = $this->isAuth($request)['authenticated'];
     $username = $this->isAuth($request)['username'];
-    if(!$authenticated) return $this->encrypt($username, json_encode([
+    if(!$authenticated) return [
       'message' => $authenticated == true ? 'Authorized' : 'Not Authorized',
       'status' => $authenticated === true ? 1 : 0
-    ]));
+    ];
 
     $message = json_decode($this->decrypt($username, $request->message), true);
     if ($id !== NULL) {
@@ -150,10 +150,10 @@ class DataAngkaKreditController extends Controller
         ['idUsulanHasil', '=', 3]
       ])->get()->toJson(), true));
       if ($countIsAny > 0) {
-        return $this->encrypt($username, json_encode([
+        return [
           'message' => "Maaf, data sudah pernah diusulkan sebelumnya untuk perubahan.\nSilahkan menunggu data terverifikasi terlebih dahulu.",
           'status' => 3
-        ]));
+        ];
       }
     } else {
       // check ketika sudah ada data yg ditambahkan dan belum diapprove, return info tunggu disahkan
@@ -163,10 +163,10 @@ class DataAngkaKreditController extends Controller
         ['m_data_angka_kredit.idUsulanHasil', '=', 3]
       ])->get()));
       if ($countIsAny > 0) {
-        return $this->encrypt($username, json_encode([
+        return [
           'message' => "Maaf, Data Angka Kredit sudah ada yang ditambahkan tetapi belum diverifikasi.\nSilahkan menunggu data terverifikasi terlebih dahulu.",
           'status' => 3
-        ]));
+        ];
       }
     }
 
@@ -229,6 +229,6 @@ class DataAngkaKreditController extends Controller
       'message' => $data == 1 ? "Data berhasil diusulkan untuk $method.\nSilahkan cek status usulan secara berkala pada Menu Usulan." : "Data gagal diusulkan untuk $method.",
       'status' => $data == 1 ? 2 : 3
     ];
-    return $this->encrypt($username, json_encode($callback));
+    return $callback;
   }
 }
