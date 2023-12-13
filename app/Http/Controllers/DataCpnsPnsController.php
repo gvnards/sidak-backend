@@ -11,10 +11,10 @@ class DataCpnsPnsController extends Controller
   public function getDataCpnsPns($idPegawai, Request $request) {
     $authenticated = $this->isAuth($request)['authenticated'];
     $username = $this->isAuth($request)['username'];
-    if(!$authenticated) return $this->encrypt($username, json_encode([
+    if(!$authenticated) return [
       'message' => $authenticated == true ? 'Authorized' : 'Not Authorized',
       'status' => $authenticated === true ? 1 : 0
-    ]));
+    ];
     $data = json_decode(DB::table('m_pegawai')->join('m_data_cpns_pns', 'm_pegawai.id', '=', 'm_data_cpns_pns.idPegawai')->where([
       ['m_pegawai.id', '=', $idPegawai]
     ])->get([
@@ -22,20 +22,24 @@ class DataCpnsPnsController extends Controller
     ]), true);
     $data[0]['dokumenSkCpns'] = $this->getBlobDokumen($data[0]['idDokumenSkCpns'], 'cpns', 'pdf');
     $data[0]['dokumenSkPns'] = $this->getBlobDokumen($data[0]['idDokumenSkPns'], 'pns', 'pdf');
+    $dokumenKategori = (new DokumenController)->getDocumentCategory('cpns');
     $callback = [
-      'message' => count($data) == 1 ? $data : 'Data tidak ditemukan.',
+      'message' => [
+        'dataCpnsPns' => $data,
+        'dokumenKategori' => $dokumenKategori
+      ],
       'status' => count($data) == 1 ? 2 : 3
     ];
-    return $this->encrypt($username, json_encode($callback));
+    return $callback;
   }
 
   public function updateDataCpnsPns($id, Request $request) {
     $authenticated = $this->isAuth($request)['authenticated'];
     $username = $this->isAuth($request)['username'];
-    if(!$authenticated) return $this->encrypt($username, json_encode([
+    if(!$authenticated) return [
       'message' => $authenticated == true ? 'Authorized' : 'Not Authorized',
       'status' => $authenticated === true ? 1 : 0
-    ]));
+    ];
     $message = json_decode($this->decrypt($username, $request->message), true);
     $dataCpnsPns = json_decode(DB::table('m_data_cpns_pns')->where([
       ['id', '=', $id]
@@ -97,6 +101,6 @@ class DataCpnsPnsController extends Controller
       'message' => $data == 1 ? 'Data berhasil disimpan.' : 'Data gagal disimpan.',
       'status' => $data == 1 ? 2 : 3
     ];
-    return $this->encrypt($username, json_encode($callback));
+    return $callback;
   }
 }
