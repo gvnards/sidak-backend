@@ -21,10 +21,10 @@ class DataGolonganPangkatController extends Controller
     if($idDataGolPang === null) {
       $authenticated = $this->isAuth($request)['authenticated'];
       $username = $this->isAuth($request)['username'];
-      if(!$authenticated) return $this->encrypt($username, json_encode([
+      if(!$authenticated) return [
         'message' => $authenticated == true ? 'Authorized' : 'Not Authorized',
         'status' => $authenticated === true ? 1 : 0
-      ]));
+      ];
       $data = DB::table('m_pegawai')->join('m_data_pangkat', 'm_pegawai.id', '=', 'm_data_pangkat.idPegawai')->join('m_daftar_pangkat', 'm_data_pangkat.idDaftarPangkat', '=', 'm_daftar_pangkat.id')->whereIn('m_data_pangkat.idUsulanStatus', [3, 4])->where([
         ['m_pegawai.id', '=', $idPegawai],
         ['m_data_pangkat.idUsulanHasil', '=', 1],
@@ -47,26 +47,26 @@ class DataGolonganPangkatController extends Controller
       'message' => $data,
       'status' => 2
     ];
-    return $this->encrypt($username, json_encode($callback));
+    return $callback;
   }
 
   public function insertDataGolPang($id=NULL, Request $request) {
     $authenticated = $this->isAuth($request)['authenticated'];
     $username = $this->isAuth($request)['username'];
-    if(!$authenticated) return $this->encrypt($username, json_encode([
+    if(!$authenticated) return [
       'message' => $authenticated == true ? 'Authorized' : 'Not Authorized',
       'status' => $authenticated === true ? 1 : 0
-    ]));
+    ];
     if ($id !== NULL) {
       $countIsAny = count(json_decode(DB::table('m_data_pangkat')->where([
         ['idDataPangkatUpdate', '=', $id],
         ['idUsulanHasil', '=', 3]
       ])->get()->toJson(), true));
       if ($countIsAny > 0) {
-        return $this->encrypt($username, json_encode([
+        return [
           'message' => "Maaf, data sudah pernah diusulkan sebelumnya untuk perubahan.\nSilahkan menunggu data terverifikasi terlebih dahulu.",
           'status' => 3
-        ]));
+        ];
       }
     }
     $message = json_decode($this->decrypt($username, $request->message), true);
@@ -108,16 +108,16 @@ class DataGolonganPangkatController extends Controller
       'message' => $data == 1 ? "Data berhasil diusulkan untuk $method.\nSilahkan cek status usulan secara berkala pada Menu Usulan." : "Data gagal diusulkan untuk $method.",
       'status' => $data == 1 ? 2 : 3
     ];
-    return $this->encrypt($username, json_encode($callback));
+    return $callback;
   }
 
   public function getDataGolPangCreated(Request $request) {
     $authenticated = $this->isAuth($request)['authenticated'];
     $username = $this->isAuth($request)['username'];
-    if(!$authenticated) return $this->encrypt($username, json_encode([
+    if(!$authenticated) return [
       'message' => $authenticated == true ? 'Authorized' : 'Not Authorized',
       'status' => $authenticated === true ? 1 : 0
-    ]));
+    ];
     $jenisGolonganPangkat = $this->getJenisGolPang();
     $daftarGolonganPangkat = $this->getDaftarGolPang();
     $dokumenKategori = (new DokumenController)->getDocumentCategory('pangkat');
@@ -129,16 +129,16 @@ class DataGolonganPangkatController extends Controller
       ],
       'status' => 2
     ];
-    return $this->encrypt($username, json_encode($callback));
+    return $callback;
   }
 
   public function getDataGolPangDetail(Request $request, $idPegawai, $idDataGolPang) {
     $authenticated = $this->isAuth($request)['authenticated'];
     $username = $this->isAuth($request)['username'];
-    if(!$authenticated) return $this->encrypt($username, json_encode([
+    if(!$authenticated) return [
       'message' => $authenticated == true ? 'Authorized' : 'Not Authorized',
       'status' => $authenticated === true ? 1 : 0
-    ]));
+    ];
     $jenisGolonganPangkat = $this->getJenisGolPang();
     $daftarGolonganPangkat = $this->getDaftarGolPang();
     $dokumenKategori = (new DokumenController)->getDocumentCategory('pangkat');
@@ -152,6 +152,6 @@ class DataGolonganPangkatController extends Controller
       ],
       'status' => 2
     ];
-    return $this->encrypt($username, json_encode($callback));
+    return $callback;
   }
 }
