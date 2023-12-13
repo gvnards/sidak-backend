@@ -12,10 +12,10 @@ class DataJabatanController extends Controller
     if($idDataJabatan === null) {
       $authenticated = $this->isAuth($request)['authenticated'];
       $username = $this->isAuth($request)['username'];
-      if(!$authenticated) return $this->encrypt($username, json_encode([
+      if(!$authenticated) return [
         'message' => $authenticated == true ? 'Authorized' : 'Not Authorized',
         'status' => $authenticated === true ? 1 : 0
-      ]));
+      ];
       $data = DB::table('m_pegawai')->join('m_data_jabatan', 'm_pegawai.id', '=', 'm_data_jabatan.idPegawai')->join('m_jabatan', 'm_data_jabatan.idJabatan', '=', 'm_jabatan.id')->join('m_jenis_jabatan', 'm_jabatan.idJenisJabatan', '=', 'm_jenis_jabatan.id')->where([
         ['m_pegawai.id', '=', $idPegawai],
         ['m_data_jabatan.idUsulanHasil', '=', 1],
@@ -42,16 +42,16 @@ class DataJabatanController extends Controller
       'message' => $data,
       'status' => 2
     ];
-    return $this->encrypt($username, json_encode($callback));
+    return $callback;
   }
 
   public function insertDataJabatan($id=NULL, Request $request) {
     $authenticated = $this->isAuth($request)['authenticated'];
     $username = $this->isAuth($request)['username'];
-    if(!$authenticated) return $this->encrypt($username, json_encode([
+    if(!$authenticated) return [
       'message' => $authenticated == true ? 'Authorized' : 'Not Authorized',
       'status' => $authenticated === true ? 1 : 0
-    ]));
+    ];
     $message = json_decode($this->decrypt($username, $request->message), true);
     if ($id !== NULL) {
       $countIsAny = count(json_decode(DB::table('m_data_jabatan')->where([
@@ -59,10 +59,10 @@ class DataJabatanController extends Controller
         ['idUsulanHasil', '=', 3]
       ])->get()->toJson(), true));
       if ($countIsAny > 0) {
-        return $this->encrypt($username, json_encode([
+        return [
           'message' => "Maaf, data sudah pernah diusulkan sebelumnya untuk perubahan.\nSilahkan menunggu data terverifikasi terlebih dahulu.",
           'status' => 3
-        ]));
+        ];
       }
     } else {
       // check ketika sudah ada data yg ditambahkan dan belum diapprove, return info tunggu disahkan
@@ -72,10 +72,10 @@ class DataJabatanController extends Controller
         ['m_data_jabatan.idUsulanHasil', '=', 3]
       ])->get()));
       if ($countIsAny > 0) {
-        return $this->encrypt($username, json_encode([
+        return [
           'message' => "Maaf, Data Jabatan sudah ada yang ditambahkan tetapi belum diverifikasi.\nSilahkan menunggu data terverifikasi terlebih dahulu.",
           'status' => 3
-        ]));
+        ];
       }
     }
     $jabatanCount = json_decode(DB::table('m_jabatan')->where([
@@ -137,7 +137,7 @@ class DataJabatanController extends Controller
       'message' => $data == 1 ? "Data berhasil diusulkan untuk $method.\nSilahkan cek status usulan secara berkala pada Menu Usulan." : "Data gagal diusulkan untuk $method.",
       'status' => $data == 1 ? 2 : 3
     ];
-    return $this->encrypt($username, json_encode($callback));
+    return $callback;
   }
 
   private function getAllJabatan() {
@@ -183,10 +183,10 @@ class DataJabatanController extends Controller
   public function getDataJabatanCreated(Request $request) {
     $authenticated = $this->isAuth($request)['authenticated'];
     $username = $this->isAuth($request)['username'];
-    if(!$authenticated) return $this->encrypt($username, json_encode([
+    if(!$authenticated) return [
       'message' => $authenticated == true ? 'Authorized' : 'Not Authorized',
       'status' => $authenticated === true ? 1 : 0
-    ]));
+    ];
     $jabatan = $this->getAllJabatan();
     $unitOrganisasi = $this->getAllUnitOrganisasi();
     $tugasTambahan = $this->getAllTugasTambahan();
@@ -200,16 +200,16 @@ class DataJabatanController extends Controller
       ],
       'status' => 2
     ];
-    return $this->encrypt($username, json_encode($callback));
+    return $callback;
   }
 
   public function getDataJabatanDetail(Request $request, $idPegawai, $idDataJabatan) {
     $authenticated = $this->isAuth($request)['authenticated'];
     $username = $this->isAuth($request)['username'];
-    if(!$authenticated) return $this->encrypt($username, json_encode([
+    if(!$authenticated) return [
       'message' => $authenticated == true ? 'Authorized' : 'Not Authorized',
       'status' => $authenticated === true ? 1 : 0
-    ]));
+    ];
     $jabatan = $this->getAllJabatan();
     $unitOrganisasi = $this->getAllUnitOrganisasi();
     $tugasTambahan = $this->getAllTugasTambahan();
@@ -225,6 +225,6 @@ class DataJabatanController extends Controller
       ],
       'status' => 2
     ];
-    return $this->encrypt($username, json_encode($callback));
+    return $callback;
   }
 }
