@@ -12,10 +12,10 @@ class DataPasanganController extends Controller
     if($idDataPasangan === null) {
       $authenticated = $this->isAuth($request)['authenticated'];
       $username = $this->isAuth($request)['username'];
-      if(!$authenticated) return $this->encrypt($username, json_encode([
+      if(!$authenticated) return [
         'message' => $authenticated == true ? 'Authorized' : 'Not Authorized',
         'status' => $authenticated === true ? 1 : 0
-      ]));
+      ];
       $data = DB::table('m_pegawai')->join('m_data_pasangan', 'm_pegawai.id', '=', 'm_data_pasangan.idPegawai')->join('m_status_perkawinan', 'm_data_pasangan.idStatusPerkawinan', '=', 'm_status_perkawinan.id')->whereIn('m_data_pasangan.idUsulanStatus', [3, 4])->where([
         ['m_pegawai.id', '=', $idPegawai],
         ['m_data_pasangan.idUsulanHasil', '=', 1],
@@ -38,10 +38,10 @@ class DataPasanganController extends Controller
       'message' => $data,
       'status' => 2
     ];
-    return $this->encrypt($username, json_encode($callback));
+    return $callback;
   }
 
-  public function getStatusPerkawinan() {
+  private function getStatusPerkawinan() {
     $data = json_decode(DB::table('m_status_perkawinan')->get(), true);
     return $data;
   }
@@ -49,10 +49,10 @@ class DataPasanganController extends Controller
   public function insertDataPasangan($id=NULL, Request $request) {
     $authenticated = $this->isAuth($request)['authenticated'];
     $username = $this->isAuth($request)['username'];
-    if(!$authenticated) return $this->encrypt($username, json_encode([
+    if(!$authenticated) return [
       'message' => $authenticated == true ? 'Authorized' : 'Not Authorized',
       'status' => $authenticated === true ? 1 : 0
-    ]));
+    ];
     $message = json_decode($this->decrypt($username, $request->message), true);
     if ($id !== NULL) {
       $countIsAny = count(json_decode(DB::table('m_data_pasangan')->where([
@@ -60,10 +60,10 @@ class DataPasanganController extends Controller
         ['idUsulanHasil', '=', 3]
       ])->get()->toJson(), true));
       if ($countIsAny > 0) {
-        return $this->encrypt($username, json_encode([
+        return [
           'message' => "Maaf, data sudah pernah diusulkan sebelumnya untuk perubahan.\nSilahkan menunggu data terverifikasi terlebih dahulu.",
           'status' => 3
-        ]));
+        ];
       }
     } else {
       // check ketika sudah ada data yg ditambahkan dan belum diapprove, return info tunggu disahkan
@@ -73,10 +73,10 @@ class DataPasanganController extends Controller
         ['m_data_pasangan.idUsulanHasil', '=', 3]
       ])->get()));
       if ($countIsAny > 0) {
-        return $this->encrypt($username, json_encode([
+        return [
           'message' => "Maaf, Data Pasangan sudah ada yang ditambahkan tetapi belum diverifikasi.\nSilahkan menunggu data terverifikasi terlebih dahulu.",
           'status' => 3
-        ]));
+        ];
       }
     }
     $nip_ = DB::table('m_pegawai')->where([['id', '=', $message['idPegawai']]])->get();
@@ -115,16 +115,16 @@ class DataPasanganController extends Controller
       'message' => $data == 1 ? "Data berhasil diusulkan untuk $method.\nSilahkan cek status usulan secara berkala pada Menu Usulan." : "Data gagal diusulkan untuk $method.",
       'status' => $data == 1 ? 2 : 3
     ];
-    return $this->encrypt($username, json_encode($callback));
+    return $callback;
   }
 
   public function getDataPasanganCreated(Request $request, $idPegawai) {
     $authenticated = $this->isAuth($request)['authenticated'];
     $username = $this->isAuth($request)['username'];
-    if(!$authenticated) return $this->encrypt($username, json_encode([
+    if(!$authenticated) return [
       'message' => $authenticated == true ? 'Authorized' : 'Not Authorized',
       'status' => $authenticated === true ? 1 : 0
-    ]));
+    ];
 
     $dataStatusPerkawinan = $this->getStatusPerkawinan();
     $dokumenKategori = (new DokumenController)->getDocumentCategory('perkawinan');
@@ -136,16 +136,16 @@ class DataPasanganController extends Controller
       'status' => 2
     ];
 
-    return $this->encrypt($username, json_encode($callback));
+    return $callback;
   }
 
   public function getDataPasanganDetail(Request $request, $idPegawai, $idDataPasangan) {
     $authenticated = $this->isAuth($request)['authenticated'];
     $username = $this->isAuth($request)['username'];
-    if(!$authenticated) return $this->encrypt($username, json_encode([
+    if(!$authenticated) return [
       'message' => $authenticated == true ? 'Authorized' : 'Not Authorized',
       'status' => $authenticated === true ? 1 : 0
-    ]));
+    ];
 
     $dataStatusPerkawinan = $this->getStatusPerkawinan();
     $dokumenKategori = (new DokumenController)->getDocumentCategory('perkawinan');
@@ -159,6 +159,6 @@ class DataPasanganController extends Controller
       'status' => 2
     ];
 
-    return $this->encrypt($username, json_encode($callback));
+    return $callback;
   }
 }

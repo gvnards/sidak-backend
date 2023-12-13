@@ -12,10 +12,10 @@ class DataAnakController extends Controller
     if($idDataAnak === null) {
       $authenticated = $this->isAuth($request)['authenticated'];
       $username = $this->isAuth($request)['username'];
-      if(!$authenticated) return $this->encrypt($username, json_encode([
+      if(!$authenticated) return [
         'message' => $authenticated == true ? 'Authorized' : 'Not Authorized',
         'status' => $authenticated === true ? 1 : 0
-      ]));
+      ];
       $data = DB::table('m_pegawai')->join('m_data_anak', 'm_pegawai.id', '=', 'm_data_anak.idPegawai')->join('m_status_anak', 'm_data_anak.idStatusAnak', '=', 'm_status_anak.id')->whereIn('m_data_anak.idUsulanStatus', [3, 4])->where([
         ['m_pegawai.id', '=', $idPegawai],
         ['m_data_anak.idUsulanHasil', '=', 1],
@@ -38,15 +38,15 @@ class DataAnakController extends Controller
       'message' => $data,
       'status' => 2
     ];
-    return $this->encrypt($username, json_encode($callback));
+    return $callback;
   }
 
-  public function getStatusAnak() {
+  private function getStatusAnak() {
     $data = json_decode(DB::table('m_status_anak')->get(), true);
     return $data;
   }
 
-  public function getDataOrangTua($idPegawai) {
+  private function getDataOrangTua($idPegawai) {
     $data = json_decode(DB::table('m_pegawai')->join('m_data_pasangan', 'm_pegawai.id', '=', 'm_data_pasangan.idPegawai')->join('m_status_perkawinan', 'm_data_pasangan.idStatusPerkawinan', '=', 'm_status_perkawinan.id')->whereIn('m_data_pasangan.idUsulanStatus', [3, 4])->where([
       ['m_pegawai.id', '=', $idPegawai],
       ['m_data_pasangan.idUsulan', '=', 1],
@@ -61,10 +61,10 @@ class DataAnakController extends Controller
   public function insertDataAnak($id=NULL, Request $request) {
     $authenticated = $this->isAuth($request)['authenticated'];
     $username = $this->isAuth($request)['username'];
-    if(!$authenticated) return $this->encrypt($username, json_encode([
+    if(!$authenticated) return [
       'message' => $authenticated == true ? 'Authorized' : 'Not Authorized',
       'status' => $authenticated === true ? 1 : 0
-    ]));
+    ];
     $message = json_decode($this->decrypt($username, $request->message), true);
     if ($id !== NULL) {
       $countIsAny = count(json_decode(DB::table('m_data_anak')->where([
@@ -72,10 +72,10 @@ class DataAnakController extends Controller
         ['idUsulanHasil', '=', 3]
       ])->get()->toJson(), true));
       if ($countIsAny > 0) {
-        return $this->encrypt($username, json_encode([
+        return [
           'message' => "Maaf, data sudah pernah diusulkan sebelumnya untuk perubahan.\nSilahkan menunggu data terverifikasi terlebih dahulu.",
           'status' => 3
-        ]));
+        ];
       }
     } else {
       // check ketika sudah ada data yg ditambahkan dan belum diapprove, return info tunggu disahkan
@@ -85,10 +85,10 @@ class DataAnakController extends Controller
         ['m_data_anak.idUsulanHasil', '=', 3]
       ])->get()));
       if ($countIsAny > 0) {
-        return $this->encrypt($username, json_encode([
+        return [
           'message' => "Maaf, Data Anak sudah ada yang ditambahkan tetapi belum diverifikasi.\nSilahkan menunggu data terverifikasi terlebih dahulu.",
           'status' => 3
-        ]));
+        ];
       }
     }
     $nip_ = DB::table('m_pegawai')->where([['id', '=', $message['idPegawai']]])->get();
@@ -127,16 +127,16 @@ class DataAnakController extends Controller
       'message' => $data == 1 ? "Data berhasil diusulkan untuk $method.\nSilahkan cek status usulan secara berkala pada Menu Usulan." : "Data gagal diusulkan untuk $method.",
       'status' => $data == 1 ? 2 : 3
     ];
-    return $this->encrypt($username, json_encode($callback));
+    return $callback;
   }
 
   public function getDataAnakCreated(Request $request, $idPegawai) {
     $authenticated = $this->isAuth($request)['authenticated'];
     $username = $this->isAuth($request)['username'];
-    if(!$authenticated) return $this->encrypt($username, json_encode([
+    if(!$authenticated) return [
       'message' => $authenticated == true ? 'Authorized' : 'Not Authorized',
       'status' => $authenticated === true ? 1 : 0
-    ]));
+    ];
 
     $dataOrangTua = $this->getDataOrangTua($idPegawai);
     $dataStatusAnak = $this->getStatusAnak();
@@ -150,16 +150,16 @@ class DataAnakController extends Controller
       'status' => 2
     ];
 
-    return $this->encrypt($username, json_encode($callback));
+    return $callback;
   }
 
   public function getDataAnakDetail(Request $request, $idPegawai, $idDataAnak) {
     $authenticated = $this->isAuth($request)['authenticated'];
     $username = $this->isAuth($request)['username'];
-    if(!$authenticated) return $this->encrypt($username, json_encode([
+    if(!$authenticated) return [
       'message' => $authenticated == true ? 'Authorized' : 'Not Authorized',
       'status' => $authenticated === true ? 1 : 0
-    ]));
+    ];
 
     $dataOrangTua = $this->getDataOrangTua($idPegawai);
     $dataStatusAnak = $this->getStatusAnak();
@@ -175,6 +175,6 @@ class DataAnakController extends Controller
       'status' => 2
     ];
 
-    return $this->encrypt($username, json_encode($callback));
+    return $callback;
   }
 }
