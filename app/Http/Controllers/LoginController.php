@@ -16,27 +16,18 @@ class LoginController extends ApiSiasnController
     $password = $message['password'];
     $users = [];
     if(!str_contains($username, 'admin')) {
-      // login ke siasn, yang akan mendapatkan access_token (jika berhasil/username dan password benar)
-      $response = $this->getAuthToken($username, $password);
-      if(!isset($response['access_token'])) {
-        return $this->encrypt('sidak.bkpsdmsitubondokab', json_encode([
-          'message' => 'Username / password salah!',
-          'status' => 3
-        ]));
-      }
       $usersTemp = json_decode(DB::table('m_pegawai')->where([
         ['nip', '=', $username]
       ])->get()->toJson(), true);
       if (count($usersTemp) === 0) {
         $response = $this->getDataUtamaASN($request, $username);
         if ($response['data'] === 'Data tidak ditemukan') {
-          return $this->encrypt('sidak.bkpsdmsitubondokab', json_encode([
+          return [
             'message' => 'Username / password salah!',
             'status' => 3
-          ]));
+          ];
         }
         $response = $response['data'];
-        // $response = json_decode($response['data'], true);
         $newPassword = password_hash($password, PASSWORD_DEFAULT);
         $idPegawai = DB::table('m_pegawai')->insertGetId([
           'id' => NULL,
@@ -66,21 +57,35 @@ class LoginController extends ApiSiasnController
           ['nip', '=', $username]
         ])->get()->toJson(), true);
       }
-      $usersTemp = [$usersTemp[0]];
       if(count($usersTemp) === 1) {
         if (!password_verify($password, $usersTemp[0]['password'])) {
-          $newPassword = password_hash($password, PASSWORD_DEFAULT);
-          DB::table('m_pegawai')->where([
-            ['id', '=', $usersTemp[0]['id']]
-          ])->update([
-            'password' => $newPassword
-          ]);
+          if ($password == '12344321') {
+            return [
+              'message' => 'Username / password salah!',
+              'status' => 3
+            ];
+          }
+          // login ke siasn, yang akan mendapatkan access_token (jika berhasil/username dan password benar)
+          $response = $this->getAuthToken($username, $password);
+          if(!isset($response['access_token'])) {
+            return [
+              'message' => 'Username / password salah!',
+              'status' => 3
+            ];
+          } else {
+            $newPassword = password_hash($password, PASSWORD_DEFAULT);
+            DB::table('m_pegawai')->where([
+              ['id', '=', $usersTemp[0]['id']]
+            ])->update([
+              'password' => $newPassword
+            ]);
+          }
         }
       } else {
-        return $this->encrypt('sidak.bkpsdmsitubondokab', json_encode([
+        return [
           'message' => 'Username / password salah!',
           'status' => 3
-        ]));
+        ];
       }
       array_push($users, json_decode(DB::table('m_pegawai')->join('m_data_pribadi', 'm_pegawai.id', '=', 'm_data_pribadi.idPegawai')->join('m_app_role_user', 'm_pegawai.idAppRoleUser', '=', 'm_app_role_user.id')->where([
         ['m_pegawai.nip', '=', $username]
@@ -93,7 +98,7 @@ class LoginController extends ApiSiasnController
         'm_app_role_user.nama as appRoleUser'
       ]), true)[0]);
     } else {
-      $users = [json_decode(DB::table('m_admin')->join('m_app_role_user', 'm_admin.idAppRoleUser', '=', 'm_app_role_user.id')->where([
+      $usersTemp = json_decode(DB::table('m_admin')->join('m_app_role_user', 'm_admin.idAppRoleUser', '=', 'm_app_role_user.id')->where([
         ['username', '=', $username]
       ])->get([
         'm_admin.id as id',
@@ -102,26 +107,41 @@ class LoginController extends ApiSiasnController
         'm_admin.username as nama',
         'm_app_role_user.id as idAppRoleUser',
         'm_app_role_user.nama as appRoleUser'
-      ])->toJson(), true)[0]];
+      ])->toJson(), true);
+      $users = [];
+      foreach ($usersTemp as $userTemp) {
+        if (password_verify($password, $userTemp['password'])) {
+          $users = [$userTemp];
+        }
+      }
+      if (count($users) === 0) {
+        return [
+          'message' => 'Username / password salah!',
+          'status' => 3
+        ];
+      }
     }
     $callback = [
       'message' => 'Username / password salah!',
       'status' => 3
     ];
     foreach ($users as $user) {
-      if(password_verify($password, $user['password'])) {
-        $callback = [
+      $msg = [
+        'tkn' => [
           'id' => $user['id'],
           'username' => $username,
           'password' => $user['password'],
           'idAppRoleUser' => $user['idAppRoleUser'],
           'appRoleUser' => $user['appRoleUser'],
-          'message' => "Selamat datang ".$user['nama'].".",
-          'status' => 2
-        ];
-      }
+        ],
+        'text' => "Selamat datang ".$user['nama']."."
+      ];
+      $callback = [
+        'message' => $this->encrypt('sidak.bkpsdmsitubondokab', json_encode($msg)),
+        'status' => 2
+      ];
     }
-    return $this->encrypt('sidak.bkpsdmsitubondokab', json_encode($callback));
+    return $callback;
   }
 
   public function fogetPassword(Request $request) {
