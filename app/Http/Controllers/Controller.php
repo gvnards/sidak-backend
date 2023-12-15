@@ -124,9 +124,9 @@ class Controller extends BaseController
   }
 
   function deleteDokumen($idDokumen, $folderDokumen, $ekstensiDokumen, $deleteFromDb=true) {
-    if ($idDokumen == NULL) return;
+    if ($idDokumen === NULL || intval($idDokumen) === 1) return;
     $dokumen = json_decode(DB::table('m_dokumen')->where([
-      ['id', '=', $idDokumen]
+      ['id', '=', intval($idDokumen)]
     ])->get(), true)[0];
     try {
       Storage::delete('dokumen/'.$folderDokumen.'/'.$dokumen['nama'].'.'.$ekstensiDokumen);
