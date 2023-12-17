@@ -44,66 +44,18 @@ class ListPegawaiController extends Controller
         'pangkat as pangkat'
       ]);
     }
+    $namaUnitOrganisasi = json_decode(DB::table('m_admin')->join('m_unit_organisasi', 'm_admin.unitOrganisasi', '=', 'm_unit_organisasi.kodeKomponen')->where([
+      ['m_admin.username', '=', $username]
+    ])->get([
+      'm_unit_organisasi.nama as unitOrganisasi'
+    ]), true);
     $callback = [
-      'message' => $data,
+      'message' => [
+        'pegawai' => $data,
+        'unitOrganisasi' => $namaUnitOrganisasi[0]['unitOrganisasi']
+      ],
       'status' => 2
     ];
-    return $this->encrypt($username, json_encode($callback));
-  }
-  public function getTotalPegawai(Request $request) {
-    $authenticated = $this->isAuth($request)['authenticated'];
-    $username = $this->isAuth($request)['username'];
-    if (!$authenticated) return $this->encrypt($username, json_encode([
-      'message' => $authenticated == true ? 'Authorized' : 'Not Authorized',
-      'status' => $authenticated === true ? 1 : 0
-    ]));
-
-    $message = $this->decrypt('sidak.bkpsdmsitubondokab', $request->header('Authorization'));
-    $message = json_decode($message, true);
-    $idAppRoleUser = $message['idAppRoleUser'];
-    $kodeKomponenAdmin = '';
-    $kdKom = DB::table('m_admin')->where('username', '=', $username)->get();
-    foreach(json_decode($kdKom, true) as $key => $value) {
-      $kodeKomponenAdmin = $kodeKomponenAdmin.$value['unitOrganisasi'].'%';
-    }
-    if ($idAppRoleUser === 1) {
-      $data = DB::table('v_short_brief')->groupBy('id')->get([
-        'id as id',
-      ]);
-    } else {
-      $data = DB::table('v_short_brief')->where('kodeKomponen', 'LIKE', $kodeKomponenAdmin)->groupBy('id')->get([
-        'id as id',
-      ]);
-    }
-    $callback = [
-      'message' => count($data),
-      'status' => 2
-    ];
-    return $this->encrypt($username, json_encode($callback));
-  }
-  public function getNamUnitOrganisasi(Request $request) {
-    $authenticated = $this->isAuth($request)['authenticated'];
-    $username = $this->isAuth($request)['username'];
-    if (!$authenticated) return $this->encrypt($username, json_encode([
-      'message' => $authenticated == true ? 'Authorized' : 'Not Authorized',
-      'status' => $authenticated === true ? 1 : 0
-    ]));
-
-    $message = $this->decrypt('sidak.bkpsdmsitubondokab', $request->header('Authorization'));
-    $message = json_decode($message, true);
-    $idAppRoleUser = $message['idAppRoleUser'];
-    $kodeKomponenAdmin = '';
-    $kdKom = DB::table('m_admin')->where('username', '=', $username)->get();
-    foreach(json_decode($kdKom, true) as $key => $value) {
-      $kodeKomponenAdmin = $kodeKomponenAdmin.$value['unitOrganisasi'];
-    }
-    $data = DB::table('m_unit_organisasi')->where('kodeKomponen', '=', $kodeKomponenAdmin)->get([
-      'nama as namaUnitOrganisasi',
-    ]);
-    $callback = [
-      'message' => json_decode($data, true)[0]['namaUnitOrganisasi'],
-      'status' => 2
-    ];
-    return $this->encrypt($username, json_encode($callback));
+    return $callback;
   }
 }

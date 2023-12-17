@@ -134,8 +134,6 @@ Route::get('dokumen-elektronik/list/{idPegawai}', 'DataDokumenElektronikControll
 Route::get('dokumen-elektronik/detail/{idPegawai}/{idDaftarDokumen}', 'DataDokumenElektronikController@getDataDokumenElektronikDetail');
 
 Route::get('list-pegawai', 'ListPegawaiController@getListPegawai');
-Route::get('total-pegawai', 'ListPegawaiController@getTotalPegawai');
-Route::get('nama-unit-organisasi', 'ListPegawaiController@getNamUnitOrganisasi');
 
 //Users Account
 Route::get('user-asn', 'UsersController@getAllUserPegawai');
