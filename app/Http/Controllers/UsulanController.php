@@ -487,6 +487,12 @@ class UsulanController extends Controller
                 'updated_at' => Carbon::now()->format('Y-m-d H:i:s'),
               ]);
             }
+            if ($oldData['idBkn'] !== '') {
+              $dokumen = json_decode(DB::table('m_dokumen')->where([
+                ['id', '=', $newData[0]['idDokumen']]
+              ])->get(), true);
+              (new ApiSiasnController)->insertDokumenRiwayat($request, $oldData['idBkn'], 858, 'pangkat', $dokumen[0]['nama'], 'pdf');
+            }
             DB::table('m_data_pangkat')->where('id', '=', $idUsulan)->update([
               'idDokumen' => 1
             ]);
@@ -694,15 +700,22 @@ class UsulanController extends Controller
             (new ApiSiasnController)->insertDokumenRiwayat($request, $response['mapData']['rwJabatanId'], 872, 'jabatan', $dokumen['nama'], 'pdf');
           }
         } else if (intval($usulan['idUsulan']) === 2 && intval($message['idUsulanHasil']) == 1) {
-          $checkData = json_decode(DB::table('m_data_jabatan')->where([
+          $dataUpdate = json_decode(DB::table('m_data_jabatan')->where([
             ['id', '=', $idUsulan]
           ])->get(), true);
           $checkData = json_decode(DB::table('m_data_jabatan')->join('m_jabatan', 'm_data_jabatan.idJabatan', '=', 'm_jabatan.id')->where([
-            ['m_data_jabatan.id', '=', $checkData[0]['idDataJabatanUpdate']]
+            ['m_data_jabatan.id', '=', $dataUpdate[0]['idDataJabatanUpdate']]
           ])->get(['m_jabatan.*']), true);
           // if (str_contains($checkData[0]['kodeKomponen'], '-')) {
             $response = (new ApiSiasnSyncController)->insertRiwayatJabatan($request, $idUsulan);
           // }
+          // upload Dokumen
+          if ($checkData[0]['idBkn'] !== '') {
+            $dokumen = json_decode(DB::table('m_dokumen')->where([
+              ['id', '=', $dataUpdate[0]['idDokumen']]
+            ])->get(), true);
+            (new ApiSiasnController)->insertDokumenRiwayat($request, $response['mapData']['rwJabatanId'], 872, 'jabatan', $dokumen[0]['nama'], 'pdf');
+          }
         }
         $newData = json_decode(DB::table('m_data_jabatan')->where('id', '=', $idUsulan)->get(), true);
         $idUpdate = $newData[0]['idDataJabatanUpdate'];
