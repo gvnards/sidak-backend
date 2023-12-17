@@ -96,6 +96,7 @@ class RestApiToAppPangkatPensiunController extends RestApiController
     ])->orderBy('m_daftar_pangkat.id', 'desc')->orderBy('m_tingkat_pendidikan.id', 'desc')->limit(1)->get([
       'm_pegawai.id AS asn_id',
       'm_pegawai.nip AS asn_nip',
+      'm_data_pribadi.nama AS nama',
       'm_data_pribadi.tempatLahir AS asn_tempat_lahir',
       'm_data_pribadi.tanggalLahir AS asn_tanggal_lahir',
       'm_daftar_pangkat.golongan AS asn_golongan',
