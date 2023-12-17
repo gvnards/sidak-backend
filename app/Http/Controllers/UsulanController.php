@@ -71,7 +71,7 @@ class UsulanController extends Controller
       'message' => $allData,
       'status' => 2
     ];
-    return $this->encrypt($username, json_encode($callback));
+    return $callback;
   }
 
   public function getUsulanDetail($idUsulan, $usulanKriteria, Request $request)
@@ -328,7 +328,7 @@ class UsulanController extends Controller
       'message' => $data,
       'status' => 2
     ];
-    return $this->encrypt($username, json_encode($callback));
+    return $callback;
   }
 
   public function updateUsulan($idUsulan, $dataMultipleVerfivication=null, Request $request)
