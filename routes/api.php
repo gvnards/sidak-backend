@@ -41,8 +41,6 @@ Route::post('data-hukdis', 'DataHukumanDisiplinController@insertDataHukdis');
 Route::post('data-hukdis/{id}', 'DataHukumanDisiplinController@insertDataHukdis'); // for insert to update
 Route::post('data-jabatan', 'DataJabatanController@insertDataJabatan');
 Route::post('data-jabatan/{id}', 'DataJabatanController@insertDataJabatan'); // for insert to update
-Route::post('data-skp', 'DataSkpController@insertDataSkp');
-Route::post('data-skp/{id}', 'DataSkpController@insertDataSkp'); // for insert to update
 ROute::post('unit-organisasi', 'JabatanUnitOrganisasiController@insertUnitOrganisasi');
 Route::post('uang-kinerja', 'JabatanUnitOrganisasiController@insertUangKinerja');
 Route::post('kelas-jabatan', 'JabatanUnitOrganisasiController@insertKelasJabatan');
@@ -66,6 +64,7 @@ Route::put('usulan/{id}', 'UsulanController@updateUsulan');
 Route::put('usulan-multiple', 'UsulanController@updateUsulanMultiple');
 Route::put('change-password', 'LoginController@changePassword');
 Route::put('dokumen-elektronik', 'DataDokumenElektronikController@updateDataDokumenElektronik');
+Route::put('data-skp/{tahun}/{idDataSkp}', 'DataSkpController@updateDokumenSkp');
 
 Route::get('main-menu', 'MenuController@getMainMenu');
 Route::get('pegawai-menu', 'MenuController@getPegawaiMenu');
@@ -97,7 +96,7 @@ Route::get('data-golpang/created', 'DataGolonganPangkatController@getDataGolPang
 Route::get('data-golpang/{idPegawai}', 'DataGolonganPangkatController@getDataGolPang');
 Route::get('data-golpang/detail/{idPegawai}/{id}', 'DataGolonganPangkatController@getDataGolPangDetail');
 Route::get('data-skp/{idPegawai}', 'DataSkpController@getDataSkp');
-Route::get('data-skp/{idPegawai}/{id}', 'DataSkpController@getDataSkp');
+Route::get('data-skp/detail/{idPegawai}/{tahun}/{id}', 'DataSkpController@getDataSkpDetail');
 Route::get('jenis-jabatan', 'DataSkpController@getJenisJabatan');
 Route::get('jenis-peraturan-kinerja', 'DataSkpController@getJenisPeraturanKinerja');
 Route::get('status-pejabat-atasan-penilai', 'DataSkpController@getJenisStatusPejabatAtasanPenilai');
@@ -154,6 +153,7 @@ Route::get('siasn/pendidikan/riwayat/sync/{idPegawai}', 'ApiSiasnSyncController@
 Route::get('siasn/hukuman-disiplin/riwayat/sync/{idPegawai}', 'ApiSiasnSyncController@syncHukdisASN');
 Route::get('siasn/penghargaan/riwayat/sync/{idPegawai}', 'ApiSiasnSyncController@syncPenghargaanASN');
 Route::get('siasn/angka-kredit/riwayat/sync/{idPegawai}', 'ApiSiasnSyncController@syncAngkaKreditASN');
+Route::get('siasn/skp/riwayat/sync/{idPegawai}', 'ApiSiasnSyncController@syncSkpASN');
 
 // API SIASN MASTER
 /// DOKUMEN
@@ -182,7 +182,7 @@ Route::get('siasn/angka-kredit/riwayat/sync/{idPegawai}', 'ApiSiasnSyncControlle
 // Route::get('acc', 'ApiSiasnController@getAllToken');
 // Route::post('jajal-hukdis', 'ApiSiasnController@insertRiwayatHukdisASN');
 /// DATA SKP DAN SKP 2022
-Route::get('siasn/get/skp/{nipBaru}', 'ApiSiasnController@getRiwayatSkpASN');
+// Route::get('siasn/get/skp/{nipBaru}', 'ApiSiasnController@getRiwayatSkpASN');
 
 
 

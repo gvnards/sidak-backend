@@ -617,6 +617,12 @@ class ApiSiasnSyncController extends ApiSiasnController
     ///// get data riwayat jabatan dari siasn
     $pangkatGolonganFromSiasn = $this->getRiwayatPangkatGolonganASN($request, $nipBaru);
     $pangkatGolonganFromSiasn = $pangkatGolonganFromSiasn['data'];
+    if ($pangkatGolonganFromSiasn == "Data tidak ditemukan") {
+      return $this->encrypt($username, json_encode([
+        'message' => 'Terjadi kesalahan pada server MySAPK.',
+        'status' => 3
+      ]));
+    }
 
     ///// get jabatan asn dari sidak
     $pangkatGolonganFromSidak = DB::table('m_data_pangkat')->where([
@@ -1055,5 +1061,233 @@ class ApiSiasnSyncController extends ApiSiasnController
     ];
     $response = $this->insertRiwayatAngkaKreditASN($request, $dataToSiasn);
     return $response;
+  }
+  public function syncSkpASN(Request $request, $idPegawai) {
+    // $authenticated = $this->isAuth($request)['authenticated'];
+    // $username = $this->isAuth($request)['username'];
+    // if(!$authenticated) return [
+    //   'message' => $authenticated == true ? 'Authorized' : 'Not Authorized',
+    //   'status' => $authenticated === true ? 1 : 0
+    // ];
+
+    $getAsn = json_decode(DB::table('m_pegawai')->where([
+      ['id', '=', $idPegawai]
+    ])->get(), true);
+    // if (count($getAsn) === 0) {
+    //   return $this->encrypt($username, json_encode([
+    //     'message' => 'Data ASN tidak ditemukan.',
+    //     'status' => 3
+    //   ]));
+    // }
+    $nipBaru = $getAsn[0]['nip'];
+
+    $skpFromSiasn = $this->getRiwayatSkpASN($request, $nipBaru);
+
+    if(!isset($skpFromSiasn['skp']['data'])) $skpFromSiasn['skp']['data'] = [];
+    if(!isset($skpFromSiasn['skp2022']['data'])) $skpFromSiasn['skp2022']['data'] = [];
+
+    $skpFromSidak = [
+      'skp' => json_decode(DB::table('m_data_skp')->where([
+        ['idPegawai', '=', $idPegawai]
+      ])->get(), true),
+      'skp2022' => json_decode(DB::table('m_data_skp_2022')->where([
+        ['idPegawai', '=', $idPegawai]
+      ])->get(), true)
+    ];
+
+    /// check jika tidak ada di siasn tp ada di sidak ada
+    $countSkpSidak = count($skpFromSidak['skp']);
+    $countSkp2022Sidak = count($skpFromSidak['skp2022']);
+    $lengthIterationSidak = $countSkpSidak > $countSkp2022Sidak ? $countSkpSidak : $countSkp2022Sidak;
+    $countSkpSiasn = count($skpFromSiasn['skp']['data']);
+    $countSkp2022Siasn = count($skpFromSiasn['skp2022']['data']);
+    $lengthIterationSiasn = $countSkpSiasn > $countSkp2022Siasn ? $countSkpSiasn : $countSkp2022Siasn;
+    $listDeletedSkp = [];
+    $listDeletedSkp2022 = [];
+    for ($i = 0; $i < $lengthIterationSidak; $i++) {
+      $isSkpFound = false;
+      $isSkp2022Found = false;
+      for ($j = 0; $j < $lengthIterationSiasn; $j++) {
+        if ($i < $countSkpSidak && $j < $countSkpSiasn) {
+          if (($skpFromSidak['skp'][$i]['idBkn'] !== '' || $skpFromSidak['skp'][$i]['idBkn'] !== null) && $skpFromSidak['skp'][$i]['idBkn'] === $skpFromSiasn['skp']['data'][$j]['id']) $isSkpFound = true;
+        }
+        if ($i < $countSkp2022Sidak && $j < $countSkp2022Siasn) {
+          if (($skpFromSidak['skp2022'][$i]['idBkn'] !== '' || $skpFromSidak['skp2022'][$i]['idBkn'] !== null) && $skpFromSidak['skp2022'][$i]['idBkn'] === $skpFromSiasn['skp2022']['data'][$j]['id']) $isSkp2022Found = true;
+        }
+      }
+      if (!$isSkpFound && $i < $countSkpSidak) {
+        DB::table('m_data_skp')->where([['id', '=', $skpFromSidak['skp'][$i]['id']]])->delete();
+        array_push($listDeletedSkp, $i);
+      }
+      if (!$isSkp2022Found && $i < $countSkp2022Sidak) {
+        DB::table('m_data_skp_2022')->where([['id', '=', $skpFromSidak['skp2022'][$i]['id']]])->delete();
+        array_push($listDeletedSkp2022, $i);
+      }
+    }
+
+    $countListDeletedSkp = count($listDeletedSkp);
+    $countListDeletedSkp2022 = count($listDeletedSkp2022);
+    if ($countListDeletedSkp > 0) {
+      for ($i = 0; $i < $countListDeletedSkp; $i++) {
+        unset($skpFromSidak['skp'][$listDeletedSkp[$i]]);
+      }
+      $skpFromSidak['skp'] = array_values($skpFromSidak['skp']);
+      $countSkpSidak = count($skpFromSidak['skp']);
+    }
+    if ($countListDeletedSkp2022 > 0) {
+      for ($i = 0; $i < $countListDeletedSkp2022; $i++) {
+        unset($skpFromSidak['skp2022'][$listDeletedSkp2022[$i]]);
+      }
+      $skpFromSidak['skp2022'] = array_values($skpFromSidak['skp2022']);
+      $countSkp2022Sidak = count($skpFromSidak['skp2022']);
+    }
+    $lengthIterationSidak = $countSkpSidak > $countSkp2022Sidak ? $countSkpSidak : $countSkp2022Sidak;
+
+    $daftarGolongan = json_decode(DB::table('m_daftar_pangkat')->get(), true);
+    $daftarJenisJabatan = json_decode(DB::table('m_jenis_jabatan')->get(), true);
+    $daftarJenisPeraturan = json_decode(DB::table('m_jenis_peraturan_kinerja')->get(), true);
+
+    /// check yg dari siasn
+    for ($i = 0; $i < $lengthIterationSiasn; $i++) {
+      $isSkpFound = false;
+      $isSkp2022Found = false;
+      for ($j = 0; $j < $lengthIterationSidak; $j++) {
+        if ($i < $countSkpSiasn && $j < $countSkpSidak) {
+          if ($skpFromSiasn['skp']['data'][$i]['id'] === $skpFromSidak['skp'][$j]['idBkn']) $isSkpFound = true;
+        }
+        if ($i < $countSkp2022Siasn && $j < $countSkp2022Sidak) {
+          if ($skpFromSiasn['skp2022']['data'][$i]['id'] === $skpFromSidak['skp2022'][$j]['idBkn']) $isSkp2022Found = true;
+        }
+      }
+      if ($i < $countSkpSiasn) {
+        $skp = $skpFromSiasn['skp']['data'][$i];
+        $idJenisJabatan = NULL;
+        foreach ($daftarJenisJabatan as $jenisJabatan) {
+          if ($jenisJabatan['idBkn'] == $skp['jenisJabatan']) $idJenisJabatan = $jenisJabatan['id'];
+        }
+        $idJenisPeraturanKinerja = NULL;
+        foreach ($daftarJenisPeraturan as $jenisPeraturan) {
+          if ($jenisPeraturan['idBkn'] == $skp['jenisPeraturanKinerjaKd']) $idJenisPeraturanKinerja = $jenisPeraturan['id'];
+          else if ($skp['jenisPeraturanKinerjaKd'] == '') $idJenisPeraturanKinerja = 2;
+        }
+        if ($isSkpFound) {
+          (new DataSkpController)->updateDataSkp([
+            'idJenisJabatan'=>intval($idJenisJabatan),
+            'tahun'=>$skp['tahun'],
+            'idJenisPeraturanKinerja'=>intval($idJenisPeraturanKinerja),
+            'nilaiSkp'=>$skp['nilaiSkp'],
+            'orientasiPelayanan'=>$skp['orientasiPelayanan'],
+            'integritas'=>$skp['integritas'],
+            'komitmen'=>$skp['komitmen'],
+            'disiplin'=>$skp['disiplin'],
+            'kerjaSama'=>$skp['kerjasama'],
+            'kepemimpinan'=>$skp['kepemimpinan'],
+            'nilaiPrestasiKerja'=>$skp['nilaiPrestasiKerja'],
+            'nilaiKonversi'=>$skp['konversiNilai'],
+            'nilaiIntegrasi'=>$skp['nilaiIntegrasi'],
+            'nilaiPerilakuKerja'=>$skp['nilaiPerilakuKerja'],
+            'inisiatifKerja'=>$skp['inisiatifKerja'],
+            'nilaiRataRata'=>$skp['nilairatarata'],
+            'jumlah'=>$skp['jumlah'],
+            'idStatusPejabatPenilai'=>$skp['statusPenilai'] == '-' || $skp['statusPenilai'] == '-' ? 2 : 1,
+            'nipNrpPejabatPenilai'=>$skp['penilaiNipNrp'],
+            'namaPejabatPenilai'=>$skp['penilaiNama'],
+            'jabatanPejabatPenilai'=>$skp['penilaiJabatan'],
+            'unitOrganisasiPejabatPenilai'=>$skp['penilaiUnorNama'],
+            'golonganPejabatPenilai'=>$skp['penilaiGolongan'],
+            'tmtGolonganPejabatPenilai'=>$skp['penilaiTmtGolongan'] == '' || $skp['penilaiTmtGolongan'] == null || $skp['penilaiTmtGolongan'] == '-' ? NULL : date('Y-m-d', strtotime($skp['penilaiTmtGolongan'])),
+            'idStatusAtasanPejabatPenilai'=>$skp['statusAtasanPenilai'] == '-' || $skp['statusAtasanPenilai'] == '-' ? 2 : 1,
+            'nipNrpAtasanPejabatPenilai'=>$skp['atasanPenilaiNipNrp'],
+            'namaAtasanPejabatPenilai'=>$skp['atasanPenilaiNama'],
+            'jabatanAtasanPejabatPenilai'=>$skp['atasanPenilaiJabatan'],
+            'unitOrganisasiAtasanPejabatPenilai'=>$skp['atasanPenilaiUnorNama'],
+            'golonganAtasanPejabatPenilai'=>$skp['atasanPenilaiGolongan'],
+            'tmtGolonganAtasanPejabatPenilai'=>$skp['atasanPenilaiTmtGolongan'] == '' || $skp['atasanPenilaiTmtGolongan'] == null || $skp['atasanPenilaiTmtGolongan'] == '-' ? NULL : date('Y-m-d', strtotime($skp['atasanPenilaiTmtGolongan'])),
+            'idBkn'=>$skp['id'],
+            'idPegawai'=>$idPegawai,
+          ]);
+        } else {
+          (new DataSkpController)->insertDataSkp($request, NULL, [
+            'idJenisJabatan'=>intval($idJenisJabatan),
+            'tahun'=>$skp['tahun'],
+            'idJenisPeraturanKinerja'=>intval($idJenisPeraturanKinerja),
+            'nilaiSkp'=>$skp['nilaiSkp'],
+            'orientasiPelayanan'=>$skp['orientasiPelayanan'],
+            'integritas'=>$skp['integritas'],
+            'komitmen'=>$skp['komitmen'],
+            'disiplin'=>$skp['disiplin'],
+            'kerjaSama'=>$skp['kerjasama'],
+            'kepemimpinan'=>$skp['kepemimpinan'],
+            'nilaiPrestasiKerja'=>$skp['nilaiPrestasiKerja'],
+            'nilaiKonversi'=>$skp['konversiNilai'],
+            'nilaiIntegrasi'=>$skp['nilaiIntegrasi'],
+            'nilaiPerilakuKerja'=>$skp['nilaiPerilakuKerja'],
+            'inisiatifKerja'=>$skp['inisiatifKerja'],
+            'nilaiRataRata'=>$skp['nilairatarata'],
+            'jumlah'=>$skp['jumlah'],
+            'idStatusPejabatPenilai'=>$skp['statusPenilai'] == '-' || $skp['statusPenilai'] == '-' ? 2 : 1,
+            'nipNrpPejabatPenilai'=>$skp['penilaiNipNrp'],
+            'namaPejabatPenilai'=>$skp['penilaiNama'],
+            'jabatanPejabatPenilai'=>$skp['penilaiJabatan'],
+            'unitOrganisasiPejabatPenilai'=>$skp['penilaiUnorNama'],
+            'golonganPejabatPenilai'=>$skp['penilaiGolongan'],
+            'tmtGolonganPejabatPenilai'=>$skp['penilaiTmtGolongan'] == '' || $skp['penilaiTmtGolongan'] == null || $skp['penilaiTmtGolongan'] == '-' ? NULL : date('Y-m-d', strtotime($skp['penilaiTmtGolongan'])),
+            'idStatusAtasanPejabatPenilai'=>$skp['statusAtasanPenilai'] == '-' || $skp['statusAtasanPenilai'] == '-' ? 2 : 1,
+            'nipNrpAtasanPejabatPenilai'=>$skp['atasanPenilaiNipNrp'],
+            'namaAtasanPejabatPenilai'=>$skp['atasanPenilaiNama'],
+            'jabatanAtasanPejabatPenilai'=>$skp['atasanPenilaiJabatan'],
+            'unitOrganisasiAtasanPejabatPenilai'=>$skp['atasanPenilaiUnorNama'],
+            'golonganAtasanPejabatPenilai'=>$skp['atasanPenilaiGolongan'],
+            'tmtGolonganAtasanPejabatPenilai'=>$skp['atasanPenilaiTmtGolongan'] == '' || $skp['atasanPenilaiTmtGolongan'] == null || $skp['atasanPenilaiTmtGolongan'] == '-' ? NULL : date('Y-m-d', strtotime($skp['atasanPenilaiTmtGolongan'])),
+            'idBkn'=>$skp['id'],
+            'idPegawai'=>$idPegawai,
+          ]);
+        }
+      }
+      if ($i < $countSkp2022Siasn) {
+        $skp2022 = $skpFromSiasn['skp2022']['data'][$i];
+        $golonganPejabatPenilai = NULL;
+        foreach ($daftarGolongan as $gol) {
+          if ($gol['idBkn'] == $skp2022['penilaiGolonganId']) $golonganPejabatPenilai = $gol['id'];
+        }
+        if ($isSkp2022Found) {
+          (new DataSkpController)->updateDataSkp2022([
+            'id' => $skp2022['id'],
+            'idPegawai' => intval($idPegawai),
+            'tahun' => $skp2022['tahun'],
+            'perilakuKerja' => intval($skp2022['PerilakuKerjaNilai']),
+            'hasilKinerja' => intval($skp2022['hasilKinerjaNilai']),
+            'kuadranKinerja' => intval($skp2022['KuadranKinerjaNilai']),
+            'nipNrpPejabatPenilai' => $skp2022['nipNrpPenilai'],
+            'namaPejabatPenilai' => $skp2022['namaPenilai'],
+            'statusPejabatPenilai' => $skp2022['statusPenilai'] === 'NON ASN' ? 2 : 1,
+            'unitOrganisasiPejabatPenilai' => $skp2022['penilaiUnorNm'],
+            'jabatanPejabatPenilai' => $skp2022['penilaiJabatanNm'],
+            'golonganPejabatPenilai' => $golonganPejabatPenilai,
+          ]);
+        } else {
+          (new DataSkpController)->insertDataSkp2022($request, NULL, [
+            'id' => $skp2022['id'],
+            'idPegawai' => intval($idPegawai),
+            'tahun' => $skp2022['tahun'],
+            'perilakuKerja' => intval($skp2022['PerilakuKerjaNilai']),
+            'hasilKinerja' => intval($skp2022['hasilKinerjaNilai']),
+            'kuadranKinerja' => intval($skp2022['KuadranKinerjaNilai']),
+            'nipNrpPejabatPenilai' => $skp2022['nipNrpPenilai'],
+            'namaPejabatPenilai' => $skp2022['namaPenilai'],
+            'statusPejabatPenilai' => $skp2022['statusPenilai'] === 'NON ASN' ? 2 : 1,
+            'unitOrganisasiPejabatPenilai' => $skp2022['penilaiUnorNm'],
+            'jabatanPejabatPenilai' => $skp2022['penilaiJabatanNm'],
+            'golonganPejabatPenilai' => $golonganPejabatPenilai,
+          ]);
+        }
+      }
+    }
+
+    $callback = [
+      'message' => "Data SKP sudah berhasil disinkronisasi dari MySAPK.\nJika terdapat ketidaksesuaian data, dapat menghubungi Admin BKPSDM.",
+      'status' => 2
+    ];
+    return $callback;
   }
 }
