@@ -53,36 +53,32 @@ class DataJabatanController extends Controller
       'status' => $authenticated === true ? 1 : 0
     ];
     $message = json_decode($this->decrypt($username, $request->message), true);
-    if ($id !== NULL) {
-      $countIsAny = count(json_decode(DB::table('m_data_jabatan')->where([
-        ['idDataJabatanUpdate', '=', $id],
-        ['idUsulanHasil', '=', 3]
-      ])->get()->toJson(), true));
-      if ($countIsAny > 0) {
-        return [
-          'message' => "Maaf, data sudah pernah diusulkan sebelumnya untuk perubahan.\nSilahkan menunggu data terverifikasi terlebih dahulu.",
-          'status' => 3
-        ];
-      }
-    } else {
-      // check ketika sudah ada data yg ditambahkan dan belum diapprove, return info tunggu disahkan
-      $countIsAny = count(json_decode(DB::table('m_data_jabatan')->where([
+
+    /// ** START CHECK --> cek apakah data yang akan diusulkan itu sudah pernah diusulkan sebelumnya atau belum
+    if ($id === NULL) {
+      $checkData = json_decode(DB::table('m_data_jabatan')->where([
         ['m_data_jabatan.idPegawai', '=', intval($message['idPegawai'])],
         ['m_data_jabatan.idUsulan', '=', 1],
         ['m_data_jabatan.idUsulanHasil', '=', 3]
-      ])->get()));
-      if ($countIsAny > 0) {
-        return [
-          'message' => "Maaf, Data Jabatan sudah ada yang ditambahkan tetapi belum diverifikasi.\nSilahkan menunggu data terverifikasi terlebih dahulu.",
-          'status' => 3
-        ];
-      }
+      ])->get(), true);
+      if (count($checkData) > 0) return [
+        'message' => "Maaf, Data Jabatan sudah ada yang ditambahkan tetapi belum diverifikasi.\nSilahkan menunggu data terverifikasi terlebih dahulu.",
+        'status' => 3
+      ];
+    } else {
+      $checkData = json_decode(DB::table('m_data_jabatan')->where([
+        ['idDataJabatanUpdate', '=', $id],
+        ['idUsulanHasil', '=', 3]
+      ])->get(), true);
+      if (count($checkData) > 0) return [
+        'message' => "Maaf, data sudah pernah diusulkan sebelumnya untuk perubahan.\nSilahkan menunggu data terverifikasi terlebih dahulu.",
+        'status' => 3
+      ];
     }
-    $jabatanCount = json_decode(DB::table('m_jabatan')->where([
-      ['id', '=', $message['idJabatan']],
-      ['kodeKomponen', '=', $message['kodeKomponen']]
-    ])->get()->toJson(), true);
-    if (count($jabatanCount) === 0) {
+    /// ** END CHECK
+
+    /// ** START CHECK --> cek apakah kodeKomponen (unor) sama dengan kodeKomponenJabatan, kalo tidak, maka tambahkan Jabatan Baru
+    if ($message['kodeKomponen'] !== $message['kodeKomponenJabatan']) {
       $jabatanBaru = json_decode(DB::table('m_jabatan')->where([
         ['id', '=', $message['idJabatan']]
       ])->get()->toJson(), true)[0];
@@ -101,6 +97,8 @@ class DataJabatanController extends Controller
       ]);
       $message['idJabatan'] = $idJabatanBaru;
     }
+    /// ** END CHECK
+
     $nip_ = DB::table('m_pegawai')->where([['id', '=', $message['idPegawai']]])->get();
     foreach ($nip_ as $key => $value) {
       $nip = $value->nip;

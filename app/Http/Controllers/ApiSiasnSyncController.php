@@ -14,19 +14,19 @@ class ApiSiasnSyncController extends ApiSiasnController
   public function syncAngkaKreditASN(Request $request, $idPegawai) {
     $authenticated = $this->isAuth($request)['authenticated'];
     $username = $this->isAuth($request)['username'];
-    if(!$authenticated) return $this->encrypt($username, json_encode([
+    if(!$authenticated) return [
       'message' => $authenticated == true ? 'Authorized' : 'Not Authorized',
       'status' => $authenticated === true ? 1 : 0
-    ]));
+    ];
 
     $getAsn = json_decode(DB::table('m_pegawai')->where([
       ['id', '=', $idPegawai]
     ])->get(), true);
     if (count($getAsn) === 0) {
-      return $this->encrypt($username, json_encode([
+      return [
         'message' => 'Data ASN tidak ditemukan.',
         'status' => 3
-      ]));
+      ];
     }
     $nipBaru = $getAsn[0]['nip'];
 
@@ -34,16 +34,8 @@ class ApiSiasnSyncController extends ApiSiasnController
 
     if (!isset($angkaKreditFromSiasn['data'])) {
       $angkaKreditFromSiasn['data'] = [];
-      // return $this->encrypt($username, json_encode([
-      //   'message' => "Data Angka Kredit tidak dapat ditarik dari MySAPK.\nMasalah ini sedang ditangani oleh BKN.",
-      //   'status' => 3
-      // ]));
     } else if (gettype($angkaKreditFromSiasn['data']) != "array") {
       $angkaKreditFromSiasn['data'] = [];
-      // return $this->encrypt($username, json_encode([
-      //   'message' => "Data angka kredit sudah berhasil disinkronisasi dari MySAPK.\nJika terdapat ketidaksesuaian data, dapat menghubungi Admin BKPSDM.",
-      //   'status' => 2
-      // ]));
     }
     $angkaKreditFromSiasn = $angkaKreditFromSiasn['data'];
 
@@ -126,15 +118,15 @@ class ApiSiasnSyncController extends ApiSiasnController
       'message' => "Data angka kredit sudah berhasil disinkronisasi dari MySAPK.\nJika setelah sinkronisasi tidak ada angka kredit yang muncul, silahkan tambahkan angka kredit sesuai dengan dasar Sertifikat yang dimiliki.\n Dan jika terdapat ketidaksesuaian angka kredit, dapat menghubungi Admin BKPSDM.",
       'status' => 2
     ];
-    return $this->encrypt($username, json_encode($callback));
+    return $callback;
   }
   public function syncJabatanASN(Request $request, $idPegawai) {
     $authenticated = $this->isAuth($request)['authenticated'];
     $username = $this->isAuth($request)['username'];
-    if(!$authenticated) return $this->encrypt($username, json_encode([
+    if(!$authenticated) return [
       'message' => $authenticated == true ? 'Authorized' : 'Not Authorized',
       'status' => $authenticated === true ? 1 : 0
-    ]));
+    ];
 
     ///// get data asn untuk mendapatkan nip berdasarkan idPegawai
     $getAsn = DB::table('m_pegawai')->where([
@@ -142,10 +134,10 @@ class ApiSiasnSyncController extends ApiSiasnController
     ])->get()->toJson();
     $getAsn = json_decode($getAsn, true);
     if (count($getAsn) === 0) {
-      return $this->encrypt($username, json_encode([
+      return [
         'message' => 'Data ASN tidak ditemukan.',
         'status' => 3
-      ]));
+      ];
     }
     $nipBaru = $getAsn[0]['nip'];
 
@@ -153,16 +145,8 @@ class ApiSiasnSyncController extends ApiSiasnController
     $jabatanFromSiasn = $this->getRiwayatJabatanASN($request, $nipBaru);
     if (!isset($jabatanFromSiasn['data'])) {
       $jabatanFromSiasn['data'] = [];
-      // return $this->encrypt($username, json_encode([
-      //   'message' => "Data Jabatan tidak dapat ditarik dari MySAPK.\nMasalah ini sedang ditangani oleh BKN.",
-      //   'status' => 3
-      // ]));
     } else if (gettype($jabatanFromSiasn['data']) != "array") {
       $jabatanFromSiasn['data'] = [];
-      // return $this->encrypt($username, json_encode([
-      //   'message' => "Data Jabatan tidak dapat ditarik dari MySAPK.\nMasalah ini sedang ditangani oleh BKN.",
-      //   'status' => 3
-      // ]));
     }
     $jabatanFromSiasn = $jabatanFromSiasn['data'];
 
@@ -370,24 +354,24 @@ class ApiSiasnSyncController extends ApiSiasnController
       'message' => "Data jabatan sudah berhasil disinkronisasi dari MySAPK.\nData yang dapat disinkronisasi adalah data sesuai dengan SOTK dan Peta Jabatan saat ini.\nJika setelah sinkronisasi tidak ada jabatan yang muncul, silahkan tambahkan jabatan sesuai dengan dasar SK Jabatan Definitif Terakhir.\n Dan jika terdapat ketidaksesuaian jabatan, dapat menghubungi Admin BKPSDM.",
       'status' => 2
     ];
-    return $this->encrypt($username, json_encode($callback));
+    return $callback;
   }
   public function syncJabatanASNAll(Request $request, $from, $to) {
     $authenticated = $this->isAuth($request)['authenticated'];
     $username = $this->isAuth($request)['username'];
-    if(!$authenticated) return $this->encrypt($username, json_encode([
+    if(!$authenticated) return [
       'message' => $authenticated == true ? 'Authorized' : 'Not Authorized',
       'status' => $authenticated === true ? 1 : 0
-    ]));
+    ];
 
     $allPegawai = json_decode(DB::table('m_pegawai')->get()->toJson(), true);
     for($i=($from-1); $i<($to-1); $i++) {
       $this->syncJabatanASN($request, $allPegawai[$i]['id']);
     }
-    return $this->encrypt($username, json_encode([
+    return [
       'message' => "Sinkron ".($to-$from+1)." pegawai telah berhasil.",
       'status' => 2
-    ]));
+    ];
   }
   public function insertRiwayatJabatan(Request $request, $idUsulan) {
     $usulan = json_decode(DB::table('m_data_jabatan')->where([
@@ -426,10 +410,10 @@ class ApiSiasnSyncController extends ApiSiasnController
   public function syncDiklatASN(Request $request, $idPegawai) {
     $authenticated = $this->isAuth($request)['authenticated'];
     $username = $this->isAuth($request)['username'];
-    if(!$authenticated) return $this->encrypt($username, json_encode([
+    if(!$authenticated) return [
       'message' => $authenticated == true ? 'Authorized' : 'Not Authorized',
       'status' => $authenticated === true ? 1 : 0
-    ]));
+    ];
 
     ///// get data asn untuk mendapatkan nip berdasarkan idPegawai
     $getAsn = DB::table('m_pegawai')->where([
@@ -437,10 +421,10 @@ class ApiSiasnSyncController extends ApiSiasnController
     ])->get()->toJson();
     $getAsn = json_decode($getAsn, true);
     if (count($getAsn) === 0) {
-      return $this->encrypt($username, json_encode([
+      return [
         'message' => 'Data ASN tidak ditemukan.',
         'status' => 3
-      ]));
+      ];
     }
     $nipBaru = $getAsn[0]['nip'];
 
@@ -542,7 +526,7 @@ class ApiSiasnSyncController extends ApiSiasnController
       'message' => "Data diklat/kursus sudah berhasil disinkronisasi dari MySAPK.\nJika setelah sinkronisasi tidak ada diklat/kursus yang muncul, silahkan tambahkan diklat/kursus sesuai dengan dasar Sertifikat yang dimiliki.\n Dan jika terdapat ketidaksesuaian diklat/kursus, dapat menghubungi Admin BKPSDM.",
       'status' => 2
     ];
-    return $this->encrypt($username, json_encode($callback));
+    return $callback;
   }
   public function insertRiwayatDiklatKursus(Request $request, $idUsulan) {
     $usulan = json_decode(DB::table('m_data_diklat')->where([
@@ -596,10 +580,10 @@ class ApiSiasnSyncController extends ApiSiasnController
   public function syncPangkatGolonganASN(Request $request, $idPegawai) {
     $authenticated = $this->isAuth($request)['authenticated'];
     $username = $this->isAuth($request)['username'];
-    if(!$authenticated) return $this->encrypt($username, json_encode([
+    if(!$authenticated) return [
       'message' => $authenticated == true ? 'Authorized' : 'Not Authorized',
       'status' => $authenticated === true ? 1 : 0
-    ]));
+    ];
 
     ///// get data asn untuk mendapatkan nip berdasarkan idPegawai
     $getAsn = DB::table('m_pegawai')->where([
@@ -607,10 +591,10 @@ class ApiSiasnSyncController extends ApiSiasnController
     ])->get()->toJson();
     $getAsn = json_decode($getAsn, true);
     if (count($getAsn) === 0) {
-      return $this->encrypt($username, json_encode([
+      return [
         'message' => 'Data ASN tidak ditemukan.',
         'status' => 3
-      ]));
+      ];
     }
     $nipBaru = $getAsn[0]['nip'];
 
@@ -618,10 +602,10 @@ class ApiSiasnSyncController extends ApiSiasnController
     $pangkatGolonganFromSiasn = $this->getRiwayatPangkatGolonganASN($request, $nipBaru);
     $pangkatGolonganFromSiasn = $pangkatGolonganFromSiasn['data'];
     if ($pangkatGolonganFromSiasn == "Data tidak ditemukan") {
-      return $this->encrypt($username, json_encode([
+      return [
         'message' => 'Terjadi kesalahan pada server MySAPK.',
         'status' => 3
-      ]));
+      ];
     }
 
     ///// get jabatan asn dari sidak
@@ -685,15 +669,15 @@ class ApiSiasnSyncController extends ApiSiasnController
       'message' => "Data pangkat/golongan sudah berhasil disinkronisasi dari MySAPK.\nJika terdapat ketidaksesuaian pangkat/golongan, dapat menghubungi Admin BKPSDM.",
       'status' => 2
     ];
-    return $this->encrypt($username, json_encode($callback));
+    return $callback;
   }
   public function syncPendidikanASN(Request $request, $idPegawai) {
     $authenticated = $this->isAuth($request)['authenticated'];
     $username = $this->isAuth($request)['username'];
-    if(!$authenticated) return $this->encrypt($username, json_encode([
+    if(!$authenticated) return [
       'message' => $authenticated == true ? 'Authorized' : 'Not Authorized',
       'status' => $authenticated === true ? 1 : 0
-    ]));
+    ];
 
     ///// get data asn untuk mendapatkan nip berdasarkan idPegawai
     $getAsn = DB::table('m_pegawai')->where([
@@ -701,10 +685,10 @@ class ApiSiasnSyncController extends ApiSiasnController
     ])->get()->toJson();
     $getAsn = json_decode($getAsn, true);
     if (count($getAsn) === 0) {
-      return $this->encrypt($username, json_encode([
+      return [
         'message' => 'Data ASN tidak ditemukan.',
         'status' => 3
-      ]));
+      ];
     }
     $nipBaru = $getAsn[0]['nip'];
 
@@ -802,15 +786,15 @@ class ApiSiasnSyncController extends ApiSiasnController
       'message' => "Data pendidikan sudah berhasil disinkronisasi dari MySAPK.\nJika terdapat ketidaksesuaian pendidikan, dapat menghubungi Admin BKPSDM.",
       'status' => 2
     ];
-    return $this->encrypt($username, json_encode($callback));
+    return $callback;
   }
   public function syncHukdisASN(Request $request, $idPegawai) {
     $authenticated = $this->isAuth($request)['authenticated'];
     $username = $this->isAuth($request)['username'];
-    if(!$authenticated) return $this->encrypt($username, json_encode([
+    if(!$authenticated) return [
       'message' => $authenticated == true ? 'Authorized' : 'Not Authorized',
       'status' => $authenticated === true ? 1 : 0
-    ]));
+    ];
 
     ///// get data asn untuk mendapatkan nip berdasarkan idPegawai
     $getAsn = DB::table('m_pegawai')->where([
@@ -818,10 +802,10 @@ class ApiSiasnSyncController extends ApiSiasnController
     ])->get()->toJson();
     $getAsn = json_decode($getAsn, true);
     if (count($getAsn) === 0) {
-      return $this->encrypt($username, json_encode([
+      return [
         'message' => 'Data ASN tidak ditemukan.',
         'status' => 3
-      ]));
+      ];
     }
     $nipBaru = $getAsn[0]['nip'];
 
@@ -915,15 +899,15 @@ class ApiSiasnSyncController extends ApiSiasnController
       'message' => "Data hukuman disiplin sudah berhasil disinkronisasi dari MySAPK.\nJika terdapat ketidaksesuaian data, dapat menghubungi Admin BKPSDM.",
       'status' => 2
     ];
-    return $this->encrypt($username, json_encode($callback));
+    return $callback;
   }
   public function syncPenghargaanASN(Request $request, $idPegawai) {
     $authenticated = $this->isAuth($request)['authenticated'];
     $username = $this->isAuth($request)['username'];
-    if(!$authenticated) return $this->encrypt($username, json_encode([
+    if(!$authenticated) return [
       'message' => $authenticated == true ? 'Authorized' : 'Not Authorized',
       'status' => $authenticated === true ? 1 : 0
-    ]));
+    ];
 
     ///// get data asn untuk mendapatkan nip berdasarkan idPegawai
     $getAsn = DB::table('m_pegawai')->where([
@@ -931,10 +915,10 @@ class ApiSiasnSyncController extends ApiSiasnController
     ])->get()->toJson();
     $getAsn = json_decode($getAsn, true);
     if (count($getAsn) === 0) {
-      return $this->encrypt($username, json_encode([
+      return [
         'message' => 'Data ASN tidak ditemukan.',
         'status' => 3
-      ]));
+      ];
     }
     $nipBaru = $getAsn[0]['nip'];
 
@@ -1009,7 +993,7 @@ class ApiSiasnSyncController extends ApiSiasnController
       'message' => "Data hukuman disiplin sudah berhasil disinkronisasi dari MySAPK.\nJika terdapat ketidaksesuaian data, dapat menghubungi Admin BKPSDM.",
       'status' => 2
     ];
-    return $this->encrypt($username, json_encode($callback));
+    return $callback;
   }
   public function insertRiwayatPenghargaan(Request $request, $idUsulan) {
     $usulan = json_decode(DB::table('m_data_penghargaan')->where([
@@ -1074,7 +1058,7 @@ class ApiSiasnSyncController extends ApiSiasnController
       ['id', '=', $idPegawai]
     ])->get(), true);
     // if (count($getAsn) === 0) {
-    //   return $this->encrypt($username, json_encode([
+    //   return [
     //     'message' => 'Data ASN tidak ditemukan.',
     //     'status' => 3
     //   ]));
