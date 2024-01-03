@@ -30,7 +30,7 @@ class RestApiToAppPangkatPensiunController extends RestApiController
     }
     return $data;
   }
-  private function restDataAngkaKredits($asnId, $periode) {
+  private function restDataAngkaKredits($asnId) {
     $data = json_decode(DB::table('m_data_angka_kredit')->leftJoin('m_daftar_jenis_angka_kredit', 'm_data_angka_kredit.idDaftarJenisAngkaKredit', '=', 'm_daftar_jenis_angka_kredit.id')->join('m_data_jabatan', 'm_data_angka_kredit.idDataJabatan', '=', 'm_data_jabatan.id')->join('m_jabatan', 'm_data_jabatan.idJabatan', '=', 'm_jabatan.id')->leftJoin('m_dokumen', 'm_data_angka_kredit.idDokumen', '=', 'm_dokumen.id')->whereIn('m_data_angka_kredit.idUsulanStatus', [3,4])->where([
       ['m_data_angka_kredit.idPegawai', '=', $asnId],
       ['m_data_angka_kredit.idUsulan', '=', 1],
@@ -55,7 +55,7 @@ class RestApiToAppPangkatPensiunController extends RestApiController
     }
     return $data;
   }
-  private function restDataHukdiss($asnId, $periode) {
+  private function restDataHukdiss($asnId) {
     $data = json_decode(DB::table('m_data_hukuman_disiplin')->join('m_jenis_hukuman_disiplin', 'm_data_hukuman_disiplin.idJenisHukumanDisiplin', '=', 'm_jenis_hukuman_disiplin.id')->join('m_daftar_hukuman_disiplin', 'm_data_hukuman_disiplin.idDaftarHukumanDisiplin', '=', 'm_daftar_hukuman_disiplin.id')->join('m_daftar_dasar_hukum_hukuman_disiplin', 'm_data_hukuman_disiplin.idDaftarDasarHukumHukdis', '=', 'm_daftar_dasar_hukum_hukuman_disiplin.id')->join('m_daftar_alasan_hukuman_disiplin', 'm_data_hukuman_disiplin.idDaftarAlasanHukdis', '=', 'm_daftar_alasan_hukuman_disiplin.id')->leftJoin('m_dokumen', 'm_data_hukuman_disiplin.idDokumen', '=', 'm_dokumen.id')->whereIn('m_data_hukuman_disiplin.idUsulanStatus', [3,4])->where([
       ['m_data_hukuman_disiplin.idPegawai', '=', $asnId],
       ['m_data_hukuman_disiplin.idUsulan', '=', 1],
@@ -76,6 +76,50 @@ class RestApiToAppPangkatPensiunController extends RestApiController
     for($i = 0; $i < count($data); $i++) {
       if($data[$i]['hukdis_dokumen_url'] !== null) {
         $data[$i]['hukdis_dokumen_url'] = 'https://sidak.situbondokab.go.id/api/rest/get/dokumen/'.$data[$i]['hukdis_dokumen_url'];
+      }
+    }
+    return $data;
+  }
+  private function restDataSkps($asnId) {
+    $dataSkp = json_decode(DB::table('m_data_skp')->join('m_jenis_jabatan', 'm_data_skp.idJenisJabatan', '=', 'm_jenis_jabatan.id')->join('m_jenis_peraturan_kinerja', 'm_data_skp.idJenisPeraturanKinerja', '=', 'm_jenis_peraturan_kinerja.id')->leftJoin('m_dokumen', 'm_data_skp.idDokumen', '=', 'm_dokumen.id')->orderBy('m_data_skp.tahun', 'desc')->whereIn('m_data_skp.idUsulanStatus', [3,4])->where([
+      ['m_data_skp.idPegawai', '=', $asnId],
+      ['m_data_skp.idUsulan', '=', 1],
+      ['m_data_skp.idUsulanHasil', '=', 1]
+    ])->get([
+      'm_jenis_jabatan.nama as jenisJabatan',
+      'm_data_skp.tahun as tahun',
+      'm_jenis_peraturan_kinerja.nama as jenisPeraturanKinerja',
+      'm_data_skp.nilaiSkp as nilaiSkp',
+      'm_data_skp.orientasiPelayanan as nilaiOrientasiPelayanan',
+      'm_data_skp.integritas as nilaiIntegritas',
+      'm_data_skp.komitmen as nilaiKomitmen',
+      'm_data_skp.disiplin as nilaiDisiplin',
+      'm_data_skp.kerjaSama as nilaiKerjaSama',
+      'm_data_skp.kepemimpinan as nilaiKepemimpinan',
+      'm_data_skp.nilaiPrestasiKerja as nilaiPrestasiKerja',
+      'm_data_skp.nilaiKonversi as nilaiKonversi',
+      'm_data_skp.nilaiIntegrasi as nilaiIntegrasi',
+      'm_data_skp.nilaiPerilakuKerja as nilaiPerilakuKerja',
+      'm_data_skp.inisiatifKerja as nilaiInisiatifKerja',
+      'm_data_skp.nilaiRataRata as nilaiRataRata',
+      'm_data_skp.jumlah as nilaiJumlah',
+      'm_dokumen.nama AS skp_dokumen_url'
+    ]), true);
+    $dataSkp2022 = json_decode(DB::table('m_data_skp_2022')->join('m_daftar_nilai_kerja_kinerja as perilakuKerja', 'm_data_skp_2022.idPerilakuKerja', '=', 'perilakuKerja.id')->join('m_daftar_nilai_kerja_kinerja as hasilKinerja', 'm_data_skp_2022.idHasilKinerja', '=', 'hasilKinerja.id')->join('m_daftar_nilai_kuadran', 'm_data_skp_2022.idKuadranKinerja', '=', 'm_daftar_nilai_kuadran.id')->leftJoin('m_dokumen', 'm_data_skp_2022.idDokumen', '=', 'm_dokumen.id')->orderBy('m_data_skp_2022.tahun', 'desc')->whereIn('m_data_skp_2022.idUsulanStatus', [3,4])->where([
+      ['m_data_skp_2022.idPegawai', '=', $asnId],
+      ['m_data_skp_2022.idUsulan', '=', 1],
+      ['m_data_skp_2022.idUsulanHasil', '=', 1]
+    ])->get([
+      'm_data_skp_2022.tahun as tahun',
+      'perilakuKerja.nama as perilakuKerja',
+      'hasilKinerja.nama as hasilKinerja',
+      'm_daftar_nilai_kuadran.nama as kuadranKinerja',
+      'm_dokumen.nama AS skp_dokumen_url'
+    ]), true);
+    $data = array_merge($dataSkp2022, $dataSkp);
+    for($i = 0; $i < count($data); $i++) {
+      if($data[$i]['skp_dokumen_url'] !== null) {
+        $data[$i]['skp_dokumen_url'] = 'https://sidak.situbondokab.go.id/api/rest/get/dokumen/'.$data[$i]['skp_dokumen_url'];
       }
     }
     return $data;
@@ -109,8 +153,9 @@ class RestApiToAppPangkatPensiunController extends RestApiController
     ]), true);
     foreach ($dataSingle as $idx => $dt) {
       $dataSingle[$idx]['asn_jabatans'] = $this->restDataJabatans($dt['asn_id'], $periode);
-      $dataSingle[$idx]['asn_kredits'] = $this->restDataAngkaKredits($dt['asn_id'], $periode);
-      $dataSingle[$idx]['asn_hukdiss'] = $this->restDataHukdiss($dt['asn_id'], $periode);
+      $dataSingle[$idx]['asn_kredits'] = $this->restDataAngkaKredits($dt['asn_id']);
+      $dataSingle[$idx]['asn_hukdiss'] = $this->restDataHukdiss($dt['asn_id']);
+      $dataSingle[$idx]['asn_skps'] = $this->restDataSkps($dt['asn_id']);
     }
 
     return $dataSingle;
