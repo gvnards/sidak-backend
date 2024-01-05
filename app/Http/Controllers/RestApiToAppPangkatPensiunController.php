@@ -8,13 +8,14 @@ use Illuminate\Support\Facades\DB;
 class RestApiToAppPangkatPensiunController extends RestApiController
 {
   private function restDataJabatans($asnId, $periode) {
-    $data = json_decode(DB::table('m_data_jabatan')->join('m_jabatan', 'm_data_jabatan.idJabatan', '=', 'm_jabatan.id')->join('m_jenis_jabatan', 'm_jabatan.idJenisJabatan', '=', 'm_jenis_jabatan.id')->join('m_unit_organisasi AS unor_child', 'm_jabatan.kodeKomponen', '=', 'unor_child.kodeKomponen')->leftJoin('m_unit_organisasi AS unor_parent', 'unor_child.idBknAtasan', '=', 'unor_parent.idBkn')->leftJoin('m_dokumen', 'm_data_jabatan.idDokumen', '=', 'm_dokumen.id')->whereIn('m_data_jabatan.idUsulanStatus', [3,4])->where([
+    $data = json_decode(DB::table('m_data_jabatan')->join('m_jabatan', 'm_data_jabatan.idJabatan', '=', 'm_jabatan.id')->join('m_jenis_jabatan', 'm_jabatan.idJenisJabatan', '=', 'm_jenis_jabatan.id')->join('m_unit_organisasi AS unor_child', 'm_jabatan.kodeKomponen', '=', 'unor_child.kodeKomponen')->join('m_eselon', 'm_jabatan.idEselon', '=', 'm_eselon.id')->leftJoin('m_unit_organisasi AS unor_parent', 'unor_child.idBknAtasan', '=', 'unor_parent.idBkn')->leftJoin('m_dokumen', 'm_data_jabatan.idDokumen', '=', 'm_dokumen.id')->whereIn('m_data_jabatan.idUsulanStatus', [3,4])->where([
       ['m_data_jabatan.idPegawai', '=', $asnId],
       ['m_data_jabatan.tmt', '<=', $periode],
       ['m_data_jabatan.idUsulan', '=', 1],
       ['m_data_jabatan.idUsulanHasil', '=', 1]
     ])->orderBy('m_data_jabatan.tmt', 'desc')->get([
       'm_jenis_jabatan.nama AS jabatan_jenis',
+      'm_eselon.nama AS eselon',
       'm_jabatan.nama AS jabatan_nama',
       'm_data_jabatan.tmt AS jabatan_tmt',
       'unor_child.nama AS jabatan_unor',
