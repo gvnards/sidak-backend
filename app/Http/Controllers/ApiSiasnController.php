@@ -16,7 +16,7 @@ class ApiSiasnController extends Controller
     return json_decode($response, true);
   }
 
-  function getAuthToken($username='199706172020121007', $password='Alhamdulillah17') {
+  function getAuthToken($username='199706172020121007', $password='Alhamdulillah17!@') {
     $response = Http::asForm()->post('https://sso-siasn.bkn.go.id/auth/realms/public-siasn/protocol/openid-connect/token', [
       'client_id' => 'situbndoservice',
       'grant_type' => 'password',
