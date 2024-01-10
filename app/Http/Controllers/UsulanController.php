@@ -590,10 +590,14 @@ class UsulanController extends Controller
               ]);
             }
             DB::table('m_data_pendidikan')->where('id', '=', $idUsulan)->update([
-              'idDokumen' => 1
+              'idDokumen' => 1,
+              'idDokumenTranskrip' => 1,
             ]);
             if ($oldData['idDokumen'] !== null) {
               $this->deleteDokumen($oldData['idDokumen'], 'pendidikan', 'pdf');
+            }
+            if ($oldData['idDokumenTranskrip'] !== null) {
+              $this->deleteDokumen($oldData['idDokumenTranskrip'], 'pendidikan', 'pdf');
             }
           } else {
             $getData = $newData[0];
