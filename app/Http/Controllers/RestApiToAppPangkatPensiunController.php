@@ -125,12 +125,33 @@ class RestApiToAppPangkatPensiunController extends RestApiController
     }
     return $data;
   }
+  private function restDataDiklats($asnId) {
+    $data = json_decode(DB::table('m_data_diklat')->join('m_jenis_diklat', 'm_data_diklat.idJenisDiklat', '=', 'm_jenis_diklat.id')->join('m_daftar_diklat', 'm_data_diklat.idDaftarDiklat', '=', 'm_daftar_diklat.id')->leftJoin('m_dokumen', 'm_data_diklat.idDokumen', '=', 'm_dokumen.id')->whereIn('m_data_diklat.idUsulanStatus', [3,4])->where([
+      ['m_data_diklat.idPegawai', '=', $asnId],
+      ['m_data_diklat.idUsulan', '=', 1],
+      ['m_data_diklat.idUsulanHasil', '=', 1],
+      ['m_jenis_diklat.id', '=', 1]
+    ])->orderBy('m_data_diklat.id', 'asc')->orderBy('m_daftar_diklat.id', 'desc')->get([
+      'm_jenis_diklat.nama AS diklat_jenis',
+      'm_daftar_diklat.nama AS diklat_nama',
+      'm_data_diklat.lamaDiklat AS diklat_lama_jam_pelajaran',
+      'm_data_diklat.tanggalDiklat AS diklat_tanggal',
+      'm_data_diklat.nomorDokumen AS diklat_dokumen_nomor',
+      'm_dokumen.nama AS diklat_dokumen_url'
+    ]), true);
+    for($i = 0; $i < count($data); $i++) {
+      if($data[$i]['diklat_dokumen_url'] !== null) {
+        $data[$i]['diklat_dokumen_url'] = 'https://sidak.situbondokab.go.id/api/rest/get/dokumen/'.$data[$i]['diklat_dokumen_url'];
+      }
+    }
+    return $data;
+  }
   public function restGet(Request $request, $nipBaru, $periode) {
     $authentication = $this->isRestAuth($request->header('Auth'));
     if (!$authentication['status']) {
       return $authentication;
     }
-    $dataSingle = json_decode(DB::table('m_pegawai')->join('m_data_pribadi', 'm_pegawai.id', '=', 'm_data_pribadi.idPegawai')->join('m_data_pangkat', 'm_pegawai.id', '=', 'm_data_pangkat.idPegawai')->join('m_daftar_pangkat', 'm_data_pangkat.idDaftarPangkat', '=', 'm_daftar_pangkat.id')->join('m_data_pendidikan', 'm_pegawai.id', '=', 'm_data_pendidikan.idPegawai')->join('m_tingkat_pendidikan', 'm_data_pendidikan.idTingkatPendidikan', '=', 'm_tingkat_pendidikan.id')->join('m_daftar_pendidikan', 'm_data_pendidikan.idDaftarPendidikan', '=', 'm_daftar_pendidikan.id')->whereIn('m_data_pangkat.idUsulanStatus', [3,4])->whereIn('m_data_pendidikan.idUsulanStatus', [3,4])->where([
+    $dataSingle = json_decode(DB::table('m_pegawai')->join('m_data_pribadi', 'm_pegawai.id', '=', 'm_data_pribadi.idPegawai')->join('m_data_pangkat', 'm_pegawai.id', '=', 'm_data_pangkat.idPegawai')->join('m_daftar_pangkat', 'm_data_pangkat.idDaftarPangkat', '=', 'm_daftar_pangkat.id')->join('m_data_pendidikan', 'm_pegawai.id', '=', 'm_data_pendidikan.idPegawai')->join('m_tingkat_pendidikan', 'm_data_pendidikan.idTingkatPendidikan', '=', 'm_tingkat_pendidikan.id')->join('m_daftar_pendidikan', 'm_data_pendidikan.idDaftarPendidikan', '=', 'm_daftar_pendidikan.id')->leftJoin('m_data_cpns_pns', 'm_pegawai.id', '=', 'm_data_cpns_pns.idPegawai')->leftJoin('m_dokumen as dokumenCpns', 'm_data_cpns_pns.idDokumenSkCpns', '=', 'dokumenCpns.id')->whereIn('m_data_pangkat.idUsulanStatus', [3,4])->whereIn('m_data_pendidikan.idUsulanStatus', [3,4])->where([
       ['m_pegawai.nip', '=', $nipBaru],
       ['m_data_pangkat.tmt', '<=', $periode],
       ['m_data_pendidikan.tanggalDokumen', '<=', $periode],
@@ -150,13 +171,21 @@ class RestApiToAppPangkatPensiunController extends RestApiController
       'm_data_pangkat.masaKerjaTahun AS asn_mk_golongan_tahun',
       'm_data_pangkat.masaKerjaBulan AS asn_mk_golongan_bulan',
       'm_tingkat_pendidikan.nama AS asn_tingkat_pendidikan',
-      'm_daftar_pendidikan.nama AS asn_pendidikan'
+      'm_daftar_pendidikan.nama AS asn_pendidikan',
+      'm_data_cpns_pns.tmtCpns AS asn_tmt_cpns',
+      'm_data_cpns_pns.tglSkCpns AS asn_tanggal_sk_cpns',
+      'm_data_cpns_pns.nomorSkCpns AS asn_nomor_sk_cpns',
+      'dokumenCpns.nama AS asn_dokumen_cpns_url'
     ]), true);
     foreach ($dataSingle as $idx => $dt) {
+      if($dataSingle[$idx]['asn_dokumen_cpns_url'] !== null) {
+        $dataSingle[$idx]['asn_dokumen_cpns_url'] = 'https://sidak.situbondokab.go.id/api/rest/get/dokumen/'.$dataSingle[$idx]['asn_dokumen_cpns_url'];
+      }
       $dataSingle[$idx]['asn_jabatans'] = $this->restDataJabatans($dt['asn_id'], $periode);
       $dataSingle[$idx]['asn_kredits'] = $this->restDataAngkaKredits($dt['asn_id']);
       $dataSingle[$idx]['asn_hukdiss'] = $this->restDataHukdiss($dt['asn_id']);
       $dataSingle[$idx]['asn_skps'] = $this->restDataSkps($dt['asn_id']);
+      $dataSingle[$idx]['asn_diklats'] = $this->restDataDiklats($dt['asn_id']);
     }
 
     return $dataSingle;
