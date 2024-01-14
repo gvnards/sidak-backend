@@ -31,7 +31,8 @@ class DataAnakController extends Controller
       ])->get([
         'm_data_anak.*'
       ]), true);
-      $data[0]['dokumen'] = $this->getBlobDokumen($data[0]['idDokumen'], 'anak', 'pdf');
+      // $data[0]['dokumen'] = $this->getBlobDokumen($data[0]['idDokumen'], 'anak', 'pdf');
+      $data[0]['dokumen'] = '';
       return $data;
     }
     $callback = [

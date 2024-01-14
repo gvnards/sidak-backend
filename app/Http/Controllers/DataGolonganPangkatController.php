@@ -40,7 +40,8 @@ class DataGolonganPangkatController extends Controller
       ])->get([
         'm_data_pangkat.*'
       ]), true);
-      $data[0]['dokumen'] = $this->getBlobDokumen($data[0]['idDokumen'], 'pangkat', 'pdf');
+      // $data[0]['dokumen'] = $this->getBlobDokumen($data[0]['idDokumen'], 'pangkat', 'pdf');
+      $data[0]['dokumen'] = '';
       return $data[0];
     }
     $callback = [

@@ -37,7 +37,8 @@ class DataPenghargaanController extends Controller
       $data = json_decode(DB::table('m_data_penghargaan')->where([
         ['id', '=', $idDataPenghargaan]
       ])->get(), true);
-      $data[0]['dokumen'] = $this->getBlobDokumen($data[0]['idDokumen'], 'penghargaan', 'pdf');
+      // $data[0]['dokumen'] = $this->getBlobDokumen($data[0]['idDokumen'], 'penghargaan', 'pdf');
+      $data[0]['dokumen'] = '';
       return $data;
     }
     $callback = [

@@ -31,7 +31,8 @@ class DataPasanganController extends Controller
       ])->get([
         'm_data_pasangan.*'
       ]), true);
-      $data[0]['dokumen'] = $this->getBlobDokumen($data[0]['idDokumen'], 'pasangan', 'pdf');
+      // $data[0]['dokumen'] = $this->getBlobDokumen($data[0]['idDokumen'], 'pasangan', 'pdf');
+      $data[0]['dokumen'] = '';
       return $data;
     }
     $callback = [

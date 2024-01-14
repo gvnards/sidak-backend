@@ -132,6 +132,9 @@ Route::get('angka-kredit/list/{idPegawai}', 'DataAngkaKreditController@getListDa
 Route::get('dokumen-elektronik/list/{idPegawai}', 'DataDokumenElektronikController@getDataCreated');
 Route::get('dokumen-elektronik/detail/{idPegawai}/{idDaftarDokumen}', 'DataDokumenElektronikController@getDataDokumenElektronikDetail');
 
+// GET DOKUMEN
+Route::get('dokumen/{idDokumen}', 'DokumenController@getDocument');
+
 Route::get('list-pegawai', 'ListPegawaiController@getListPegawai');
 
 //Users Account

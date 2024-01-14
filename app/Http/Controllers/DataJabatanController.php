@@ -35,7 +35,8 @@ class DataJabatanController extends Controller
         'm_jabatan.kodeKomponen as kodeKomponen',
         'm_unit_organisasi.nama as unitOrganisasi'
       ]), true);
-      $data[0]['dokumen'] = $this->getBlobDokumen($data[0]['idDokumen'], 'jabatan', 'pdf');
+      // $data[0]['dokumen'] = $this->getBlobDokumen($data[0]['idDokumen'], 'jabatan', 'pdf');
+      $data[0]['dokumen'] = '';
       return $data;
     }
     $callback = [

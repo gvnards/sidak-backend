@@ -41,7 +41,7 @@ class DataSkpController extends Controller
     }
 
     $tahun_ = intval($tahun);
-    if ($tahun_ === 2022) {
+    if ($tahun_ >= 2022) {
       $data = json_decode(DB::table('m_data_skp_2022')->leftJoin('m_daftar_nilai_kerja_kinerja as perilakuKerja', 'm_data_skp_2022.idPerilakuKerja', '=', 'perilakuKerja.id')->leftJoin('m_daftar_nilai_kerja_kinerja as hasilKinerja', 'm_data_skp_2022.idHasilKinerja', '=', 'hasilKinerja.id')->leftJoin('m_daftar_nilai_kuadran', 'm_data_skp_2022.idKuadranKinerja', '=', 'm_daftar_nilai_kuadran.id')->leftJoin('m_status_pejabat_atasan_penilai', 'm_data_skp_2022.idStatusPejabatPenilai', '=', 'm_status_pejabat_atasan_penilai.id')->where([
         ['m_data_skp_2022.id', '=', $idDataSkp]
       ])->get([
@@ -51,13 +51,15 @@ class DataSkpController extends Controller
         'm_daftar_nilai_kuadran.nama as kuadranKinerja',
         'm_status_pejabat_atasan_penilai.nama as statusPejabatPenilai'
       ]), true);
-      $data[0]['dokumen'] = $this->getBlobDokumen($data[0]['idDokumen'], 'skp', 'pdf');
+      // $data[0]['dokumen'] = $this->getBlobDokumen($data[0]['idDokumen'], 'skp', 'pdf');
+      $data[0]['dokumen'] = '';
       return $data;
     } else {
       $data = json_decode(DB::table('m_data_skp')->leftJoin('m_dokumen', 'm_data_skp.idDokumen', '=', 'm_dokumen.id')->where([
         ['m_data_skp.id', '=', $idDataSkp],
       ])->get(), true);
-      $data[0]['dokumen'] = $this->getBlobDokumen($data[0]['idDokumen'], 'skp', 'pdf');
+      // $data[0]['dokumen'] = $this->getBlobDokumen($data[0]['idDokumen'], 'skp', 'pdf');
+      $data[0]['dokumen'] = '';
       return $data;
     }
   }
@@ -116,13 +118,13 @@ class DataSkpController extends Controller
     $username = $this->isAuth($request)['username'];
     $message = json_decode($this->decrypt($username, $request->message), true);
     $tahun_ = intval($tahun);
-    $dataSkp = json_decode(DB::table($tahun_ === 2022 ? 'm_data_skp_2022' : 'm_data_skp')->where([
+    $dataSkp = json_decode(DB::table($tahun_ >= 2022 ? 'm_data_skp_2022' : 'm_data_skp')->where([
       ['id', '=', $idDataSkp]
     ])->get(), true);
     $asn = json_decode(DB::table('m_pegawai')->where([
       ['id', '=', $dataSkp[0]['idPegawai']]
     ])->get(), true);
-    DB::table($tahun_ === 2022 ? 'm_data_skp_2022' : 'm_data_skp')->where([
+    DB::table($tahun_ >= 2022 ? 'm_data_skp_2022' : 'm_data_skp')->where([
       ['id', '=', $idDataSkp]
     ])->update([
       'idDokumen' => NULL,
@@ -135,7 +137,7 @@ class DataSkpController extends Controller
       'updated_at' => Carbon::now()->format('Y-m-d H:i:s')
     ]);
     $this->uploadDokumen('DOK_SKP_'.$tahun.'_'.$asn[0]['nip'].'_'.$message['date'], $message['dokumen'], 'pdf', 'skp');
-    DB::table($tahun_ === 2022 ? 'm_data_skp_2022' : 'm_data_skp')->where([
+    DB::table($tahun_ >= 2022 ? 'm_data_skp_2022' : 'm_data_skp')->where([
       ['id', '=', $idDataSkp]
     ])->update([
       'idDokumen' => $dokumen,

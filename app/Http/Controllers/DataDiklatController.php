@@ -47,7 +47,8 @@ class DataDiklatController extends Controller
       ])->get([
         'm_data_diklat.*'
       ]), true);
-      $data[0]['dokumen'] = $this->getBlobDokumen($data[0]['idDokumen'], 'diklat', 'pdf');
+      // $data[0]['dokumen'] = $this->getBlobDokumen($data[0]['idDokumen'], 'diklat', 'pdf');
+      $data[0]['dokumen'] = '';
       return $data;
     }
     $callback = [
