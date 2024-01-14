@@ -83,7 +83,7 @@ class ApiSiasnSyncController extends ApiSiasnController
           ['idBkn', '=', $newAngkaKreditFromSiasn[$i]['rwJabatan']]
         ])->get(), true);
         if (count($dataJabatanSidak) > 0) {
-          $idDaftarJenisAngkaKredit = NULL;
+          $idDaftarJenisAngkaKredit = 4;
           if ($newAngkaKreditFromSiasn[$i]['isAngkaKreditPertama'] == '1') $idDaftarJenisAngkaKredit = 1;
           else if ($newAngkaKreditFromSiasn[$i]['isIntegrasi'] == '1') $idDaftarJenisAngkaKredit = 2;
           else if ($newAngkaKreditFromSiasn[$i]['isKonversi'] == '1') $idDaftarJenisAngkaKredit = 3;
