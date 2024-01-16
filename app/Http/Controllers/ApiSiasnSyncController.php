@@ -54,6 +54,9 @@ class ApiSiasnSyncController extends ApiSiasnController
         }
         if (!$isFind) {
           DB::table('m_data_angka_kredit')->where([
+            ['idDataAngkaKreditUpdate', '=', $angkaKreditFromSidak[$i]['id']]
+          ])->delete();
+          DB::table('m_data_angka_kredit')->where([
             ['id', '=', $angkaKreditFromSidak[$i]['id']]
           ])->delete();
         }
@@ -166,6 +169,9 @@ class ApiSiasnSyncController extends ApiSiasnController
           }
         }
         if (!$isFind) {
+          DB::table('m_data_jabatan')->where([
+            ['idDataJabatanUpdate', '=', $jabatanFromSidak[$i]['id']]
+          ])->delete();
           DB::table('m_data_jabatan')->where([
             ['id', '=', $jabatanFromSidak[$i]['id']]
           ])->delete();
@@ -713,6 +719,9 @@ class ApiSiasnSyncController extends ApiSiasnController
         }
         if (!$isFind) {
           DB::table('m_data_pendidikan')->where([
+            ['idDataPendidikanUpdate', '=', $pendidikanFromSidak[$i]['id']]
+          ])->delete();
+          DB::table('m_data_pendidikan')->where([
             ['id', '=', $pendidikanFromSidak[$i]['id']]
           ])->delete();
         }
@@ -830,6 +839,9 @@ class ApiSiasnSyncController extends ApiSiasnController
         }
         if (!$isFind) {
           DB::table('m_data_hukuman_disiplin')->where([
+            ['idDataHukumanDisiplinUpdate', '=', $hukdisFromSidak[$i]['id']]
+          ])->delete();
+          DB::table('m_data_hukuman_disiplin')->where([
             ['id', '=', $hukdisFromSidak[$i]['id']]
           ])->delete();
         }
@@ -942,6 +954,9 @@ class ApiSiasnSyncController extends ApiSiasnController
           }
         }
         if (!$isFind) {
+          DB::table('m_data_penghargaan')->where([
+            ['idDataPenghargaanUpdate', '=', $penghargaanFromSidak[$i]['id']]
+          ])->delete();
           DB::table('m_data_penghargaan')->where([
             ['id', '=', $penghargaanFromSidak[$i]['id']]
           ])->delete();
