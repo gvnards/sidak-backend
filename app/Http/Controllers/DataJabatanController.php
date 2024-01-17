@@ -8,6 +8,70 @@ use Illuminate\Support\Facades\DB;
 
 class DataJabatanController extends Controller
 {
+  private function searchUnor($listUnor, $searchKey, $searchValue) {
+    $countList = count($listUnor);
+    for ($i = 0; $i < $listUnor; $i++) {
+      if ($listUnor[$i][$searchKey] === $searchValue) return [$listUnor[$i]];
+    }
+    return [];
+  }
+
+  private function filterUnorThatHasIdBkn($listUnor) {
+    $countList = count($listUnor);
+    $unor = [];
+    $unorHilang = [];
+    for ($i = 0; $i < $countList; $i++) {
+      if($listUnor[$i]['idBkn'] !== '' && $listUnor[$i]['idBkn'] !== null && $listUnor[$i]['kodeKomponen'] !== '431') array_push($unor, $listUnor[$i]);
+      else array_push($unorHilang, $listUnor[$i]);
+    }
+    return [
+      'unor' => $unor,
+      'unorHilang' => $unorHilang
+    ];
+  }
+
+  private function shortenNamaUnor($listUnor, $textPenyambung) {
+    $unor = $listUnor['unor'];
+    $unorHilang = $listUnor['unorHilang'];
+    /// persingkat nama unor dengan cara menghapus nama sesuai dengan unor yang dilihangkan (tdk punya idBkn)
+    $countUnor = count($unor);
+    $countUnorHilang = count($unorHilang);
+    for ($i = 0; $i < $countUnor; $i++) {
+      for ($j = 0; $j < $countUnorHilang; $j++) {
+        if (str_contains($unor[$i]['kodeKomponen'], $unorHilang[$j]['kodeKomponen'])) {
+          $explodeNamaUnor = explode($textPenyambung, $unor[$i]['nama']);
+          $countExplodeNamaUnor = count($explodeNamaUnor);
+          $namaUnorHilang = explode($textPenyambung, $unorHilang[$j]['nama'])[0];
+          $explodeNamaUnorResult = [];
+          for ($l = 0; $l < $countExplodeNamaUnor; $l++) {
+            if ($explodeNamaUnor[$l] !== $namaUnorHilang) array_push($explodeNamaUnorResult, $explodeNamaUnor[$l]);
+          }
+          $unor[$i]['nama'] = implode($textPenyambung, $explodeNamaUnorResult);
+        }
+      }
+    }
+    return $unor;
+  }
+
+  public function getAllUnor() {
+    $unor = json_decode(DB::table('m_unit_organisasi')->where('kodeKomponen', 'NOT LIKE', '-%')->get(), true);
+    $textPenyambung = " pada ";
+    $countUnor = count($unor);
+    for ($i = 0; $i < $countUnor; $i++) {
+      $explodeKodeKomponen = explode(".", $unor[$i]['kodeKomponen']);
+      if (count($explodeKodeKomponen) > 1) {
+        array_pop($explodeKodeKomponen);
+        $searchKodeKomponen = implode('.', $explodeKodeKomponen);
+        $searchUnor = $this->searchUnor($unor, 'kodeKomponen', $searchKodeKomponen);
+        if (count($searchUnor) > 0) {
+          $unor[$i]['nama'] = $unor[$i]['nama'].$textPenyambung.$searchUnor[0]['nama'];
+        }
+      }
+    }
+    $unorFiltered = $this->filterUnorThatHasIdBkn($unor);
+    $shortenNamaUnor = $this->shortenNamaUnor($unorFiltered, $textPenyambung);
+    return $shortenNamaUnor;
+  }
   public function getDataJabatan(Request $request, $idPegawai, $idDataJabatan=null) {
     if($idDataJabatan === null) {
       $authenticated = $this->isAuth($request)['authenticated'];
@@ -101,7 +165,7 @@ class DataJabatanController extends Controller
     /// ** END CHECK
 
     $nip_ = DB::table('m_pegawai')->where([['id', '=', $message['idPegawai']]])->get();
-    foreach ($nip_ as $key => $value) {
+    foreach ($nip_ as $ley => $value) {
       $nip = $value->nip;
     }
     $dokumen = DB::table('m_dokumen')->insertGetId([
@@ -181,13 +245,12 @@ class DataJabatanController extends Controller
 
   public function getDataJabatanCreated(Request $request) {
     $authenticated = $this->isAuth($request)['authenticated'];
-    $username = $this->isAuth($request)['username'];
     if(!$authenticated) return [
       'message' => $authenticated == true ? 'Authorized' : 'Not Authorized',
       'status' => $authenticated === true ? 1 : 0
     ];
     $jabatan = $this->getAllJabatan();
-    $unitOrganisasi = $this->getAllUnitOrganisasi();
+    $unitOrganisasi = $this->getAllUnor();
     $tugasTambahan = $this->getAllTugasTambahan();
     $dokumenKategori = (new DokumenController)->getDocumentCategory('jabatan');
     $callback = [
@@ -210,7 +273,7 @@ class DataJabatanController extends Controller
       'status' => $authenticated === true ? 1 : 0
     ];
     $jabatan = $this->getAllJabatan();
-    $unitOrganisasi = $this->getAllUnitOrganisasi();
+    $unitOrganisasi = $this->getAllUnor();
     $tugasTambahan = $this->getAllTugasTambahan();
     $dataJabatanUnitOrganisasi = $this->getDataJabatan($request, $idPegawai, $idDataJabatan);
     $dokumenKategori = (new DokumenController)->getDocumentCategory('jabatan');
