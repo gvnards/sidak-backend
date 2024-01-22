@@ -635,6 +635,22 @@ class ApiSiasnSyncController extends ApiSiasnController
       }
     }
 
+    /// delete data pangkat di sidak jika di siasn tidak ada datanya
+    for($i=0; $i<count($pangkatGolonganFromSidak); $i++) {
+      $isFind = false;
+      for($j=0; $j<count($pangkatGolonganFromSiasn); $j++) {
+        if ($pangkatGolonganFromSidak[$i]['idBkn'] == $pangkatGolonganFromSiasn[$j]['id']) $isFind = true;
+      }
+      if (!$isFind) {
+        DB::table('m_data_pangkat')->where([
+          ['idDataPangkatUpdate', '=', $pangkatGolonganFromSidak[$i]['id']]
+        ])->delete();
+        DB::table('m_data_pangkat')->where([
+          ['id', '=', $pangkatGolonganFromSidak[$i]['id']]
+        ])->delete();
+      }
+    }
+
     ///// loop insert pangkat/golongan dari siasn
     $affected = '';
     for($i=0; $i<count($newPangkatGolonganFromSiasn); $i++) {
