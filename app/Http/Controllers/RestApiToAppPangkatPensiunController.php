@@ -7,9 +7,9 @@ use Illuminate\Support\Facades\DB;
 
 class RestApiToAppPangkatPensiunController extends RestApiController
 {
-  private function restDataJabatans($asnId, $periode) {
+  private function restDataJabatans($asnId=NULL, $periode) {
     $data = json_decode(DB::table('m_data_jabatan')->join('m_jabatan', 'm_data_jabatan.idJabatan', '=', 'm_jabatan.id')->join('m_jenis_jabatan', 'm_jabatan.idJenisJabatan', '=', 'm_jenis_jabatan.id')->join('m_unit_organisasi AS unor_child', 'm_jabatan.kodeKomponen', '=', 'unor_child.kodeKomponen')->join('m_eselon', 'm_jabatan.idEselon', '=', 'm_eselon.id')->leftJoin('m_unit_organisasi AS unor_parent', 'unor_child.idBknAtasan', '=', 'unor_parent.idBkn')->leftJoin('m_dokumen', 'm_data_jabatan.idDokumen', '=', 'm_dokumen.id')->whereIn('m_data_jabatan.idUsulanStatus', [3,4])->where([
-      ['m_data_jabatan.idPegawai', '=', $asnId],
+      $asnId === NULL ? [NULL] : ['m_data_jabatan.idPegawai', '=', $asnId],
       ['m_data_jabatan.tmt', '<=', $periode],
       ['m_data_jabatan.idUsulan', '=', 1],
       ['m_data_jabatan.idUsulanHasil', '=', 1]
@@ -22,7 +22,8 @@ class RestApiToAppPangkatPensiunController extends RestApiController
       'unor_parent.nama AS jabatan_unor_induk',
       'm_data_jabatan.tanggalDokumen AS jabatan_dokumen_tanggal',
       'm_data_jabatan.nomorDokumen AS jabatan_dokumen_nomor',
-      'm_dokumen.nama AS jabatan_dokumen_url'
+      'm_dokumen.nama AS jabatan_dokumen_url',
+      'm_data_jabatan.idPegawai AS asn_id'
     ]), true);
     for($i = 0; $i < count($data); $i++) {
       if($data[$i]['jabatan_dokumen_url'] !== null) {
@@ -31,9 +32,9 @@ class RestApiToAppPangkatPensiunController extends RestApiController
     }
     return $data;
   }
-  private function restDataAngkaKredits($asnId) {
+  private function restDataAngkaKredits($asnId=NULL) {
     $data = json_decode(DB::table('m_data_angka_kredit')->leftJoin('m_daftar_jenis_angka_kredit', 'm_data_angka_kredit.idDaftarJenisAngkaKredit', '=', 'm_daftar_jenis_angka_kredit.id')->join('m_data_jabatan', 'm_data_angka_kredit.idDataJabatan', '=', 'm_data_jabatan.id')->join('m_jabatan', 'm_data_jabatan.idJabatan', '=', 'm_jabatan.id')->leftJoin('m_dokumen', 'm_data_angka_kredit.idDokumen', '=', 'm_dokumen.id')->whereIn('m_data_angka_kredit.idUsulanStatus', [3,4])->where([
-      ['m_data_angka_kredit.idPegawai', '=', $asnId],
+      $asnId === NULL ? [NULL] : ['m_data_angka_kredit.idPegawai', '=', $asnId],
       ['m_data_angka_kredit.idUsulan', '=', 1],
       ['m_data_angka_kredit.idUsulanHasil', '=', 1]
     ])->get([
@@ -47,7 +48,8 @@ class RestApiToAppPangkatPensiunController extends RestApiController
       'm_data_angka_kredit.angkaKreditTotal AS kredit_nilai_ak_total',
       'm_data_angka_kredit.tanggalDokumen AS kredit_dokumen_tanggal',
       'm_data_angka_kredit.nomorDokumen AS kredit_dokumen_nomor',
-      'm_dokumen.nama AS kredit_dokumen_url'
+      'm_dokumen.nama AS kredit_dokumen_url',
+      'm_data_angka_kredit.idPegawai AS asn_id'
     ]), true);
     for($i = 0; $i < count($data); $i++) {
       if($data[$i]['kredit_dokumen_url'] !== null) {
@@ -56,9 +58,9 @@ class RestApiToAppPangkatPensiunController extends RestApiController
     }
     return $data;
   }
-  private function restDataHukdiss($asnId) {
+  private function restDataHukdiss($asnId=NULL) {
     $data = json_decode(DB::table('m_data_hukuman_disiplin')->join('m_jenis_hukuman_disiplin', 'm_data_hukuman_disiplin.idJenisHukumanDisiplin', '=', 'm_jenis_hukuman_disiplin.id')->join('m_daftar_hukuman_disiplin', 'm_data_hukuman_disiplin.idDaftarHukumanDisiplin', '=', 'm_daftar_hukuman_disiplin.id')->join('m_daftar_dasar_hukum_hukuman_disiplin', 'm_data_hukuman_disiplin.idDaftarDasarHukumHukdis', '=', 'm_daftar_dasar_hukum_hukuman_disiplin.id')->join('m_daftar_alasan_hukuman_disiplin', 'm_data_hukuman_disiplin.idDaftarAlasanHukdis', '=', 'm_daftar_alasan_hukuman_disiplin.id')->leftJoin('m_dokumen', 'm_data_hukuman_disiplin.idDokumen', '=', 'm_dokumen.id')->whereIn('m_data_hukuman_disiplin.idUsulanStatus', [3,4])->where([
-      ['m_data_hukuman_disiplin.idPegawai', '=', $asnId],
+      $asnId === NULL ? [NULL] : ['m_data_hukuman_disiplin.idPegawai', '=', $asnId],
       ['m_data_hukuman_disiplin.idUsulan', '=', 1],
       ['m_data_hukuman_disiplin.idUsulanHasil', '=', 1]
     ])->get([
@@ -72,7 +74,8 @@ class RestApiToAppPangkatPensiunController extends RestApiController
       'm_data_hukuman_disiplin.keteranganAlasanHukdis AS hukdis_keterangan_alasan',
       'm_data_hukuman_disiplin.nomorDokumen AS hukdis_dokumen_nomor',
       'm_data_hukuman_disiplin.tanggalDokumen AS hukdis_dokumen_tanggal',
-      'm_dokumen.nama AS hukdis_dokumen_url'
+      'm_dokumen.nama AS hukdis_dokumen_url',
+      'm_data_hukuman_disiplin.idPegawai AS asn_id'
     ]), true);
     for($i = 0; $i < count($data); $i++) {
       if($data[$i]['hukdis_dokumen_url'] !== null) {
@@ -81,9 +84,9 @@ class RestApiToAppPangkatPensiunController extends RestApiController
     }
     return $data;
   }
-  private function restDataSkps($asnId) {
+  private function restDataSkps($asnId=NULL) {
     $dataSkp = json_decode(DB::table('m_data_skp')->join('m_jenis_jabatan', 'm_data_skp.idJenisJabatan', '=', 'm_jenis_jabatan.id')->join('m_jenis_peraturan_kinerja', 'm_data_skp.idJenisPeraturanKinerja', '=', 'm_jenis_peraturan_kinerja.id')->leftJoin('m_dokumen', 'm_data_skp.idDokumen', '=', 'm_dokumen.id')->orderBy('m_data_skp.tahun', 'desc')->whereIn('m_data_skp.idUsulanStatus', [3,4])->where([
-      ['m_data_skp.idPegawai', '=', $asnId],
+      $asnId === NULL ? [NULL] : ['m_data_skp.idPegawai', '=', $asnId],
       ['m_data_skp.idUsulan', '=', 1],
       ['m_data_skp.idUsulanHasil', '=', 1]
     ])->get([
@@ -104,7 +107,8 @@ class RestApiToAppPangkatPensiunController extends RestApiController
       'm_data_skp.inisiatifKerja as nilaiInisiatifKerja',
       'm_data_skp.nilaiRataRata as nilaiRataRata',
       'm_data_skp.jumlah as nilaiJumlah',
-      'm_dokumen.nama AS skp_dokumen_url'
+      'm_dokumen.nama AS skp_dokumen_url',
+      'm_data_skp.idPegawai AS asn_id'
     ]), true);
     $dataSkp2022 = json_decode(DB::table('m_data_skp_2022')->join('m_daftar_nilai_kerja_kinerja as perilakuKerja', 'm_data_skp_2022.idPerilakuKerja', '=', 'perilakuKerja.id')->join('m_daftar_nilai_kerja_kinerja as hasilKinerja', 'm_data_skp_2022.idHasilKinerja', '=', 'hasilKinerja.id')->join('m_daftar_nilai_kuadran', 'm_data_skp_2022.idKuadranKinerja', '=', 'm_daftar_nilai_kuadran.id')->leftJoin('m_dokumen', 'm_data_skp_2022.idDokumen', '=', 'm_dokumen.id')->orderBy('m_data_skp_2022.tahun', 'desc')->whereIn('m_data_skp_2022.idUsulanStatus', [3,4])->where([
       ['m_data_skp_2022.idPegawai', '=', $asnId],
@@ -125,9 +129,9 @@ class RestApiToAppPangkatPensiunController extends RestApiController
     }
     return $data;
   }
-  private function restDataDiklats($asnId) {
+  private function restDataDiklats($asnId=NULL) {
     $data = json_decode(DB::table('m_data_diklat')->join('m_jenis_diklat', 'm_data_diklat.idJenisDiklat', '=', 'm_jenis_diklat.id')->join('m_daftar_diklat', 'm_data_diklat.idDaftarDiklat', '=', 'm_daftar_diklat.id')->leftJoin('m_dokumen', 'm_data_diklat.idDokumen', '=', 'm_dokumen.id')->whereIn('m_data_diklat.idUsulanStatus', [3,4])->where([
-      ['m_data_diklat.idPegawai', '=', $asnId],
+      $asnId === NULL ? [NULL] : ['m_data_diklat.idPegawai', '=', $asnId],
       ['m_data_diklat.idUsulan', '=', 1],
       ['m_data_diklat.idUsulanHasil', '=', 1],
       ['m_jenis_diklat.id', '=', 1]
@@ -137,7 +141,8 @@ class RestApiToAppPangkatPensiunController extends RestApiController
       'm_data_diklat.lamaDiklat AS diklat_lama_jam_pelajaran',
       'm_data_diklat.tanggalDiklat AS diklat_tanggal',
       'm_data_diklat.nomorDokumen AS diklat_dokumen_nomor',
-      'm_dokumen.nama AS diklat_dokumen_url'
+      'm_dokumen.nama AS diklat_dokumen_url',
+      'm_data_diklat.idPegawai AS asn_id'
     ]), true);
     for($i = 0; $i < count($data); $i++) {
       if($data[$i]['diklat_dokumen_url'] !== null) {
@@ -145,6 +150,49 @@ class RestApiToAppPangkatPensiunController extends RestApiController
       }
     }
     return $data;
+  }
+  private function restDataPangkats($asnId=NULL) {
+    $data = json_decode(DB::table('m_data_pangkat')->join('m_daftar_pangkat', 'm_data_pangkat.idDaftarPangkat', '=', 'm_daftar_pangkat.id')->whereIn('m_data_pangkat.idUsulanStatus', [3,4])->where([
+      $asnId === NULL ? [NULL] : ['m_data_pangkat.idPegawai', '=', $asnId],
+      ['m_data_pangkat.idUsulan', '=', 1],
+      ['m_data_pangkat.idUsulanHasil', '=', 1]
+    ])->orderBy('m_daftar_pangkat.id', 'desc')->get([
+      'm_daftar_pangkat.golongan AS asn_golongan',
+      'm_daftar_pangkat.pangkat AS asn_pangkat',
+      'm_data_pangkat.tmt AS asn_tmt_golongan',
+      'm_data_pangkat.masaKerjaTahun AS asn_mk_golongan_tahun',
+      'm_data_pangkat.masaKerjaBulan AS asn_mk_golongan_bulan',
+      'm_data_pangkat.idPegawai AS asn_id'
+    ]), true);
+    return $data;
+  }
+  private function restDataKeluargas($asnId=NULL) {
+    $dataPasangan = json_decode(DB::table('m_data_pasangan')->join('m_status_perkawinan', 'm_data_pasangan.idStatusPerkawinan', '=', 'm_status_perkawinan.id')->whereIn('m_data_pasangan.idUsulanStatus', [3,4])->where([
+      $asnId === NULL ? [NULL] : ['m_data_pasangan.idPegawai', '=', $asnId],
+      ['m_data_pasangan.idUsulan', '=', 1],
+      ['m_data_pasangan.idUsulanHasil', '=', 1]
+    ])->orderBy('m_data_pasangan.tanggalStatusPerkawinan', 'desc')->get([
+      'm_data_pasangan.nama AS pasangan_nama',
+      'm_data_pasangan.tempatLahir AS pasangan_tempat_lahir',
+      'm_data_pasangan.tanggalLahir AS pasangan_tanggal_lahir',
+      'm_status_perkawinan.nama AS pasangan_status_perkawinan',
+      'm_data_pasangan.tanggalStatusPerkawinan AS pasangan_status_perkawinan_tanggal',
+      'm_data_pasangan.idPegawai AS asn_id'
+    ]), true);
+    $dataAnak = json_decode(DB::table('m_data_anak')->whereIn('m_data_anak.idUsulanStatus', [3,4])->where([
+      $asnId === NULL ? [NULL] : ['m_data_anak.idPegawai', '=', $asnId],
+      ['m_data_anak.idUsulan', '=', 1],
+      ['m_data_anak.idUsulanHasil', '=', 1]
+    ])->orderBy('m_data_anak.tanggalLahir','asc')->get([
+      'm_data_anak.nama AS anak_nama',
+      'm_data_anak.tempatLahir AS anak_tempat_lahir',
+      'm_data_anak.tanggalLahir AS anak_tanggal_lahir',
+      'm_data_anak.idPegawai AS asn_id'
+    ]), true);
+    return [
+      'pasangan' => $dataPasangan,
+      'anak' => $dataAnak
+    ];
   }
   public function restGet(Request $request, $nipBaru, $periode) {
     $authentication = $this->isRestAuth($request->header('Auth'));
@@ -186,6 +234,7 @@ class RestApiToAppPangkatPensiunController extends RestApiController
       $dataSingle[$idx]['asn_hukdiss'] = $this->restDataHukdiss($dt['asn_id']);
       $dataSingle[$idx]['asn_skps'] = $this->restDataSkps($dt['asn_id']);
       $dataSingle[$idx]['asn_diklats'] = $this->restDataDiklats($dt['asn_id']);
+      $dataSingle[$idx]['asn_keluargas'] = $this->restDataKeluargas($dt['asn_id']);
     }
 
     return $dataSingle;
@@ -214,5 +263,97 @@ class RestApiToAppPangkatPensiunController extends RestApiController
     //   m_daftar_pangkat.id DESC,
     //   m_tingkat_pendidikan.id DESC
     // LIMIT 1;
+  }
+  private function restFilterData($asnId, $dataAll) {
+    // $countData = count($dataAll);
+    $currentData = [];
+    $nextData = [];
+    // for ($i=0;$i<$countData;$i++) {
+    //   if (intval($asnId) === intval($dataAll[$i]['asn_id'])) array_push($currentData, $dataAll[$i]);
+    //   else array_push($nextData, $dataAll[$i]);
+    // }
+    foreach ($dataAll as $key => $eachData) {
+        if (intval($asnId) === intval($eachData['asn_id'])) array_push($currentData, $eachData);
+        else array_push($nextData, $eachData);
+    }
+    return [
+      'currentData' => $currentData,
+      'nextData' => $nextData
+    ];
+  }
+  public function restGetAllAsn(Request $request, $periode) {
+    $authentication = $this->isRestAuth($request->header('Auth'));
+    if (!$authentication['status']) {
+      return $authentication;
+    }
+    $dataAsnAll = json_decode(DB::table('m_pegawai')->join('m_data_pribadi', 'm_pegawai.id', '=', 'm_data_pribadi.idPegawai')->leftJoin('m_data_status_kepegawaian', 'm_pegawai.id', '=', 'm_data_status_kepegawaian.idPegawai')->leftJoin('m_data_cpns_pns', 'm_pegawai.id', '=', 'm_data_cpns_pns.idPegawai')->leftJoin('m_dokumen as dokumenCpns', 'm_data_cpns_pns.idDokumenSkCpns', '=', 'dokumenCpns.id')->whereNotIn('m_data_status_kepegawaian.idDaftarStatusKepegawaian', [8,9,10,11,12,13,14])->orWhere([
+      ['m_data_status_kepegawaian.id', '=', NULL]
+    ])->get([
+      'm_pegawai.id as asn_id',
+      'm_pegawai.nip AS asn_nip',
+      'm_data_pribadi.nama AS nama',
+      'm_data_pribadi.tempatLahir AS asn_tempat_lahir',
+      'm_data_pribadi.tanggalLahir AS asn_tanggal_lahir',
+      'm_data_cpns_pns.tmtCpns AS asn_tmt_cpns',
+      'm_data_cpns_pns.tglSkCpns AS asn_tanggal_sk_cpns',
+      'm_data_cpns_pns.nomorSkCpns AS asn_nomor_sk_cpns',
+      'dokumenCpns.nama AS asn_dokumen_cpns_url'
+    ]), true);
+    $dataPangkatAsnAll = $this->restDataPangkats();
+    $dataJabatanAsnAll = $this->restDataJabatans(NULL, $periode);
+    $dataAngkaKreditAsnAll = $this->restDataAngkaKredits();
+    $dataHukdisAsnAll = $this->restDataHukdiss();
+    $dataSkpAsnAll = $this->restDataSkps();
+    $dataDiklatAsnAll = $this->restDataDiklats();
+    $dataKeluargaAll = $this->restDataKeluargas();
+    foreach ($dataAsnAll as $idx => $dt) {
+      if($dataAsnAll[$idx]['asn_dokumen_cpns_url'] !== null) {
+        $dataAsnAll[$idx]['asn_dokumen_cpns_url'] = 'https://sidak.situbondokab.go.id/api/rest/get/dokumen/'.$dataAsnAll[$idx]['asn_dokumen_cpns_url'];
+      }
+      $dtPangkat = $this->restFilterData($dataAsnAll[$idx]['asn_id'], $dataPangkatAsnAll);
+      $dataPangkatAsnAll = $dtPangkat['nextData'];
+      $dtPangkat = $dtPangkat['currentData'];
+      if (count($dtPangkat) > 0) {
+        $dataAsnAll[$idx]['asn_golongan'] = $dtPangkat[0]['asn_golongan'];
+        $dataAsnAll[$idx]['asn_pangkat'] = $dtPangkat[0]['asn_pangkat'];
+        $dataAsnAll[$idx]['asn_tmt_golongan'] = $dtPangkat[0]['asn_tmt_golongan'];
+        $dataAsnAll[$idx]['asn_mk_golongan_tahun'] = $dtPangkat[0]['asn_mk_golongan_tahun'];
+        $dataAsnAll[$idx]['asn_mk_golongan_bulan'] = $dtPangkat[0]['asn_mk_golongan_bulan'];
+      } else {
+        $dataAsnAll[$idx]['asn_golongan'] = null;
+        $dataAsnAll[$idx]['asn_pangkat'] = null;
+        $dataAsnAll[$idx]['asn_tmt_golongan'] = null;
+        $dataAsnAll[$idx]['asn_mk_golongan_tahun'] = null;
+        $dataAsnAll[$idx]['asn_mk_golongan_bulan'] = null;
+      }
+      $dtJabatan = $this->restFilterData($dataAsnAll[$idx]['asn_id'], $dataJabatanAsnAll);
+      $dataJabatanAsnAll = $dtJabatan['nextData'];
+      $dataAsnAll[$idx]['asn_jabatans'] = $dtJabatan['currentData'];
+      ///
+      $dtAngkaKredit = $this->restFilterData($dataAsnAll[$idx]['asn_id'], $dataAngkaKreditAsnAll);
+      $dataAngkaKreditAsnAll = $dtAngkaKredit['nextData'];
+      $dataAsnAll[$idx]['asn_kredits'] = $dtAngkaKredit['currentData'];
+      ///
+      $dtHukdis = $this->restFilterData($dataAsnAll[$idx]['asn_id'], $dataHukdisAsnAll);
+      $dataHukdisAsnAll = $dtHukdis['nextData'];
+      $dataAsnAll[$idx]['asn_hukdiss'] = $dtHukdis['currentData'];
+      ///
+      $dtSkp = $this->restFilterData($dataAsnAll[$idx]['asn_id'], $dataSkpAsnAll);
+      $dataSkpAsnAll = $dtSkp['nextData'];
+      $dataAsnAll[$idx]['asn_skps'] = $dtSkp['currentData'];
+      ///
+      $dtDiklat = $this->restFilterData($dataAsnAll[$idx]['asn_id'], $dataDiklatAsnAll);
+      $dataDiklatAsnAll = $dtDiklat['nextData'];
+      $dataAsnAll[$idx]['asn_diklats'] = $dtDiklat['currentData'];
+      ///
+      $dtPasangan = $this->restFilterData($dataAsnAll[$idx]['asn_id'], $dataKeluargaAll['pasangan']);
+      $dataKeluargaAll['pasangan'] = $dtPasangan['nextData'];
+      $dataAsnAll[$idx]['asn_keluargas']['pasangan'] = $dtPasangan['currentData'];
+      ///
+      $dtAnak = $this->restFilterData($dataAsnAll[$idx]['asn_id'], $dataKeluargaAll['anak']);
+      $dataKeluargaAll['anak'] = $dtAnak['nextData'];
+      $dataAsnAll[$idx]['asn_keluargas']['anak'] = $dtAnak['currentData'];
+    }
+    return $dataAsnAll;
   }
 }

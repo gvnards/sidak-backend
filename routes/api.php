@@ -194,5 +194,6 @@ Route::get('siasn/skp/riwayat/sync/{idPegawai}', 'ApiSiasnSyncController@syncSkp
 // Route::get('get-rest-token/{username}', 'RestApiController@getRestTokenAdmin');
 Route::post('rest/login', 'RestApiController@restLogin');
 Route::get('rest/get/dokumen/{namaDokumen}', 'RestApiController@restGetDocument');
+Route::get('rest/get/datapangkat/all/{periode}', 'RestApiToAppPangkatPensiunController@restGetAllAsn');
 Route::get('rest/get/datapangkat/{nipBaru}/{periode}', 'RestApiToAppPangkatPensiunController@restGet');
 Route::get('rest/get/dataslks/{nipBaru}', 'RestApiToAppSlksController@restGet');
