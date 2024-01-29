@@ -65,6 +65,7 @@ class ApiSiasnSyncController extends ApiSiasnController
 
     ///// cek apakah jabatan yang dari siasn sudah ada di sidak, jika belum, kumpulkan ke dalam variabel newJabatanFromSiasn
     $newAngkaKreditFromSiasn = [];
+    $updateAngkaKreditFromSiasn = [];
     for($i=0; $i<count($angkaKreditFromSiasn); $i++) {
       $isFind = false;
       for($j=0; $j<count($angkaKreditFromSidak); $j++) {
@@ -73,8 +74,42 @@ class ApiSiasnSyncController extends ApiSiasnController
           $isFind = true;
         }
       }
-      if (!$isFind) {
-        array_push($newAngkaKreditFromSiasn, $angkaKreditFromSiasn[$i]);
+      if (!$isFind) array_push($newAngkaKreditFromSiasn, $angkaKreditFromSiasn[$i]);
+      else array_push($updateAngkaKreditFromSiasn, $angkaKreditFromSiasn[$i]);
+    }
+
+    // update to database
+    for($i = 0; $i < count($updateAngkaKreditFromSiasn); $i++) {
+      if ($updateAngkaKreditFromSiasn[$i]['rwJabatan'] !== '' || $updateAngkaKreditFromSiasn[$i]['rwJabatan'] !== null) {
+        $dataJabatanSidak = NULL;
+        if ($updateAngkaKreditFromSiasn[$i]['rwJabatan'] !== '') {
+          $dataJabatanSidakTemp = json_decode(DB::table('m_data_jabatan')->where([
+            ['idBkn', '=', $updateAngkaKreditFromSiasn[$i]['rwJabatan']]
+          ])->get(), true);
+          if (count($dataJabatanSidakTemp) > 0) {
+            $dataJabatanSidak = $dataJabatanSidakTemp[0]['id'];
+          }
+        }
+        $idDaftarJenisAngkaKredit = 4;
+        if ($updateAngkaKreditFromSiasn[$i]['isAngkaKreditPertama'] == '1') $idDaftarJenisAngkaKredit = 1;
+        else if ($updateAngkaKreditFromSiasn[$i]['isIntegrasi'] == '1') $idDaftarJenisAngkaKredit = 2;
+        else if ($updateAngkaKreditFromSiasn[$i]['isKonversi'] == '1') $idDaftarJenisAngkaKredit = 3;
+        DB::table('m_data_angka_kredit')->where([
+          ['idBkn', '=', $updateAngkaKreditFromSiasn[$i]['id']]
+        ])->update([
+          'idDaftarJenisAngkaKredit' => $idDaftarJenisAngkaKredit,
+          'idDataJabatan' => $dataJabatanSidak,
+          'tahun' => $idDaftarJenisAngkaKredit == 3 ? $updateAngkaKreditFromSiasn[$i]['tahunSelesaiPenailan'] : NULL,
+          'periodePenilaianMulai' => date("Y-m-d", strtotime($updateAngkaKreditFromSiasn[$i]['tahunMulaiPenailan']."-".$updateAngkaKreditFromSiasn[$i]['bulanMulaiPenailan']."-01")),
+          'periodePenilaianSelesai' => date("Y-m-t", strtotime($updateAngkaKreditFromSiasn[$i]['tahunSelesaiPenailan']."-".$updateAngkaKreditFromSiasn[$i]['bulanSelesaiPenailan']."-01")),
+          'angkaKreditUtama' => $updateAngkaKreditFromSiasn[$i]['kreditUtamaBaru'] === '' ? NULL : $updateAngkaKreditFromSiasn[$i]['kreditUtamaBaru'],
+          'angkaKreditPenunjang' => $updateAngkaKreditFromSiasn[$i]['kreditPenunjangBaru'] === '' ? NULL : $updateAngkaKreditFromSiasn[$i]['kreditPenunjangBaru'],
+          'angkaKreditTotal' => $updateAngkaKreditFromSiasn[$i]['kreditBaruTotal'],
+          'tanggalDokumen' => $updateAngkaKreditFromSiasn[$i]['tanggalSk'] == NULL || $updateAngkaKreditFromSiasn[$i]['tanggalSk'] == '' ? NULL : date('Y-m-d', strtotime($updateAngkaKreditFromSiasn[$i]['tanggalSk'])),
+          'nomorDokumen' => $updateAngkaKreditFromSiasn[$i]['nomorSk'],
+          'keteranganUsulan' => 'Data sinkron dengan SIASN/MySAPK',
+          'updated_at' => Carbon::now()->format('Y-m-d H:i:s'),
+        ]);
       }
     }
 
@@ -82,38 +117,42 @@ class ApiSiasnSyncController extends ApiSiasnController
     $affected = '';
     for($i = 0; $i < count($newAngkaKreditFromSiasn); $i++) {
       if ($newAngkaKreditFromSiasn[$i]['rwJabatan'] !== '' || $newAngkaKreditFromSiasn[$i]['rwJabatan'] !== null) {
-        $dataJabatanSidak = json_decode(DB::table('m_data_jabatan')->where([
-          ['idBkn', '=', $newAngkaKreditFromSiasn[$i]['rwJabatan']]
-        ])->get(), true);
-        if (count($dataJabatanSidak) > 0) {
-          $idDaftarJenisAngkaKredit = 4;
-          if ($newAngkaKreditFromSiasn[$i]['isAngkaKreditPertama'] == '1') $idDaftarJenisAngkaKredit = 1;
-          else if ($newAngkaKreditFromSiasn[$i]['isIntegrasi'] == '1') $idDaftarJenisAngkaKredit = 2;
-          else if ($newAngkaKreditFromSiasn[$i]['isKonversi'] == '1') $idDaftarJenisAngkaKredit = 3;
-          DB::table('m_data_angka_kredit')->insert([
-            'id' => NULL,
-            'idDaftarJenisAngkaKredit' => $idDaftarJenisAngkaKredit,
-            'idDataJabatan' => $dataJabatanSidak[0]['id'],
-            'tahun' => $idDaftarJenisAngkaKredit == 3 ? $newAngkaKreditFromSiasn[$i]['tahunSelesaiPenailan'] : NULL,
-            'periodePenilaianMulai' => date("Y-m-d", strtotime($newAngkaKreditFromSiasn[$i]['tahunMulaiPenailan']."-".$newAngkaKreditFromSiasn[$i]['bulanMulaiPenailan']."-01")),
-            'periodePenilaianSelesai' => date("Y-m-t", strtotime($newAngkaKreditFromSiasn[$i]['tahunSelesaiPenailan']."-".$newAngkaKreditFromSiasn[$i]['bulanSelesaiPenailan']."-01")),
-            'angkaKreditUtama' => $newAngkaKreditFromSiasn[$i]['kreditUtamaBaru'] === '' ? NULL : $newAngkaKreditFromSiasn[$i]['kreditUtamaBaru'],
-            'angkaKreditPenunjang' => $newAngkaKreditFromSiasn[$i]['kreditPenunjangBaru'] === '' ? NULL : $newAngkaKreditFromSiasn[$i]['kreditPenunjangBaru'],
-            'angkaKreditTotal' => $newAngkaKreditFromSiasn[$i]['kreditBaruTotal'],
-            'tanggalDokumen' => $newAngkaKreditFromSiasn[$i]['tanggalSk'] == NULL || $newAngkaKreditFromSiasn[$i]['tanggalSk'] == '' ? NULL : date('Y-m-d', strtotime($newAngkaKreditFromSiasn[$i]['tanggalSk'])),
-            'nomorDokumen' => $newAngkaKreditFromSiasn[$i]['nomorSk'],
-            'idDokumen' => NULL,
-            'idPegawai' => intval($idPegawai),
-            'idUsulan' => 1,
-            'idUsulanStatus' => 4,
-            'idUsulanHasil' => 1,
-            'idDataAngkaKreditUpdate' => NULL,
-            'keteranganUsulan' => 'Data sinkron dengan SIASN/MySAPK',
-            'created_at' => Carbon::now()->format('Y-m-d H:i:s'),
-            'updated_at' => Carbon::now()->format('Y-m-d H:i:s'),
-            'idBkn' => $newAngkaKreditFromSiasn[$i]['id'],
-          ]);
+        $dataJabatanSidak = NULL;
+        if ($newAngkaKreditFromSiasn[$i]['rwJabatan'] !== '') {
+          $dataJabatanSidakTemp = json_decode(DB::table('m_data_jabatan')->where([
+            ['idBkn', '=', $newAngkaKreditFromSiasn[$i]['rwJabatan']]
+          ])->get(), true);
+          if (count($dataJabatanSidakTemp) > 0) {
+            $dataJabatanSidak = $dataJabatanSidakTemp[0]['id'];
+          }
         }
+        $idDaftarJenisAngkaKredit = 4;
+        if ($newAngkaKreditFromSiasn[$i]['isAngkaKreditPertama'] == '1') $idDaftarJenisAngkaKredit = 1;
+        else if ($newAngkaKreditFromSiasn[$i]['isIntegrasi'] == '1') $idDaftarJenisAngkaKredit = 2;
+        else if ($newAngkaKreditFromSiasn[$i]['isKonversi'] == '1') $idDaftarJenisAngkaKredit = 3;
+        DB::table('m_data_angka_kredit')->insert([
+          'id' => NULL,
+          'idDaftarJenisAngkaKredit' => $idDaftarJenisAngkaKredit,
+          'idDataJabatan' => $dataJabatanSidak,
+          'tahun' => $idDaftarJenisAngkaKredit == 3 ? $newAngkaKreditFromSiasn[$i]['tahunSelesaiPenailan'] : NULL,
+          'periodePenilaianMulai' => date("Y-m-d", strtotime($newAngkaKreditFromSiasn[$i]['tahunMulaiPenailan']."-".$newAngkaKreditFromSiasn[$i]['bulanMulaiPenailan']."-01")),
+          'periodePenilaianSelesai' => date("Y-m-t", strtotime($newAngkaKreditFromSiasn[$i]['tahunSelesaiPenailan']."-".$newAngkaKreditFromSiasn[$i]['bulanSelesaiPenailan']."-01")),
+          'angkaKreditUtama' => $newAngkaKreditFromSiasn[$i]['kreditUtamaBaru'] === '' ? NULL : $newAngkaKreditFromSiasn[$i]['kreditUtamaBaru'],
+          'angkaKreditPenunjang' => $newAngkaKreditFromSiasn[$i]['kreditPenunjangBaru'] === '' ? NULL : $newAngkaKreditFromSiasn[$i]['kreditPenunjangBaru'],
+          'angkaKreditTotal' => $newAngkaKreditFromSiasn[$i]['kreditBaruTotal'],
+          'tanggalDokumen' => $newAngkaKreditFromSiasn[$i]['tanggalSk'] == NULL || $newAngkaKreditFromSiasn[$i]['tanggalSk'] == '' ? NULL : date('Y-m-d', strtotime($newAngkaKreditFromSiasn[$i]['tanggalSk'])),
+          'nomorDokumen' => $newAngkaKreditFromSiasn[$i]['nomorSk'],
+          'idDokumen' => NULL,
+          'idPegawai' => intval($idPegawai),
+          'idUsulan' => 1,
+          'idUsulanStatus' => 4,
+          'idUsulanHasil' => 1,
+          'idDataAngkaKreditUpdate' => NULL,
+          'keteranganUsulan' => 'Data sinkron dengan SIASN/MySAPK',
+          'created_at' => Carbon::now()->format('Y-m-d H:i:s'),
+          'updated_at' => Carbon::now()->format('Y-m-d H:i:s'),
+          'idBkn' => $newAngkaKreditFromSiasn[$i]['id'],
+        ]);
       }
     }
 
