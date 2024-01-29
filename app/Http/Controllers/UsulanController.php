@@ -306,7 +306,7 @@ class UsulanController extends Controller
         ]), true);
         $data[0]['dokumen'] = $this->getBlobDokumen($data[0]['idDokumen'], $data[0]['idDokumen'] == 1 ? '' :  'pak', 'pdf');
         if ($data[0]['idDataAngkaKreditUpdate'] !== null) {
-          $dataBeforeUpdate = json_decode(DB::table('m_data_angka_kredit')->join('m_daftar_jenis_angka_kredit', 'm_data_angka_kredit.idDaftarJenisAngkaKredit', '=', 'm_daftar_jenis_angka_kredit.id')->join('m_data_jabatan', 'm_data_angka_kredit.idDataJabatan', '=', 'm_data_jabatan.id')->join('m_jabatan', 'm_data_jabatan.idJabatan', '=', 'm_jabatan.id')->where([
+          $dataBeforeUpdate = json_decode(DB::table('m_data_angka_kredit')->join('m_daftar_jenis_angka_kredit', 'm_data_angka_kredit.idDaftarJenisAngkaKredit', '=', 'm_daftar_jenis_angka_kredit.id')->leftJoin('m_data_jabatan', 'm_data_angka_kredit.idDataJabatan', '=', 'm_data_jabatan.id')->leftJoin('m_jabatan', 'm_data_jabatan.idJabatan', '=', 'm_jabatan.id')->where([
             ['m_data_angka_kredit.id', '=', $data[0]['idDataAngkaKreditUpdate']]
           ])->get([
             'm_data_angka_kredit.*',
@@ -835,7 +835,7 @@ class UsulanController extends Controller
             'status' => 3
           ]));
         }
-        if (intval($usulan['idUsulan']) == 1 && intval($message['idUsulanHasil']) == 1) {
+        if (intval($message['idUsulanHasil']) == 1) {
           $response = $response = (new ApiSiasnSyncController)->insertRiwayatAngkaKredit($request, $idUsulan);
           if (!$response['success']) {
             $callback = [
@@ -853,6 +853,24 @@ class UsulanController extends Controller
             (new ApiSiasnController)->insertDokumenRiwayat($request, $response['mapData']['rwAngkaKreditId'], 879, 'pak', $dokumen['nama'], 'pdf');
           }
         }
+        // else if (intval($usulan['idUsulan']) === 2 && intval($message['idUsulanHasil']) == 1) {
+        //   $dataUpdate = json_decode(DB::table('m_data_jabatan')->where([
+        //     ['id', '=', $idUsulan]
+        //   ])->get(), true);
+        //   $checkData = json_decode(DB::table('m_data_jabatan')->join('m_jabatan', 'm_data_jabatan.idJabatan', '=', 'm_jabatan.id')->where([
+        //     ['m_data_jabatan.id', '=', $dataUpdate[0]['idDataJabatanUpdate']]
+        //   ])->get(['m_jabatan.*']), true);
+        //   // if (str_contains($checkData[0]['kodeKomponen'], '-')) {
+        //     $response = (new ApiSiasnSyncController)->insertRiwayatJabatan($request, $idUsulan);
+        //   // }
+        //   // upload Dokumen
+        //   if ($checkData[0]['idBkn'] !== '') {
+        //     $dokumen = json_decode(DB::table('m_dokumen')->where([
+        //       ['id', '=', $dataUpdate[0]['idDokumen']]
+        //     ])->get(), true);
+        //     (new ApiSiasnController)->insertDokumenRiwayat($request, $response['mapData']['rwJabatanId'], 872, 'jabatan', $dokumen[0]['nama'], 'pdf');
+        //   }
+        // }
 
         $newData = json_decode(DB::table('m_data_angka_kredit')->where('id', '=', $idUsulan)->get(), true);
         $idUpdate = $newData[0]['idDataAngkaKreditUpdate'];
@@ -864,10 +882,10 @@ class UsulanController extends Controller
         ]);
         if ($idUpdate != null) {
           if (intval($message['idUsulanHasil']) == 1) {
-            $tahun = $message['tahun'];
-            $angkaKreditUtama = $message['angkaKreditUtama'];
-            $angkaKreditPenunjang = $message['angkaKreditPenunjang'];
-            switch (intval($message['idDaftarJenisAngkaKredit'])) {
+            $tahun = $newData[0]['tahun'];
+            $angkaKreditUtama = $newData[0]['angkaKreditUtama'];
+            $angkaKreditPenunjang = $newData[0]['angkaKreditPenunjang'];
+            switch (intval($newData[0]['idDaftarJenisAngkaKredit'])) {
               case 1:
                 $tahun = null;
                 break;

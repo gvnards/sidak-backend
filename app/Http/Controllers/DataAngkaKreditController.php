@@ -44,7 +44,7 @@ class DataAngkaKreditController extends Controller
 
   public function getDataAngkaKredit($idPegawai, $idUsulan=NULL) {
     if ($idUsulan === NULL) {
-      $data = json_decode(DB::table('m_data_angka_kredit')->join('m_data_jabatan', 'm_data_angka_kredit.idDataJabatan', '=', 'm_data_jabatan.id')->join('m_jabatan', 'm_data_jabatan.idJabatan', '=', 'm_jabatan.id')->where([
+      $data = json_decode(DB::table('m_data_angka_kredit')->leftJoin('m_data_jabatan', 'm_data_angka_kredit.idDataJabatan', '=', 'm_data_jabatan.id')->leftJoin('m_jabatan', 'm_data_jabatan.idJabatan', '=', 'm_jabatan.id')->where([
         ['m_data_angka_kredit.idPegawai', '=', $idPegawai],
         ['m_data_angka_kredit.idUsulanHasil', '=', 1],
         ['m_data_angka_kredit.idUsulan', '=', 1]
@@ -55,6 +55,11 @@ class DataAngkaKreditController extends Controller
         'm_data_angka_kredit.angkaKreditTotal as totalAngkaKredit',
         'm_jabatan.nama as jabatan'
       ]), true);
+      for ($i = 0; $i < count($data); $i++) {
+        if ($data[$i]['jabatan'] === '' || $data[$i]['jabatan'] === NULL) {
+          $data[$i]['jabatan'] = '(Silahkan Update PAK Anda)';
+        }
+      }
     } else {
       $data = json_decode(DB::table('m_data_angka_kredit')->where([
         ['id', '=', $idUsulan]
