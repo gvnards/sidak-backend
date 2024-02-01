@@ -418,7 +418,7 @@ class ApiSiasnSyncController extends ApiSiasnController
       'status' => 2
     ];
   }
-  public function insertRiwayatJabatan(Request $request, $idUsulan) {
+  public function insertRiwayatJabatan($idUsulan) {
     $usulan = json_decode(DB::table('m_data_jabatan')->where([
       ['id', '=', $idUsulan]
     ])->get()->toJson(), true)[0];
@@ -448,7 +448,7 @@ class ApiSiasnSyncController extends ApiSiasnController
       'tmtPelantikan' => date('d-m-Y', strtotime($usulan['tmt'])),
       'unorId' => $unor['idBkn']
     ];
-    $response = $this->insertRiwayatJabatanASN($request, $data);
+    $response = $this->insertRiwayatJabatanASN($data);
     return $response;
     // return $data;
   }
@@ -573,7 +573,7 @@ class ApiSiasnSyncController extends ApiSiasnController
     ];
     return $callback;
   }
-  public function insertRiwayatDiklatKursus(Request $request, $idUsulan) {
+  public function insertRiwayatDiklatKursus($idUsulan) {
     $usulan = json_decode(DB::table('m_data_diklat')->where([
       ['id', '=', $idUsulan]
     ])->get(), true)[0];
@@ -596,7 +596,7 @@ class ApiSiasnSyncController extends ApiSiasnController
         'tanggal' => date('d-m-Y', strtotime($usulan['tanggalDiklat'])),
         'tanggalSelesai' => date('d-m-Y', strtotime($usulan['tanggalSelesaiDiklat'])),
       ];
-      $response = $this->insertRiwayatDiklatASN($request, $data);
+      $response = $this->insertRiwayatDiklatASN($data);
       // {
       //   "success": true,
       //   "mapData": {
@@ -618,7 +618,7 @@ class ApiSiasnSyncController extends ApiSiasnController
         'tanggalKursus' => date('d-m-Y', strtotime($usulan['tanggalDiklat'])),
         'tanggalSelesaiKursus' => date('d-m-Y', strtotime($usulan['tanggalSelesaiDiklat'])),
       ];
-      $response = $this->insertRiwayatKursusASN($request, $data);
+      $response = $this->insertRiwayatKursusASN($data);
     }
     return $response;
   }
@@ -1065,7 +1065,7 @@ class ApiSiasnSyncController extends ApiSiasnController
     ];
     return $callback;
   }
-  public function insertRiwayatPenghargaan(Request $request, $idUsulan) {
+  public function insertRiwayatPenghargaan($idUsulan) {
     $usulan = json_decode(DB::table('m_data_penghargaan')->where([
       ['id', '=', $idUsulan]
     ])->get(), true)[0];
@@ -1084,10 +1084,10 @@ class ApiSiasnSyncController extends ApiSiasnController
       'skNomor' => $usulan['nomorDokumen'],
       'tahun' => intval($usulan['tahunPenghargaan'])
     ];
-    $response = $this->insertRiwayatPenghargaanASN($request, $data);
+    $response = $this->insertRiwayatPenghargaanASN($data);
     return $response;
   }
-  public function insertRiwayatAngkaKredit(Request $request, $idUsulan) {
+  public function insertRiwayatAngkaKredit($idUsulan) {
     $usulan = json_decode(DB::table('m_data_angka_kredit')->join('m_pegawai', 'm_data_angka_kredit.idPegawai', '=', 'm_pegawai.id')->join('m_data_jabatan', 'm_data_angka_kredit.idDataJabatan', '=', 'm_data_jabatan.id')->where([
       ['m_data_jabatan.idBkn', '!=', ''],
       ['m_pegawai.idBkn', '!=', ''],
@@ -1113,7 +1113,7 @@ class ApiSiasnSyncController extends ApiSiasnController
       'rwJabatanId' => $usulan['idBknJabatan'],
       'tanggalSk' => date('d-m-Y', strtotime($usulan['tanggalDokumen']))
     ];
-    $response = $this->insertRiwayatAngkaKreditASN($request, $dataToSiasn);
+    $response = $this->insertRiwayatAngkaKreditASN($dataToSiasn);
     return $response;
   }
   public function syncSkpASN(Request $request, $idPegawai) {

@@ -127,6 +127,29 @@ class DataPendidikanController extends Controller
       'message' => $data == 1 ? "Data berhasil diusulkan untuk $method.\nSilahkan cek status usulan secara berkala pada Menu Usulan." : "Data gagal diusulkan untuk $method.",
       'status' => $data == 1 ? 2 : 3
     ];
+    // kondisi bypass
+    $isByPass = $this->isUsernameGetByPass($username);
+    if ($isByPass) {
+      $dt = json_decode(DB::table('m_data_pendidikan')->where([
+        'idDokumen' => $dokumen,
+        'idPegawai' => $message['idPegawai'],
+        'idUsulan' => $id == NULL ? 1 : 2,
+        'idUsulanStatus' => 1,
+        'idUsulanHasil' => 3,
+      ])->get(), true);
+      $dtUpdate = $this->updateDataPendidikan($dt[0]['id'], [
+      'idUsulanStatus' => 3,
+      'idUsulanHasil' => 1,
+      'keteranganUsulan' => ''
+      ]);
+      if ($dtUpdate['status'] === 4) {
+        return [
+          'message' => 'Data sudah diverifikasi oleh admin. Silahkan refresh atau verifikasi yang data lain.',
+          'status' => 3
+        ];
+      }
+      $callback = $dtUpdate;
+    }
     return $callback;
   }
 
@@ -176,5 +199,66 @@ class DataPendidikanController extends Controller
       'status' => 1
     ];
     return $callback;
+  }
+
+  public function updateDataPendidikan($idUsulan, $message) {
+    $newData = json_decode(DB::table('m_data_pendidikan')->where('id', '=', $idUsulan)->get(), true);
+    if (intval($newData[0]['idUsulanStatus']) !== 1) {
+      /// data sudah diverifikasi
+      return [
+        'status' => 4
+      ];
+    }
+    $idUpdate = $newData[0]['idDataPendidikanUpdate'];
+    $data = DB::table('m_data_pendidikan')->where('id', '=', $idUsulan)->update([
+      'idUsulanStatus' => $message['idUsulanStatus'],
+      'idUsulanHasil' => $message['idUsulanHasil'],
+      'keteranganUsulan' => $message['keteranganUsulan'],
+      'updated_at' => Carbon::now()->format('Y-m-d H:i:s'),
+    ]);
+    if ($idUpdate != null) {
+      if (intval($message['idUsulanHasil']) == 1) {
+        $oldData = json_decode(DB::table('m_data_pendidikan')->where('id', '=', $idUpdate)->get(), true)[0];
+        foreach ($newData as $key => $value) {
+          $data = DB::table('m_data_pendidikan')->where('id', '=', $idUpdate)->update([
+            'idJenisPendidikan' => $value['idJenisPendidikan'],
+            'idTingkatPendidikan' => $value['idTingkatPendidikan'],
+            'idDaftarPendidikan' => $value['idDaftarPendidikan'],
+            'namaSekolah' => $value['namaSekolah'],
+            'gelarDepan' => $value['gelarDepan'],
+            'gelarBelakang' => $value['gelarBelakang'],
+            'tanggalLulus' => $value['tanggalLulus'],
+            'tahunLulus' => $value['tahunLulus'],
+            'nomorDokumen' => $value['nomorDokumen'],
+            'tanggalDokumen' => $value['tanggalDokumen'],
+            'idDokumen' => $value['idDokumen'],
+            'idDokumenTranskrip' => $value['idDokumenTranskrip'],
+            'updated_at' => Carbon::now()->format('Y-m-d H:i:s'),
+          ]);
+        }
+        DB::table('m_data_pendidikan')->where('id', '=', $idUsulan)->update([
+          'idDokumen' => 1,
+          'idDokumenTranskrip' => 1,
+        ]);
+        if ($oldData['idDokumen'] !== null) {
+          $this->deleteDokumen($oldData['idDokumen'], 'pendidikan', 'pdf');
+        }
+        if ($oldData['idDokumenTranskrip'] !== null) {
+          $this->deleteDokumen($oldData['idDokumenTranskrip'], 'pendidikan', 'pdf');
+        }
+      } else {
+        $getData = $newData[0];
+        DB::table('m_data_pendidikan')->where('id', '=', $idUsulan)->update([
+          'idDokumen' => 1,
+          'idDokumenTranskrip' => 1
+        ]);
+        $this->deleteDokumen($getData['idDokumen'], 'pendidikan', 'pdf');
+        $this->deleteDokumen($getData['idDokumenTranskrip'], 'pendidikan', 'pdf');
+      }
+    }
+    return [
+      'message' => $data == 1 ? 'Data berhasil disimpan.' : 'Data gagal disimpan.',
+      'status' => $data == 1 ? 2 : 3
+    ];
   }
 }

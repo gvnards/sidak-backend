@@ -15,6 +15,16 @@ class Controller extends BaseController
 {
   use AuthorizesRequests, DispatchesJobs, ValidatesRequests;
 
+  function isUsernameGetByPass($username) {
+    /** LIST BYPASS AKUN LGSG OTOMATIS TER-APPROVE */
+    $isByPass = false;
+    $listByPass = ['super-admin'];
+    for ($i = 0; $i < count($listByPass); $i++) {
+      if ($listByPass[$i] === $username) $isByPass = true;
+    }
+    return $isByPass;
+  }
+
   function getPegawaiByDate($string_date) {
     $query = "WITH jabatan_pegawai AS (
       SELECT

@@ -200,6 +200,29 @@ class DataJabatanController extends Controller
       'message' => $data == 1 ? "Data berhasil diusulkan untuk $method.\nSilahkan cek status usulan secara berkala pada Menu Usulan." : "Data gagal diusulkan untuk $method.",
       'status' => $data == 1 ? 2 : 3
     ];
+    // kondisi bypass
+    $isByPass = $this->isUsernameGetByPass($username);
+    if ($isByPass) {
+      $dt = json_decode(DB::table('m_data_jabatan')->where([
+        'idDokumen' => $dokumen,
+        'idPegawai' => $message['idPegawai'],
+        'idUsulan' => $id == NULL ? 1 : 2,
+        'idUsulanStatus' => 1,
+        'idUsulanHasil' => 3,
+      ])->get(), true);
+      $dtUpdate = $this->updateDataJabatan($dt[0]['id'], [
+      'idUsulanStatus' => 3,
+      'idUsulanHasil' => 1,
+      'keteranganUsulan' => ''
+      ], $isByPass);
+      if ($dtUpdate['status'] === 4) {
+        return [
+          'message' => 'Data sudah diverifikasi oleh admin. Silahkan refresh atau verifikasi yang data lain.',
+          'status' => 3
+        ];
+      }
+      $callback = $dtUpdate;
+    }
     return $callback;
   }
 
@@ -288,5 +311,100 @@ class DataJabatanController extends Controller
       'status' => 2
     ];
     return $callback;
+  }
+
+  public function updateDataJabatan($idUsulan, $message, $isByPass=false) {
+    $usulan = json_decode(DB::table('m_data_jabatan')->where([
+      ['id', '=', $idUsulan]
+    ])->get()->toJson(), true)[0];
+    if (intval($usulan['idUsulanStatus']) !== 1) {
+      /// data sudah diverifikasi
+      return [
+        'status' => 4
+      ];
+    }
+    if (intval($usulan['idUsulan']) == 1 && intval($message['idUsulanHasil']) == 1) {
+      $response = (new ApiSiasnSyncController)->insertRiwayatJabatan($idUsulan);
+      if (!$response['success']) {
+        $callback = [
+          'message' => $response['message'],
+          'status' => 3
+        ];
+        if ($isByPass) {
+          /// delete ketika ada masalah
+          DB::table('m_data_jabatan')->where([
+            ['id', '=', $idUsulan]
+          ])->delete();
+        }
+        return $callback;
+      } else {
+        DB::table('m_data_jabatan')->where('id', '=', $idUsulan)->update([
+          'idBkn' => $response['mapData']['rwJabatanId'],
+        ]);
+        $dokumen = json_decode(DB::table('m_dokumen')->where([
+          ['id', '=', $usulan['idDokumen']]
+        ])->get()->toJson(), true)[0];
+        (new ApiSiasnController)->insertDokumenRiwayat($response['mapData']['rwJabatanId'], 872, 'jabatan', $dokumen['nama'], 'pdf');
+      }
+    } else if (intval($usulan['idUsulan']) === 2 && intval($message['idUsulanHasil']) == 1) {
+      $dataUpdate = json_decode(DB::table('m_data_jabatan')->where([
+        ['id', '=', $idUsulan]
+      ])->get(), true);
+      $checkData = json_decode(DB::table('m_data_jabatan')->join('m_jabatan', 'm_data_jabatan.idJabatan', '=', 'm_jabatan.id')->where([
+        ['m_data_jabatan.id', '=', $dataUpdate[0]['idDataJabatanUpdate']]
+      ])->get(['m_jabatan.*']), true);
+      // if (str_contains($checkData[0]['kodeKomponen'], '-')) {
+        $response = (new ApiSiasnSyncController)->insertRiwayatJabatan($idUsulan);
+      // }
+      // upload Dokumen
+      if ($checkData[0]['idBkn'] !== '') {
+        $dokumen = json_decode(DB::table('m_dokumen')->where([
+          ['id', '=', $dataUpdate[0]['idDokumen']]
+        ])->get(), true);
+        (new ApiSiasnController)->insertDokumenRiwayat($response['mapData']['rwJabatanId'], 872, 'jabatan', $dokumen[0]['nama'], 'pdf');
+      }
+    }
+    $newData = json_decode(DB::table('m_data_jabatan')->where('id', '=', $idUsulan)->get(), true);
+    $idUpdate = $newData[0]['idDataJabatanUpdate'];
+    $data = DB::table('m_data_jabatan')->where('id', '=', $idUsulan)->update([
+      'idUsulanStatus' => $message['idUsulanStatus'],
+      'idUsulanHasil' => $message['idUsulanHasil'],
+      'keteranganUsulan' => $message['keteranganUsulan'],
+      'updated_at' => Carbon::now()->format('Y-m-d H:i:s'),
+    ]);
+    if ($idUpdate != null) {
+      if (intval($message['idUsulanHasil']) == 1) {
+        $oldData = json_decode(DB::table('m_data_jabatan')->where('id', '=', $idUpdate)->get(), true)[0];
+        foreach ($newData as $key => $value) {
+          $data = DB::table('m_data_jabatan')->where('id', '=', $idUpdate)->update([
+            'idJabatan' => $value['idJabatan'],
+            'isPltPlh' => $value['isPltPlh'],
+            'tmt' => $value['tmt'],
+            'spmt' => $value['spmt'],
+            'tanggalDokumen' => $value['tanggalDokumen'],
+            'nomorDokumen' => $value['nomorDokumen'],
+            'idJabatanTugasTambahan' => $value['idJabatanTugasTambahan'],
+            'idDokumen' => $value['idDokumen'],
+            'updated_at' => Carbon::now()->format('Y-m-d H:i:s'),
+          ]);
+        }
+        DB::table('m_data_jabatan')->where('id', '=', $idUsulan)->update([
+          'idDokumen' => 1
+        ]);
+        if ($oldData['idDokumen'] !== null) {
+          $this->deleteDokumen($oldData['idDokumen'], 'jabatan', 'pdf');
+        }
+      } else {
+        $getData = $newData[0];
+        DB::table('m_data_jabatan')->where('id', '=', $idUsulan)->update([
+          'idDokumen' => 1
+        ]);
+        $this->deleteDokumen($getData['idDokumen'], 'jabatan', 'pdf');
+      }
+    }
+    return [
+      'message' => $data == 1 ? 'Data berhasil disimpan.' : 'Data gagal disimpan.',
+      'status' => $data == 1 ? 2 : 3
+    ];
   }
 }

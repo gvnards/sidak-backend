@@ -235,6 +235,130 @@ class DataAngkaKreditController extends Controller
       'message' => $data == 1 ? "Data berhasil diusulkan untuk $method.\nSilahkan cek status usulan secara berkala pada Menu Usulan." : "Data gagal diusulkan untuk $method.",
       'status' => $data == 1 ? 2 : 3
     ];
+    // kondisi bypass
+    $isByPass = $this->isUsernameGetByPass($username);
+    if ($isByPass) {
+      $dt = json_decode(DB::table('m_data_angka_kredit')->where([
+        'idDokumen' => $dokumen,
+        'idPegawai' => $message['idPegawai'],
+        'idUsulan' => $id == NULL ? 1 : 2,
+        'idUsulanStatus' => 1,
+        'idUsulanHasil' => 3,
+      ])->get(), true);
+      $dtUpdate = $this->updateDataAngkaKredit($dt[0]['id'], [
+      'idUsulanStatus' => 3,
+      'idUsulanHasil' => 1,
+      'keteranganUsulan' => ''
+      ], $isByPass);
+      if ($dtUpdate['status'] === 4) {
+        return [
+          'message' => 'Data sudah diverifikasi oleh admin. Silahkan refresh atau verifikasi yang data lain.',
+          'status' => 3
+        ];
+      }
+      $callback = $dtUpdate;
+    }
     return $callback;
+  }
+
+  public function updateDataAngkaKredit($idUsulan, $message, $isByPass=false) {
+    $usulan = json_decode(DB::table('m_data_angka_kredit')->where([
+      ['id', '=', $idUsulan]
+    ])->get()->toJson(), true)[0];
+    if (intval($usulan['idUsulanStatus']) !== 1) {
+      /// data sudah diverifikasi
+      return [
+        'status' => 4
+      ];
+    }
+    if (intval($message['idUsulanHasil']) == 1) {
+      $response = $response = (new ApiSiasnSyncController)->insertRiwayatAngkaKredit($idUsulan);
+      if (!$response['success']) {
+        $callback = [
+          'message' => $response['message'],
+          'status' => 3
+        ];
+        if ($isByPass) {
+          /// delete ketika ada masalah
+          DB::table('m_data_angka_kredit')->where([
+            ['id', '=', $idUsulan]
+          ])->delete();
+        }
+        return $callback;
+      } else {
+        DB::table('m_data_angka_kredit')->where('id', '=', $idUsulan)->update([
+          'idBkn' => $response['mapData']['rwAngkaKreditId'],
+        ]);
+        $dokumen = json_decode(DB::table('m_dokumen')->where([
+          ['id', '=', $usulan['idDokumen']]
+        ])->get()->toJson(), true)[0];
+        (new ApiSiasnController)->insertDokumenRiwayat($response['mapData']['rwAngkaKreditId'], 879, 'pak', $dokumen['nama'], 'pdf');
+      }
+    }
+
+    $newData = json_decode(DB::table('m_data_angka_kredit')->where('id', '=', $idUsulan)->get(), true);
+    $idUpdate = $newData[0]['idDataAngkaKreditUpdate'];
+    $data = DB::table('m_data_angka_kredit')->where('id', '=', $idUsulan)->update([
+      'idUsulanStatus' => $message['idUsulanStatus'],
+      'idUsulanHasil' => $message['idUsulanHasil'],
+      'keteranganUsulan' => $message['keteranganUsulan'],
+      'updated_at' => Carbon::now()->format('Y-m-d H:i:s'),
+    ]);
+    if ($idUpdate != null) {
+      if (intval($message['idUsulanHasil']) == 1) {
+        $tahun = $newData[0]['tahun'];
+        $angkaKreditUtama = $newData[0]['angkaKreditUtama'];
+        $angkaKreditPenunjang = $newData[0]['angkaKreditPenunjang'];
+        switch (intval($newData[0]['idDaftarJenisAngkaKredit'])) {
+          case 1:
+            $tahun = null;
+            break;
+          case 2:
+            $tahun = null;
+            $angkaKreditUtama = null;
+            $angkaKreditPenunjang = null;
+            break;
+          case 3:
+            $angkaKreditUtama = null;
+            $angkaKreditPenunjang = null;
+            break;
+          default:
+            break;
+        }
+        $oldData = json_decode(DB::table('m_data_angka_kredit')->where('id', '=', $idUpdate)->get(), true)[0];
+        foreach ($newData as $key => $value) {
+          $data = DB::table('m_data_angka_kredit')->where('id', '=', $idUpdate)->update([
+            'idDaftarJenisAngkaKredit' => $value['idDaftarJenisAngkaKredit'],
+            'idDataJabatan' => $value['idDataJabatan'],
+            'tahun' => $tahun,
+            'periodePenilaianMulai' => $value['periodePenilaianMulai'],
+            'periodePenilaianSelesai' => $value['periodePenilaianSelesai'],
+            'angkaKreditUtama' => $angkaKreditUtama,
+            'angkaKreditPenunjang' => $angkaKreditPenunjang,
+            'angkaKreditTotal' => $value['angkaKreditTotal'],
+            'tanggalDokumen' => $value['tanggalDokumen'],
+            'nomorDokumen' => $value['nomorDokumen'],
+            'idDokumen' => $value['idDokumen'],
+            'updated_at' => Carbon::now()->format('Y-m-d H:i:s'),
+          ]);
+        }
+        DB::table('m_data_angka_kredit')->where('id', '=', $idUsulan)->update([
+          'idDokumen' => 1
+        ]);
+        if ($oldData['idDokumen'] !== null) {
+          $this->deleteDokumen($oldData['idDokumen'], 'penghargaan', 'pdf');
+        }
+      } else {
+        $getData = $newData[0];
+        DB::table('m_data_angka_kredit')->where('id', '=', $idUsulan)->update([
+          'idDokumen' => 1
+        ]);
+        $this->deleteDokumen($getData['idDokumen'], 'penghargaan', 'pdf');
+      }
+    }
+    return [
+      'message' => $data == 1 ? 'Data berhasil disimpan.' : 'Data gagal disimpan.',
+      'status' => $data == 1 ? 2 : 3
+    ];
   }
 }

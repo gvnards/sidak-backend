@@ -97,13 +97,13 @@ class ApiSiasnController extends Controller
     $response = Http::withHeaders($token)->get($url, []);
     return json_decode($response, true);
   }
-  function insertRiwayatDiklatASN(Request $request, $data) {
-    $authenticated = $this->isAuth($request)['authenticated'];
-    $username = $this->isAuth($request)['username'];
-    if(!$authenticated) return $this->encrypt($username, json_encode([
-      'message' => $authenticated == true ? 'Authorized' : 'Not Authorized',
-      'status' => $authenticated === true ? 1 : 0
-    ]));
+  function insertRiwayatDiklatASN($data) {
+    // $authenticated = $this->isAuth($request)['authenticated'];
+    // $username = $this->isAuth($request)['username'];
+    // if(!$authenticated) return $this->encrypt($username, json_encode([
+    //   'message' => $authenticated == true ? 'Authorized' : 'Not Authorized',
+    //   'status' => $authenticated === true ? 1 : 0
+    // ]));
     $token = $this->getAllToken();
     // format url --> /diklat/save
     // "id" dan "path", tidak perlu diisi dulu tidak masalah
@@ -158,13 +158,13 @@ class ApiSiasnController extends Controller
     $response = Http::withHeaders($token)->get($url, []);
     return json_decode($response, true);
   }
-  function insertRiwayatKursusASN(Request $request, $data) {
-    $authenticated = $this->isAuth($request)['authenticated'];
-    $username = $this->isAuth($request)['username'];
-    if(!$authenticated) return $this->encrypt($username, json_encode([
-      'message' => $authenticated == true ? 'Authorized' : 'Not Authorized',
-      'status' => $authenticated === true ? 1 : 0
-    ]));
+  function insertRiwayatKursusASN($data) {
+    // $authenticated = $this->isAuth($request)['authenticated'];
+    // $username = $this->isAuth($request)['username'];
+    // if(!$authenticated) return $this->encrypt($username, json_encode([
+    //   'message' => $authenticated == true ? 'Authorized' : 'Not Authorized',
+    //   'status' => $authenticated === true ? 1 : 0
+    // ]));
     $token = $this->getAllToken();
     // format url --> /kursus/save
     // "id" dan "path", tidak perlu diisi dulu tidak masalah
@@ -197,13 +197,13 @@ class ApiSiasnController extends Controller
     return json_decode($response, true);
   }
   // UPLOAD
-  function insertDokumenRiwayat(Request $request, $idRiwayat, $idRefDokumen, $folderDokumen, $namaDokumen, $ekstensiDokumen) {
-    $authenticated = $this->isAuth($request)['authenticated'];
-    $username = $this->isAuth($request)['username'];
-    if(!$authenticated) return $this->encrypt($username, json_encode([
-      'message' => $authenticated == true ? 'Authorized' : 'Not Authorized',
-      'status' => $authenticated === true ? 1 : 0
-    ]));
+  function insertDokumenRiwayat($idRiwayat, $idRefDokumen, $folderDokumen, $namaDokumen, $ekstensiDokumen) {
+    // $authenticated = $this->isAuth($request)['authenticated'];
+    // $username = $this->isAuth($request)['username'];
+    // if(!$authenticated) return $this->encrypt($username, json_encode([
+    //   'message' => $authenticated == true ? 'Authorized' : 'Not Authorized',
+    //   'status' => $authenticated === true ? 1 : 0
+    // ]));
     $token = $this->getAllToken();
     $curl = curl_init($this->initialUrl()."/upload-dok-rw");
     $headers = [];
@@ -267,13 +267,13 @@ class ApiSiasnController extends Controller
     $response = Http::withHeaders($token)->get($url, []);
     return json_decode($response, true);
   }
-  function insertRiwayatJabatanASN(Request $request, $data) {
-    $authenticated = $this->isAuth($request)['authenticated'];
-    $username = $this->isAuth($request)['username'];
-    if(!$authenticated) return $this->encrypt($username, json_encode([
-      'message' => $authenticated == true ? 'Authorized' : 'Not Authorized',
-      'status' => $authenticated === true ? 1 : 0
-    ]));
+  function insertRiwayatJabatanASN($data) {
+    // $authenticated = $this->isAuth($request)['authenticated'];
+    // $username = $this->isAuth($request)['username'];
+    // if(!$authenticated) return $this->encrypt($username, json_encode([
+    //   'message' => $authenticated == true ? 'Authorized' : 'Not Authorized',
+    //   'status' => $authenticated === true ? 1 : 0
+    // ]));
     $token = $this->getAllToken();
     // format url --> /jabatan/save
     // "id" dan "path", tidak perlu diisi dulu tidak masalah
@@ -405,7 +405,7 @@ class ApiSiasnController extends Controller
     $response = Http::withHeaders($token)->get($url, []);
     return json_decode($response, true);
   }
-  function insertRiwayatAngkaKreditASN(Request $request, $data) {
+  function insertRiwayatAngkaKreditASN($data) {
     $token = $this->getAllToken();
     // format url --> /angkakredit/save
     // "id" dan "path", tidak perlu diisi dulu tidak masalah
@@ -477,13 +477,13 @@ class ApiSiasnController extends Controller
     return json_decode($response, true);
   }
 
-  function insertRiwayatPenghargaanASN(Request $request, $data) {
-    $authenticated = $this->isAuth($request)['authenticated'];
-    $username = $this->isAuth($request)['username'];
-    if(!$authenticated) return $this->encrypt($username, json_encode([
-      'message' => $authenticated == true ? 'Authorized' : 'Not Authorized',
-      'status' => $authenticated === true ? 1 : 0
-    ]));
+  function insertRiwayatPenghargaanASN($data) {
+    // $authenticated = $this->isAuth($request)['authenticated'];
+    // $username = $this->isAuth($request)['username'];
+    // if(!$authenticated) return $this->encrypt($username, json_encode([
+    //   'message' => $authenticated == true ? 'Authorized' : 'Not Authorized',
+    //   'status' => $authenticated === true ? 1 : 0
+    // ]));
     $token = $this->getAllToken();
     // format url --> /penghargaan/save
     // "id" dan "path", tidak perlu diisi dulu tidak masalah

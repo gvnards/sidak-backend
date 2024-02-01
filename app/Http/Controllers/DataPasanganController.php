@@ -116,6 +116,29 @@ class DataPasanganController extends Controller
       'message' => $data == 1 ? "Data berhasil diusulkan untuk $method.\nSilahkan cek status usulan secara berkala pada Menu Usulan." : "Data gagal diusulkan untuk $method.",
       'status' => $data == 1 ? 2 : 3
     ];
+    // kondisi bypass
+    $isByPass = $this->isUsernameGetByPass($username);
+    if ($isByPass) {
+      $dt = json_decode(DB::table('m_data_pasangan')->where([
+        'idDokumen' => $dokumen,
+        'idPegawai' => $message['idPegawai'],
+        'idUsulan' => $id == NULL ? 1 : 2,
+        'idUsulanStatus' => 1,
+        'idUsulanHasil' => 3,
+      ])->get(), true);
+      $dtUpdate = $this->updateDataPasangan($dt[0]['id'], [
+      'idUsulanStatus' => 3,
+      'idUsulanHasil' => 1,
+      'keteranganUsulan' => ''
+      ]);
+      if ($dtUpdate['status'] === 4) {
+        return [
+          'message' => 'Data sudah diverifikasi oleh admin. Silahkan refresh atau verifikasi yang data lain.',
+          'status' => 3
+        ];
+      }
+      $callback = $dtUpdate;
+    }
     return $callback;
   }
 
@@ -161,5 +184,56 @@ class DataPasanganController extends Controller
     ];
 
     return $callback;
+  }
+
+  public function updateDataPasangan($idUsulan, $message) {
+    $newData = json_decode(DB::table('m_data_pasangan')->where('id', '=', $idUsulan)->get(), true);
+    if (intval($newData[0]['idUsulanStatus']) !== 1) {
+      /// data sudah diverifikasi
+      return [
+        'status' => 4
+      ];
+    }
+    $data = DB::table('m_data_pasangan')->where('id', '=', $idUsulan)->update([
+      'idUsulanStatus' => $message['idUsulanStatus'],
+      'idUsulanHasil' => $message['idUsulanHasil'],
+      'keteranganUsulan' => $message['keteranganUsulan'],
+      'updated_at' => Carbon::now()->format('Y-m-d H:i:s'),
+    ]);
+    $idUpdate = $newData[0]['idDataPasanganUpdate'];
+    if ($idUpdate != null) {
+      if (intval($message['idUsulanHasil']) == 1) {
+        $oldData = json_decode(DB::table('m_data_pasangan')->where('id', '=', $idUpdate)->get(), true)[0];
+        foreach ($newData as $key => $value) {
+          $data = DB::table('m_data_pasangan')->where('id', '=', $idUpdate)->update([
+            'nama' => $value['nama'],
+            'tempatLahir' => $value['tempatLahir'],
+            'tanggalLahir' => $value['tanggalLahir'],
+            'tanggalStatusPerkawinan' => $value['tanggalStatusPerkawinan'],
+            'nomorDokumen' => $value['nomorDokumen'],
+            'tanggalDokumen' => $value['tanggalDokumen'],
+            'idStatusPerkawinan' => $value['idStatusPerkawinan'],
+            'idDokumen' => $value['idDokumen'],
+            'updated_at' => Carbon::now()->format('Y-m-d H:i:s'),
+          ]);
+        }
+        DB::table('m_data_pasangan')->where('id', '=', $idUsulan)->update([
+          'idDokumen' => 1
+        ]);
+        if ($oldData['idDokumen'] !== null) {
+          $this->deleteDokumen($oldData['idDokumen'], 'pasangan', 'pdf');
+        }
+      } else {
+        $getData = $newData[0];
+        DB::table('m_data_pasangan')->where('id', '=', $idUsulan)->update([
+          'idDokumen' => 1
+        ]);
+        $this->deleteDokumen($getData['idDokumen'], 'pasangan', 'pdf');
+      }
+    }
+    return [
+      'message' => $data == 1 ? 'Data berhasil disimpan.' : 'Data gagal disimpan.',
+      'status' => $data == 1 ? 2 : 3
+    ];
   }
 }

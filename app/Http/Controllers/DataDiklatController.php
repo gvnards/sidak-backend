@@ -116,6 +116,29 @@ class DataDiklatController extends Controller
       'message' => $data == 1 ? "Data berhasil diusulkan untuk $method.\nSilahkan cek status usulan secara berkala pada Menu Usulan." : "Data gagal diusulkan untuk $method.",
       'status' => $data == 1 ? 2 : 3
     ];
+    // kondisi bypass
+    $isByPass = $this->isUsernameGetByPass($username);
+    if ($isByPass) {
+      $dt = json_decode(DB::table('m_data_diklat')->where([
+        'idDokumen' => $dokumen,
+        'idPegawai' => $message['idPegawai'],
+        'idUsulan' => $id == NULL ? 1 : 2,
+        'idUsulanStatus' => 1,
+        'idUsulanHasil' => 3,
+      ])->get(), true);
+      $dtUpdate = $this->updateDataDiklat($dt[0]['id'], [
+      'idUsulanStatus' => 3,
+      'idUsulanHasil' => 1,
+      'keteranganUsulan' => ''
+      ], $isByPass);
+      if ($dtUpdate['status'] === 4) {
+        return [
+          'message' => 'Data sudah diverifikasi oleh admin. Silahkan refresh atau verifikasi yang data lain.',
+          'status' => 3
+        ];
+      }
+      $callback = $dtUpdate;
+    }
     return $callback;
   }
 
@@ -169,5 +192,83 @@ class DataDiklatController extends Controller
     ];
 
     return $callback;
+  }
+
+  public function updateDataDiklat($idUsulan, $message, $isByPass=false) {
+    $usulan = json_decode(DB::table('m_data_diklat')->where([
+      ['id', '=', $idUsulan]
+    ])->get()->toJson(), true)[0];
+    if (intval($usulan['idUsulanStatus']) !== 1) {
+      /// data sudah diverifikasi
+      return [
+        'status' => 4
+      ];
+    }
+    if (intval($usulan['idUsulan']) == 1 && $message['idUsulanHasil'] == 1) {
+      $response = (new ApiSiasnSyncController)->insertRiwayatDiklatKursus($idUsulan);
+      if (!$response['success']) {
+        $callback = [
+          'message' => $response['message'],
+          'status' => 3
+        ];
+        if ($isByPass) {
+          /// delete ketika ada masalah
+          DB::table('m_data_diklat')->where([
+            ['id', '=', $idUsulan]
+          ])->delete();
+        }
+        return $callback;
+      } else {
+        DB::table('m_data_diklat')->where('id', '=', $idUsulan)->update([
+          'idBkn' => $response['mapData']['rwDiklatId'] ?? $response['mapData']['rwKursusId'],
+        ]);
+        $dokumen = json_decode(DB::table('m_dokumen')->where([
+          ['id', '=', $usulan['idDokumen']]
+        ])->get()->toJson(), true)[0];
+        (new ApiSiasnController)->insertDokumenRiwayat($response['mapData']['rwDiklatId'] ?? $response['mapData']['rwKursusId'], $usulan['idJenisDiklat'] == 1 ? 874 : 881, 'diklat', $dokumen['nama'], 'pdf');
+      }
+    }
+    $newData = json_decode(DB::table('m_data_diklat')->where('id', '=', $idUsulan)->get(), true);
+    $idUpdate = $newData[0]['idDataDiklatUpdate'];
+    $data = DB::table('m_data_diklat')->where('id', '=', $idUsulan)->update([
+      'idUsulanStatus' => $message['idUsulanStatus'],
+      'idUsulanHasil' => $message['idUsulanHasil'],
+      'keteranganUsulan' => $message['keteranganUsulan'],
+      'updated_at' => Carbon::now()->format('Y-m-d H:i:s')
+    ]);
+    if ($idUpdate != null) {
+      if (intval($message['idUsulanHasil']) == 1) {
+        $oldData = json_decode(DB::table('m_data_diklat')->where('id', '=', $idUpdate)->get(), true)[0];
+        foreach ($newData as $key => $value) {
+          $data = DB::table('m_data_diklat')->where('id', '=', $idUpdate)->update([
+            'idJenisDiklat' => $value['idJenisDiklat'],
+            'idDaftarDiklat' => $value['idDaftarDiklat'],
+            'namaDiklat' => $value['namaDiklat'],
+            'lamaDiklat' => $value['lamaDiklat'],
+            'tanggalDiklat' => $value['tanggalDiklat'],
+            'idDaftarInstansiDiklat' => $value['idDaftarInstansiDiklat'],
+            'institusiPenyelenggara' => $value['institusiPenyelenggara'],
+            'idDokumen' => $value['idDokumen'],
+            'updated_at' => Carbon::now()->format('Y-m-d H:i:s'),
+          ]);
+        }
+        DB::table('m_data_diklat')->where('id', '=', $idUsulan)->update([
+          'idDokumen' => 1
+        ]);
+        if ($oldData['idDokumen'] !== null) {
+          $this->deleteDokumen($oldData['idDokumen'], 'diklat', 'pdf');
+        }
+      } else {
+        $getData = $newData[0];
+        DB::table('m_data_diklat')->where('id', '=', $idUsulan)->update([
+          'idDokumen' => 1
+        ]);
+        $this->deleteDokumen($getData['idDokumen'], 'diklat', 'pdf');
+      }
+    }
+    return [
+      'message' => $data == 1 ? 'Data berhasil disimpan.' : 'Data gagal disimpan.',
+      'status' => $data == 1 ? 2 : 3
+    ];
   }
 }
