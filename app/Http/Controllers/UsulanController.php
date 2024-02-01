@@ -306,7 +306,7 @@ class UsulanController extends Controller
         ]), true);
         $data[0]['dokumen'] = $this->getBlobDokumen($data[0]['idDokumen'], $data[0]['idDokumen'] == 1 ? '' :  'pak', 'pdf');
         if ($data[0]['idDataAngkaKreditUpdate'] !== null) {
-          $dataBeforeUpdate = json_decode(DB::table('m_data_angka_kredit')->join('m_daftar_jenis_angka_kredit', 'm_data_angka_kredit.idDaftarJenisAngkaKredit', '=', 'm_daftar_jenis_angka_kredit.id')->leftJoin('m_data_jabatan', 'm_data_angka_kredit.idDataJabatan', '=', 'm_data_jabatan.id')->leftJoin('m_jabatan', 'm_data_jabatan.idJabatan', '=', 'm_jabatan.id')->where([
+          $dataBeforeUpdate = json_decode(DB::table('m_data_angka_kredit')->leftJoin('m_daftar_jenis_angka_kredit', 'm_data_angka_kredit.idDaftarJenisAngkaKredit', '=', 'm_daftar_jenis_angka_kredit.id')->leftJoin('m_data_jabatan', 'm_data_angka_kredit.idDataJabatan', '=', 'm_data_jabatan.id')->leftJoin('m_jabatan', 'm_data_jabatan.idJabatan', '=', 'm_jabatan.id')->where([
             ['m_data_angka_kredit.id', '=', $data[0]['idDataAngkaKreditUpdate']]
           ])->get([
             'm_data_angka_kredit.*',
