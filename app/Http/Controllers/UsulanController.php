@@ -66,7 +66,7 @@ class UsulanController extends Controller
     ])->select(DB::raw("m_pegawai.nip as nip, 'Data Angka Kredit' as usulanKriteria, m_data_pribadi.idPegawai as idPegawai, m_data_pribadi.nama as nama, m_data_angka_kredit.id as id, m_data_angka_kredit.created_at as createdAt, m_data_angka_kredit.idUsulanHasil as idUsulanHasil, m_usulan.nama as usulan, m_usulan.id as idUsulan"))->union($dataAnak)->union($dataDiklat)->union($dataPangkat)->union($dataPasangan)->union($dataPendidikan)->union($dataJabatan)->union($dataSkp)->union($dataPenghargaan);
 
     /// Get All Data After Binding On UNION Method
-    $allData = json_decode(DB::table($dataAngkaKredit)->whereIn('idPegawai', $idPegawai !== NULL ? [$idPegawai] : $daftarPegawai)->orderBy('createdAt', 'asc')->get(), true);
+    $allData = json_decode(DB::table($dataAngkaKredit)->whereIn('idPegawai', $idPegawai !== NULL ? [$idPegawai] : $daftarPegawai)->orderBy('createdAt', intval($idUsulanStatus) === 3 || intval($idUsulanStatus) === 4 ? 'desc' : 'asc')->get(), true);
     $callback = [
       'message' => $allData,
       'status' => 2
