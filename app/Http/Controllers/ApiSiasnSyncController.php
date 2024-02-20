@@ -89,19 +89,19 @@ class ApiSiasnSyncController extends ApiSiasnController
     DB::table('m_data_cpns_pns')->insert([
       'id' => NULL,
       'idPegawai' => $idPegawai,
-      'tmtCpns' => date('Y-m-d', strtotime($response['tmtCpns'])),
-      'tglSkCpns' => date('Y-m-d', strtotime($response['tglSkCpns'])),
+      'tmtCpns' => $response['tmtCpns'] == null || $response['tmtCpns'] == '' ? '0000-00-00' : date('Y-m-d', strtotime($response['tmtCpns'])),
+      'tglSkCpns' => $response['tglSkCpns'] == null || $response['tglSkCpns'] == '' ? '0000-00-00' : date('Y-m-d', strtotime($response['tglSkCpns'])),
       'nomorSkCpns' => $response['nomorSkCpns'],
-      'tglSpmt' => date('Y-m-d', strtotime($response['tglSkCpns'])),
+      'tglSpmt' => $response['tglSkCpns'] == null || $response['tglSkCpns'] == '' ? '0000-00-00' : date('Y-m-d', strtotime($response['tglSkCpns'])),
       'nomorSpmt' => $response['noSpmt'],
       'idPejabatPengangkatCpns' => 1,
       'idDokumenSkCpns' => NULL,
-      'tmtPns' => date('Y-m-d', strtotime($response['tmtPns'])),
-      'tglSkPns' => date('Y-m-d', strtotime($response['tglSkPns'])),
+      'tmtPns' => $response['tmtPns'] == null || $response['tmtPns'] == '' ? '0000-00-00' : date('Y-m-d', strtotime($response['tmtPns'])),
+      'tglSkPns' => $response['tglSkPns'] == null || $response['tglSkPns'] == '' ? '0000-00-00' : date('Y-m-d', strtotime($response['tglSkPns'])),
       'nomorSkPns' => $response['nomorSkPns'],
-      'tglSttpl' => date('Y-m-d', strtotime($response['tglSttpl'])),
+      'tglSttpl' => $response['tglSttpl'] == null || $response['tglSttpl'] == '' ? '0000-00-00' : date('Y-m-d', strtotime($response['tglSttpl'])),
       'nomorSttpl' => $response['nomorSttpl'],
-      'tglSuratDokter' => date('Y-m-d', strtotime($response['tglSuratKeteranganDokter'])),
+      'tglSuratDokter' => $response['tglSuratKeteranganDokter'] == null || $response['tglSuratKeteranganDokter'] == '' ? '0000-00-00' : date('Y-m-d', strtotime($response['tglSuratKeteranganDokter'])),
       'nomorSuratDokter' => $response['noSuratKeteranganDokter'],
       'nomorKarpeg' => $response['noSeriKarpeg'],
       'nomorKarisKarsu' => '',
@@ -123,6 +123,8 @@ class ApiSiasnSyncController extends ApiSiasnController
       'message' => $authenticated == true ? 'Authorized' : 'Not Authorized',
       'status' => $authenticated === true ? 1 : 0
     ];
+
+    $this->syncJabatanASN($request, $idPegawai);
 
     $getAsn = json_decode(DB::table('m_pegawai')->where([
       ['id', '=', $idPegawai]
@@ -313,6 +315,18 @@ class ApiSiasnSyncController extends ApiSiasnController
           }
         }
         if (!$isFind) {
+          // check di data angka kredit, kalo ada yg masih nyangkut, idDataJabatan di NULL-kan atau di delete row nya
+          DB::table('m_data_angka_kredit')->where([
+            ['idDataJabatan', '=', $jabatanFromSidak[$i]['id']],
+            ['idBkn', '!=', '']
+          ])->update([
+            'idDataJabatan' => NULL
+          ]);
+          DB::table('m_data_angka_kredit')->where([
+            ['idDataJabatan', '=', $jabatanFromSidak[$i]['id']],
+            ['idBkn', '=', '']
+          ])->delete();
+          // end check di data angka kredit
           DB::table('m_data_jabatan')->where([
             ['idDataJabatanUpdate', '=', $jabatanFromSidak[$i]['id']]
           ])->delete();
