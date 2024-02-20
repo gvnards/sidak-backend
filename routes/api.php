@@ -157,6 +157,8 @@ Route::get('siasn/hukuman-disiplin/riwayat/sync/{idPegawai}', 'ApiSiasnSyncContr
 Route::get('siasn/penghargaan/riwayat/sync/{idPegawai}', 'ApiSiasnSyncController@syncPenghargaanASN');
 Route::get('siasn/angka-kredit/riwayat/sync/{idPegawai}', 'ApiSiasnSyncController@syncAngkaKreditASN');
 Route::get('siasn/skp/riwayat/sync/{idPegawai}', 'ApiSiasnSyncController@syncSkpASN');
+Route::get('rekap-sinkron/created', 'RekapSinkronController@getRekapSinkron');
+Route::post('rekap-sinkron/sync/{idPegawai}', 'RekapSinkronController@onSync');
 
 // API SIASN MASTER
 /// DOKUMEN

@@ -8,7 +8,6 @@ use Illuminate\Support\Facades\DB;
 
 class DataPegawaiController extends Controller
 {
-
   public function insertDataPegawai(Request $request) {
     $authenticated = $this->isAuth($request)['authenticated'];
     $username = $this->isAuth($request)['username'];
