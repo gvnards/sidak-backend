@@ -286,9 +286,11 @@ class RestApiToAppPangkatPensiunController extends RestApiController
     if (!$authentication['status']) {
       return $authentication;
     }
-    $dataAsnAll = json_decode(DB::table('m_pegawai')->join('m_data_pribadi', 'm_pegawai.id', '=', 'm_data_pribadi.idPegawai')->leftJoin('m_data_status_kepegawaian', 'm_pegawai.id', '=', 'm_data_status_kepegawaian.idPegawai')->leftJoin('m_data_cpns_pns', 'm_pegawai.id', '=', 'm_data_cpns_pns.idPegawai')->leftJoin('m_dokumen as dokumenCpns', 'm_data_cpns_pns.idDokumenSkCpns', '=', 'dokumenCpns.id')->whereNotIn('m_data_status_kepegawaian.idDaftarStatusKepegawaian', [8,9,10,11,12,13,14])->orWhere([
-      ['m_data_status_kepegawaian.id', '=', NULL]
-    ])->get([
+    $dataAsnAll = json_decode(DB::table('m_pegawai')->join('m_data_pribadi', 'm_pegawai.id', '=', 'm_data_pribadi.idPegawai')->leftJoin('m_data_status_kepegawaian', 'm_pegawai.id', '=', 'm_data_status_kepegawaian.idPegawai')->leftJoin('m_data_cpns_pns', 'm_pegawai.id', '=', 'm_data_cpns_pns.idPegawai')->leftJoin('m_dokumen as dokumenCpns', 'm_data_cpns_pns.idDokumenSkCpns', '=', 'dokumenCpns.id')->where(function ($query) {
+      $query->whereNotIn('m_data_status_kepegawaian.idDaftarStatusKepegawaian', [8,9,10,11,12,13,14])->orWhere([
+        ['m_data_status_kepegawaian.id', '=', NULL]
+      ]);
+    })->get([
       'm_pegawai.id as asn_id',
       'm_pegawai.nip AS asn_nip',
       'm_data_pribadi.nama AS nama',
