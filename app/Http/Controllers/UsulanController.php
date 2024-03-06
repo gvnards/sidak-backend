@@ -8,7 +8,7 @@ use Carbon\Carbon;
 
 class UsulanController extends Controller
 {
-  public function getUsulan($idUsulanStatus = NULL, $idPegawai = NULL, Request $request)
+  public function getUsulan(Request $request, $idUsulanStatus = NULL, $idPegawai = NULL)
   {
     $authenticated = $this->isAuth($request)['authenticated'];
     $username = $this->isAuth($request)['username'];
