@@ -151,21 +151,23 @@ class ApiSiasnSyncController extends ApiSiasnController
     ])->get(), true);
 
     ///// cek apakah angka kredit dari sidak (yang ada idBkn nya), itu masih ada atau tidak di siasn, jika tidak, hapus
-    for($i = 0; $i < count($angkaKreditFromSidak); $i++) {
-      if ($angkaKreditFromSidak[$i]['idBkn'] != '' && $angkaKreditFromSidak[$i]['idBkn'] != null) {
-        $isFind = false;
-        for($j=0; $j<count($angkaKreditFromSiasn); $j++) {
-          if ($angkaKreditFromSidak[$i]['idBkn'] == $angkaKreditFromSiasn[$j]['id']) {
-            $isFind = true;
+    if (count($angkaKreditFromSiasn) > 0) {
+      for($i = 0; $i < count($angkaKreditFromSidak); $i++) {
+        if ($angkaKreditFromSidak[$i]['idBkn'] != '' && $angkaKreditFromSidak[$i]['idBkn'] != null) {
+          $isFind = false;
+          for($j=0; $j<count($angkaKreditFromSiasn); $j++) {
+            if ($angkaKreditFromSidak[$i]['idBkn'] == $angkaKreditFromSiasn[$j]['id']) {
+              $isFind = true;
+            }
           }
-        }
-        if (!$isFind) {
-          DB::table('m_data_angka_kredit')->where([
-            ['idDataAngkaKreditUpdate', '=', $angkaKreditFromSidak[$i]['id']]
-          ])->delete();
-          DB::table('m_data_angka_kredit')->where([
-            ['id', '=', $angkaKreditFromSidak[$i]['id']]
-          ])->delete();
+          if (!$isFind && count($angkaKreditFromSiasn)) {
+            DB::table('m_data_angka_kredit')->where([
+              ['idDataAngkaKreditUpdate', '=', $angkaKreditFromSidak[$i]['id']]
+            ])->delete();
+            DB::table('m_data_angka_kredit')->where([
+              ['id', '=', $angkaKreditFromSidak[$i]['id']]
+            ])->delete();
+          }
         }
       }
     }
@@ -306,33 +308,35 @@ class ApiSiasnSyncController extends ApiSiasnController
     $jabatanFromSidak = json_decode($jabatanFromSidak, true);
 
     ///// cek apakah jabatan dari sidak (yang ada idBkn nya), itu masih ada atau tidak di siasn, jika tidak, hapus
-    for($i=0; $i<count($jabatanFromSidak); $i++) {
-      if ($jabatanFromSidak[$i]['idBkn'] != '' && $jabatanFromSidak[$i]['idBkn'] != null) {
-        $isFind = false;
-        for($j=0; $j<count($jabatanFromSiasn); $j++) {
-          if ($jabatanFromSidak[$i]['idBkn'] == $jabatanFromSiasn[$j]['id']) {
-            $isFind = true;
+    if (count($jabatanFromSiasn) > 0) {
+      for($i=0; $i<count($jabatanFromSidak); $i++) {
+        if ($jabatanFromSidak[$i]['idBkn'] != '' && $jabatanFromSidak[$i]['idBkn'] != null) {
+          $isFind = false;
+          for($j=0; $j<count($jabatanFromSiasn); $j++) {
+            if ($jabatanFromSidak[$i]['idBkn'] == $jabatanFromSiasn[$j]['id']) {
+              $isFind = true;
+            }
           }
-        }
-        if (!$isFind) {
-          // check di data angka kredit, kalo ada yg masih nyangkut, idDataJabatan di NULL-kan atau di delete row nya
-          DB::table('m_data_angka_kredit')->where([
-            ['idDataJabatan', '=', $jabatanFromSidak[$i]['id']],
-            ['idBkn', '!=', '']
-          ])->update([
-            'idDataJabatan' => NULL
-          ]);
-          DB::table('m_data_angka_kredit')->where([
-            ['idDataJabatan', '=', $jabatanFromSidak[$i]['id']],
-            ['idBkn', '=', '']
-          ])->delete();
-          // end check di data angka kredit
-          DB::table('m_data_jabatan')->where([
-            ['idDataJabatanUpdate', '=', $jabatanFromSidak[$i]['id']]
-          ])->delete();
-          DB::table('m_data_jabatan')->where([
-            ['id', '=', $jabatanFromSidak[$i]['id']]
-          ])->delete();
+          if (!$isFind) {
+            // check di data angka kredit, kalo ada yg masih nyangkut, idDataJabatan di NULL-kan atau di delete row nya
+            DB::table('m_data_angka_kredit')->where([
+              ['idDataJabatan', '=', $jabatanFromSidak[$i]['id']],
+              ['idBkn', '!=', '']
+            ])->update([
+              'idDataJabatan' => NULL
+            ]);
+            DB::table('m_data_angka_kredit')->where([
+              ['idDataJabatan', '=', $jabatanFromSidak[$i]['id']],
+              ['idBkn', '=', '']
+            ])->delete();
+            // end check di data angka kredit
+            DB::table('m_data_jabatan')->where([
+              ['idDataJabatanUpdate', '=', $jabatanFromSidak[$i]['id']]
+            ])->delete();
+            DB::table('m_data_jabatan')->where([
+              ['id', '=', $jabatanFromSidak[$i]['id']]
+            ])->delete();
+          }
         }
       }
     }
@@ -764,7 +768,7 @@ class ApiSiasnSyncController extends ApiSiasnController
 
     ///// get data riwayat jabatan dari siasn
     $pangkatGolonganFromSiasn = $this->getRiwayatPangkatGolonganASN($request, $nipBaru);
-    $pangkatGolonganFromSiasn = $pangkatGolonganFromSiasn['data'];
+    $pangkatGolonganFromSiasn = !isset($pangkatGolonganFromSiasn['data']) ? [] : $pangkatGolonganFromSiasn['data'];
     if ($pangkatGolonganFromSiasn == "Data tidak ditemukan") {
       return [
         'message' => 'Terjadi kesalahan pada server MySAPK.',
@@ -794,18 +798,20 @@ class ApiSiasnSyncController extends ApiSiasnController
     }
 
     /// delete data pangkat di sidak jika di siasn tidak ada datanya
-    for($i=0; $i<count($pangkatGolonganFromSidak); $i++) {
-      $isFind = false;
-      for($j=0; $j<count($pangkatGolonganFromSiasn); $j++) {
-        if ($pangkatGolonganFromSidak[$i]['idBkn'] == $pangkatGolonganFromSiasn[$j]['id']) $isFind = true;
-      }
-      if (!$isFind) {
-        DB::table('m_data_pangkat')->where([
-          ['idDataPangkatUpdate', '=', $pangkatGolonganFromSidak[$i]['id']]
-        ])->delete();
-        DB::table('m_data_pangkat')->where([
-          ['id', '=', $pangkatGolonganFromSidak[$i]['id']]
-        ])->delete();
+    if (count($pangkatGolonganFromSiasn) > 0) {
+      for($i=0; $i<count($pangkatGolonganFromSidak); $i++) {
+        $isFind = false;
+        for($j=0; $j<count($pangkatGolonganFromSiasn); $j++) {
+          if ($pangkatGolonganFromSidak[$i]['idBkn'] == $pangkatGolonganFromSiasn[$j]['id']) $isFind = true;
+        }
+        if (!$isFind) {
+          DB::table('m_data_pangkat')->where([
+            ['idDataPangkatUpdate', '=', $pangkatGolonganFromSidak[$i]['id']]
+          ])->delete();
+          DB::table('m_data_pangkat')->where([
+            ['id', '=', $pangkatGolonganFromSidak[$i]['id']]
+          ])->delete();
+        }
       }
     }
 
@@ -888,21 +894,23 @@ class ApiSiasnSyncController extends ApiSiasnController
     $pendidikanFromSidak = json_decode($pendidikanFromSidak, true);
 
     ///// cek apakah jabatan dari sidak (yang ada idBkn nya), itu masih ada atau tidak di siasn, jika tidak, hapus
-    for($i=0; $i<count($pendidikanFromSidak); $i++) {
-      if ($pendidikanFromSidak[$i]['idBkn'] != '' && $pendidikanFromSidak[$i]['idBkn'] != null) {
-        $isFind = false;
-        for($j=0; $j<count($pendidikanFromSiasn); $j++) {
-          if ($pendidikanFromSidak[$i]['idBkn'] == $pendidikanFromSiasn[$j]['id']) {
-            $isFind = true;
+    if (count($pendidikanFromSiasn) > 0) {
+      for($i=0; $i<count($pendidikanFromSidak); $i++) {
+        if ($pendidikanFromSidak[$i]['idBkn'] != '' && $pendidikanFromSidak[$i]['idBkn'] != null) {
+          $isFind = false;
+          for($j=0; $j<count($pendidikanFromSiasn); $j++) {
+            if ($pendidikanFromSidak[$i]['idBkn'] == $pendidikanFromSiasn[$j]['id']) {
+              $isFind = true;
+            }
           }
-        }
-        if (!$isFind) {
-          DB::table('m_data_pendidikan')->where([
-            ['idDataPendidikanUpdate', '=', $pendidikanFromSidak[$i]['id']]
-          ])->delete();
-          DB::table('m_data_pendidikan')->where([
-            ['id', '=', $pendidikanFromSidak[$i]['id']]
-          ])->delete();
+          if (!$isFind) {
+            DB::table('m_data_pendidikan')->where([
+              ['idDataPendidikanUpdate', '=', $pendidikanFromSidak[$i]['id']]
+            ])->delete();
+            DB::table('m_data_pendidikan')->where([
+              ['id', '=', $pendidikanFromSidak[$i]['id']]
+            ])->delete();
+          }
         }
       }
     }
@@ -1052,7 +1060,7 @@ class ApiSiasnSyncController extends ApiSiasnController
 
     ///// get data riwayat jabatan dari siasn
     $hukdisFromSiasn = $this->getRiwayatHukdisASN($request, $nipBaru);
-    $hukdisFromSiasn = $hukdisFromSiasn['data'] ?? [];
+    $hukdisFromSiasn = !isset($hukdisFromSiasn['data']) ? [] : $hukdisFromSiasn['data'];
 
     ///// get jabatan asn dari sidak
     $hukdisFromSidak = DB::table('m_data_hukuman_disiplin')->where([
@@ -1061,21 +1069,23 @@ class ApiSiasnSyncController extends ApiSiasnController
     $hukdisFromSidak = json_decode($hukdisFromSidak, true);
 
     ///// cek apakah jabatan dari sidak (yang ada idBkn nya), itu masih ada atau tidak di siasn, jika tidak, hapus
-    for($i=0; $i<count($hukdisFromSidak); $i++) {
-      if ($hukdisFromSidak[$i]['idBkn'] != '' && $hukdisFromSidak[$i]['idBkn'] != null) {
-        $isFind = false;
-        for($j=0; $j<count($hukdisFromSiasn); $j++) {
-          if ($hukdisFromSidak[$i]['idBkn'] == $hukdisFromSiasn[$j]['id']) {
-            $isFind = true;
+    if (count($hukdisFromSiasn) > 0) {
+      for($i=0; $i<count($hukdisFromSidak); $i++) {
+        if ($hukdisFromSidak[$i]['idBkn'] != '' && $hukdisFromSidak[$i]['idBkn'] != null) {
+          $isFind = false;
+          for($j=0; $j<count($hukdisFromSiasn); $j++) {
+            if ($hukdisFromSidak[$i]['idBkn'] == $hukdisFromSiasn[$j]['id']) {
+              $isFind = true;
+            }
           }
-        }
-        if (!$isFind) {
-          DB::table('m_data_hukuman_disiplin')->where([
-            ['idDataHukumanDisiplinUpdate', '=', $hukdisFromSidak[$i]['id']]
-          ])->delete();
-          DB::table('m_data_hukuman_disiplin')->where([
-            ['id', '=', $hukdisFromSidak[$i]['id']]
-          ])->delete();
+          if (!$isFind) {
+            DB::table('m_data_hukuman_disiplin')->where([
+              ['idDataHukumanDisiplinUpdate', '=', $hukdisFromSidak[$i]['id']]
+            ])->delete();
+            DB::table('m_data_hukuman_disiplin')->where([
+              ['id', '=', $hukdisFromSidak[$i]['id']]
+            ])->delete();
+          }
         }
       }
     }
@@ -1168,7 +1178,7 @@ class ApiSiasnSyncController extends ApiSiasnController
 
     ///// get data riwayat jabatan dari siasn
     $penghargaanFromSiasn = $this->getRiwayatPenghargaanASN($request, $nipBaru);
-    $penghargaanFromSiasn = $penghargaanFromSiasn['data'] == 'Data tidak ditemukan' ? [] : $penghargaanFromSiasn['data'];
+    $penghargaanFromSiasn = $penghargaanFromSiasn['data'] == 'Data tidak ditemukan' || !isset($penghargaanFromSiasn['data']) ? [] : $penghargaanFromSiasn['data'];
 
     ///// get jabatan asn dari sidak
     $penghargaanFromSidak = DB::table('m_data_penghargaan')->where([
@@ -1177,21 +1187,23 @@ class ApiSiasnSyncController extends ApiSiasnController
     $penghargaanFromSidak = json_decode($penghargaanFromSidak, true);
 
     ///// cek apakah jabatan dari sidak (yang ada idBkn nya), itu masih ada atau tidak di siasn, jika tidak, hapus
-    for($i=0; $i<count($penghargaanFromSidak); $i++) {
-      if ($penghargaanFromSidak[$i]['idBkn'] != '' && $penghargaanFromSidak[$i]['idBkn'] != null) {
-        $isFind = false;
-        for($j=0; $j<count($penghargaanFromSiasn); $j++) {
-          if ($penghargaanFromSidak[$i]['idBkn'] == $penghargaanFromSiasn[$j]['ID']) {
-            $isFind = true;
+    if (count($penghargaanFromSiasn) > 0) {
+      for($i=0; $i<count($penghargaanFromSidak); $i++) {
+        if ($penghargaanFromSidak[$i]['idBkn'] != '' && $penghargaanFromSidak[$i]['idBkn'] != null) {
+          $isFind = false;
+          for($j=0; $j<count($penghargaanFromSiasn); $j++) {
+            if ($penghargaanFromSidak[$i]['idBkn'] == $penghargaanFromSiasn[$j]['ID']) {
+              $isFind = true;
+            }
           }
-        }
-        if (!$isFind) {
-          DB::table('m_data_penghargaan')->where([
-            ['idDataPenghargaanUpdate', '=', $penghargaanFromSidak[$i]['id']]
-          ])->delete();
-          DB::table('m_data_penghargaan')->where([
-            ['id', '=', $penghargaanFromSidak[$i]['id']]
-          ])->delete();
+          if (!$isFind) {
+            DB::table('m_data_penghargaan')->where([
+              ['idDataPenghargaanUpdate', '=', $penghargaanFromSidak[$i]['id']]
+            ])->delete();
+            DB::table('m_data_penghargaan')->where([
+              ['id', '=', $penghargaanFromSidak[$i]['id']]
+            ])->delete();
+          }
         }
       }
     }
