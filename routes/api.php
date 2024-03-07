@@ -159,6 +159,9 @@ Route::get('siasn/angka-kredit/riwayat/sync/{idPegawai}', 'ApiSiasnSyncControlle
 Route::get('siasn/skp/riwayat/sync/{idPegawai}', 'ApiSiasnSyncController@syncSkpASN');
 Route::get('rekap-sinkron/created', 'RekapSinkronController@getRekapSinkron');
 Route::post('rekap-sinkron/sync/{idPegawai}', 'RekapSinkronController@onSync');
+Route::get('export/created', 'ExportDataController@created');
+Route::get('export/data-usulan/created', 'ExportDataController@dataUsulanCreated');
+Route::get('export/{kriteria}', 'ExportDataController@exportData');
 
 // API SIASN MASTER
 /// DOKUMEN
