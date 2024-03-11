@@ -44,12 +44,13 @@ class DataAngkaKreditController extends Controller
 
   public function getDataAngkaKredit($idPegawai, $idUsulan=NULL) {
     if ($idUsulan === NULL) {
-      $data = json_decode(DB::table('m_data_angka_kredit')->leftJoin('m_data_jabatan', 'm_data_angka_kredit.idDataJabatan', '=', 'm_data_jabatan.id')->leftJoin('m_jabatan', 'm_data_jabatan.idJabatan', '=', 'm_jabatan.id')->where([
+      $data = json_decode(DB::table('m_data_angka_kredit')->leftJoin('m_daftar_jenis_angka_kredit', 'm_data_angka_kredit.idDaftarJenisAngkaKredit', '=', 'm_daftar_jenis_angka_kredit.id')->leftJoin('m_data_jabatan', 'm_data_angka_kredit.idDataJabatan', '=', 'm_data_jabatan.id')->leftJoin('m_jabatan', 'm_data_jabatan.idJabatan', '=', 'm_jabatan.id')->where([
         ['m_data_angka_kredit.idPegawai', '=', $idPegawai],
         ['m_data_angka_kredit.idUsulanHasil', '=', 1],
         ['m_data_angka_kredit.idUsulan', '=', 1]
       ])->orderBy('m_data_angka_kredit.periodePenilaianSelesai', 'desc')->get([
         'm_data_angka_kredit.id as id',
+        'm_daftar_jenis_angka_kredit.jenisAngkaKredit as jenisPAK',
         'm_data_angka_kredit.periodePenilaianMulai as periodeMulai',
         'm_data_angka_kredit.periodePenilaianSelesai as periodeSelesai',
         'm_data_angka_kredit.angkaKreditTotal as totalAngkaKredit',
@@ -59,6 +60,8 @@ class DataAngkaKreditController extends Controller
         if ($data[$i]['jabatan'] === '' || $data[$i]['jabatan'] === NULL) {
           $data[$i]['jabatan'] = '(Silahkan Update PAK Anda)';
         }
+        $data[$i]['jenisPAK'] = $data[$i]['jenisPAK'] == null ? "Konvensional" : substr($data[$i]['jenisPAK'], 0, strpos($data[$i]['jenisPAK']," ("));
+        $data[$i]['jabatan'] =  "(".$data[$i]['jenisPAK'].") | ".$data[$i]['jabatan'];
       }
     } else {
       $data = json_decode(DB::table('m_data_angka_kredit')->where([
