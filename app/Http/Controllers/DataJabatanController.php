@@ -10,7 +10,7 @@ class DataJabatanController extends Controller
 {
   private function searchUnor($listUnor, $searchKey, $searchValue) {
     $countList = count($listUnor);
-    for ($i = 0; $i < $listUnor; $i++) {
+    for ($i = 0; $i < $countList; $i++) {
       if ($listUnor[$i][$searchKey] === $searchValue) return [$listUnor[$i]];
     }
     return [];
@@ -53,8 +53,9 @@ class DataJabatanController extends Controller
     return $unor;
   }
 
-  public function getAllUnor() {
-    $unor = json_decode(DB::table('m_unit_organisasi')->where('kodeKomponen', 'NOT LIKE', '-%')->get(), true);
+  public function getAllUnor($customQueryUnor=null) {
+    $unor = $customQueryUnor ?? DB::table('m_unit_organisasi')->where('kodeKomponen', 'NOT LIKE', '-%')->get();
+    $unor = json_decode($unor, true);
     $textPenyambung = " pada ";
     $countUnor = count($unor);
     for ($i = 0; $i < $countUnor; $i++) {
@@ -80,16 +81,54 @@ class DataJabatanController extends Controller
         'message' => $authenticated == true ? 'Authorized' : 'Not Authorized',
         'status' => $authenticated === true ? 1 : 0
       ];
-      $data = DB::table('m_pegawai')->join('m_data_jabatan', 'm_pegawai.id', '=', 'm_data_jabatan.idPegawai')->join('m_jabatan', 'm_data_jabatan.idJabatan', '=', 'm_jabatan.id')->join('m_jenis_jabatan', 'm_jabatan.idJenisJabatan', '=', 'm_jenis_jabatan.id')->where([
+      $data = json_decode(DB::table('m_pegawai')->join('m_data_jabatan', 'm_pegawai.id', '=', 'm_data_jabatan.idPegawai')->join('m_jabatan', 'm_data_jabatan.idJabatan', '=', 'm_jabatan.id')->join('m_jenis_jabatan', 'm_jabatan.idJenisJabatan', '=', 'm_jenis_jabatan.id')->where([
         ['m_pegawai.id', '=', $idPegawai],
         ['m_data_jabatan.idUsulanHasil', '=', 1],
         ['m_data_jabatan.idUsulan', '=', 1],
       ])->orderBy('m_data_jabatan.tmt', 'desc')->get([
         'm_data_jabatan.id as id',
+        'm_data_jabatan.tmt as tmt',
         'm_jabatan.nama as jabatan',
         'm_jabatan.kodeKomponen as kodeKomponen',
         'm_jenis_jabatan.nama as jenisJabatan'
-      ]);
+      ]), true);
+      $listKodeKomponen = [];
+      foreach ($data as $value) {
+        $kdExplode = explode(".", $value['kodeKomponen']);
+        $countKdExplode = count($kdExplode);
+        for ($i = 0; $i < $countKdExplode; $i++) {
+          if (count($listKodeKomponen) === 0) {
+            array_push($listKodeKomponen, implode(".", $kdExplode));
+          } else {
+            if (count($kdExplode) === 0) break;
+            $kdImplode = implode(".", $kdExplode);
+            $isHasKd = false;
+            foreach ($listKodeKomponen as $listKd) {
+              if ($kdImplode === $listKd) $isHasKd = true;
+            }
+            if (!$isHasKd) {
+              array_push($listKodeKomponen, $kdImplode);
+            }
+            array_pop($kdExplode);
+          }
+        }
+      }
+      $allUnor = $this->getAllUnor(DB::table('m_unit_organisasi')->whereIn('kodeKomponen', $listKodeKomponen)->where([
+        ['idBkn', '!=', ''],
+        ['kodeKomponen', 'NOT LIKE', '-%']
+      ])->get());
+      for ($i = 0; $i < count($data); $i++) {
+        if (str_contains($data[$i]['kodeKomponen'], "-")) {
+          $data[$i]['unitOrganisasi'] = "(Unit organisasi tidak ada di dalam database. Silahkan update atau konsultasi dengan BKPSDM.)";
+          continue;
+        }
+        for ($j = 0; $j < count($allUnor); $j++) {
+          if ($data[$i]['kodeKomponen'] === $allUnor[$j]['kodeKomponen']) {
+            $data[$i]['unitOrganisasi'] = $allUnor[$j]['nama'];
+            break;
+          }
+        }
+      }
     } else {
       $data = json_decode(DB::table('m_pegawai')->join('m_data_jabatan', 'm_pegawai.id', '=', 'm_data_jabatan.idPegawai')->join('m_jabatan', 'm_data_jabatan.idJabatan', '=', 'm_jabatan.id')->join('m_kelas_jabatan', 'm_jabatan.idKelasJabatan', '=', 'm_kelas_jabatan.id')->join('m_uang_kinerja', 'm_kelas_jabatan.idUangKinerja', '=', 'm_uang_kinerja.id')->join('m_jenis_jabatan', 'm_jabatan.idJenisJabatan', '=', 'm_jenis_jabatan.id')->join('m_unit_organisasi', 'm_jabatan.kodeKomponen', '=', 'm_unit_organisasi.kodeKomponen')->leftJoin('m_eselon', 'm_jabatan.idEselon', '=', 'm_eselon.id')->where([
         ['m_data_jabatan.id', '=', $idDataJabatan],
