@@ -351,13 +351,7 @@ class ApiSiasnController extends Controller
   }
 
   // HUKUMAN DISIPLIN
-  function getRiwayatHukdisASN(Request $request, $nipBaru) {
-    $authenticated = $this->isAuth($request)['authenticated'];
-    $username = $this->isAuth($request)['username'];
-    if(!$authenticated) return $this->encrypt($username, json_encode([
-      'message' => $authenticated == true ? 'Authorized' : 'Not Authorized',
-      'status' => $authenticated === true ? 1 : 0
-    ]));
+  function getRiwayatHukdisASN($nipBaru) {
     $token = $this->getAllToken();
     // format url --> /pns/rw-hukdis/{nipBaru}
     $url = $this->initialUrl() . "/pns/rw-hukdis/$nipBaru";

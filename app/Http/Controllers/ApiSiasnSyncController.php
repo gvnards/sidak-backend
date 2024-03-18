@@ -1059,7 +1059,7 @@ class ApiSiasnSyncController extends ApiSiasnController
     $nipBaru = $getAsn[0]['nip'];
 
     ///// get data riwayat jabatan dari siasn
-    $hukdisFromSiasn = $this->getRiwayatHukdisASN($request, $nipBaru);
+    $hukdisFromSiasn = $this->getRiwayatHukdisASN($nipBaru);
     $hukdisFromSiasn = !isset($hukdisFromSiasn['data']) ? [] : $hukdisFromSiasn['data'];
 
     ///// get jabatan asn dari sidak
@@ -1108,26 +1108,32 @@ class ApiSiasnSyncController extends ApiSiasnController
     ///// loop insert jabatan dari siasn, tetapi cek terlebih dahulu, idUnor dan idJabatan ada tidak dalam peta jabatan saat ini
     $affected = '';
     for($i=0; $i<count($newHukdisFromSiasn); $i++) {
-      switch ($newHukdisFromSiasn[$i]['jenisHukuman']) {
-        case 'R':
-          $idDaftarHukumanDisiplin = 15;
-          break;
-        case 'S':
-          $idDaftarHukumanDisiplin = 16;
-          break;
-        default:
-          $idDaftarHukumanDisiplin = 17;
-          break;
+      if ($newHukdisFromSiasn[$i]['jenisHukuman'] === 'R' || $newHukdisFromSiasn[$i]['jenisHukuman'] === 'S' || $newHukdisFromSiasn[$i]['jenisHukuman'] === 'B') {
+        switch ($newHukdisFromSiasn[$i]['jenisTingkatHukumanId']) {
+          case 'R':
+            $idDaftarHukumanDisiplin = 15;
+            break;
+          case 'S':
+            $idDaftarHukumanDisiplin = 16;
+            break;
+          default:
+            $idDaftarHukumanDisiplin = 17;
+            break;
+        }
+      } else {
+        $idDaftarHukumanDisiplin = json_decode(DB::table('m_daftar_hukuman_disiplin')->where([
+          ['idBkn', '=', intval($newHukdisFromSiasn[$i]['jenisHukuman'])]
+        ])->get(), true)[0]['id'];
       }
       $idDaftarDasarHukumHukdis = json_decode(DB::table('m_daftar_dasar_hukum_hukuman_disiplin')->where([
         ['idBkn', '=', $newHukdisFromSiasn[$i]['nomorPp']]
-      ])->get(), true)[0];
-      $idJenisHukuman = json_decode(DB::table('m_jenis_hukuman_disiplin')->where('idBkn', '=', $newHukdisFromSiasn[$i]['jenisHukuman'])->get(), true)[0];
+      ])->orWhere('nama', '=', $newHukdisFromSiasn[$i]['nomorPp'])->get(), true)[0];
+      $idJenisHukuman = json_decode(DB::table('m_jenis_hukuman_disiplin')->where('idBkn', '=', $newHukdisFromSiasn[$i]['jenisTingkatHukumanId'])->orWhere('idBkn', '=', $newHukdisFromSiasn[$i]['jenisHukuman'])->get(), true)[0];
       $idDaftarAlasanHukdis = json_decode(DB::table('m_daftar_alasan_hukuman_disiplin')->where('idBkn', '=', $newHukdisFromSiasn[$i]['alasanHukumanDisiplin'])->get(), true)[0];
       DB::table('m_data_hukuman_disiplin')->insert([
         'id' => NULL,
         'idJenisHukumanDisiplin' => $idJenisHukuman['id'],
-        'idDaftarHukumanDisiplin' => $newHukdisFromSiasn[$i]['jenisTingkatHukumanId'] === '' ? $idDaftarHukumanDisiplin : $newHukdisFromSiasn[$i]['jenisTingkatHukumanId'],
+        'idDaftarHukumanDisiplin' => $idDaftarHukumanDisiplin,
         'nomorDokumen' => $newHukdisFromSiasn[$i]['skNomor'],
         'tanggalDokumen' => date('Y-m-d', strtotime($newHukdisFromSiasn[$i]['skTanggal'])),
         'tmtAwal' => date('Y-m-d', strtotime($newHukdisFromSiasn[$i]['hukumanTanggal'])),

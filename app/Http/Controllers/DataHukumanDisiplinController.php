@@ -80,7 +80,7 @@ class DataHukumanDisiplinController extends Controller
         ['m_pegawai.id', '=', $idPegawai],
         ['m_data_hukuman_disiplin.idUsulanHasil', '=', 1],
         ['m_data_hukuman_disiplin.idUsulan', '=', 1],
-      ])->get([
+      ])->orderBy('m_data_hukuman_disiplin.tmtAwal', 'desc')->get([
         'm_data_hukuman_disiplin.id',
         'm_jenis_hukuman_disiplin.nama as jenisHukumanDisiplin',
         'm_daftar_hukuman_disiplin.nama as daftarHukumanDisiplin'
