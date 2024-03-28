@@ -36,7 +36,7 @@ class ListPegawaiController extends Controller
         'pangkat as pangkat'
       ]), true);
     } else {
-      $data = json_decode(DB::table('v_short_brief')->where('kodeKomponen', 'LIKE', $userAdmin[0]['kodeKomponen'])->groupBy('id')->get([
+      $data = json_decode(DB::table('v_short_brief')->where('kodeKomponen', 'LIKE', $userAdmin[0]['kodeKomponen'].'%')->groupBy('id')->get([
         'id as id',
         'nama as nama',
         'nip as nip',
