@@ -32,8 +32,7 @@ class ListPegawaiController extends Controller
         'jabatan as jabatan',
         'kodeKomponen as kodeKomponen',
         'unitOrganisasi as unitOrganisasi',
-        'golongan as golongan',
-        'pangkat as pangkat'
+        'golongan as golongan'
       ]), true);
     } else {
       $data = json_decode(DB::table('v_short_brief')->where('kodeKomponen', 'LIKE', $userAdmin[0]['kodeKomponen'].'%')->groupBy('id')->get([
@@ -43,8 +42,7 @@ class ListPegawaiController extends Controller
         'jabatan as jabatan',
         'kodeKomponen as kodeKomponen',
         'unitOrganisasi as unitOrganisasi',
-        'golongan as golongan',
-        'pangkat as pangkat'
+        'golongan as golongan'
       ]), true);
     }
     $listKodeKomponen = [];
