@@ -266,32 +266,15 @@ class DataJabatanController extends Controller
   }
 
   private function getAllJabatan() {
-    // $data = json_decode(DB::table('m_jabatan')->get(), true);
-    $data = json_decode(DB::table('v_m_daftar_jabatan')->join('m_kelas_jabatan', 'v_m_daftar_jabatan.idKelasJabatan', '=', 'm_kelas_jabatan.id')->join('m_uang_kinerja', 'm_kelas_jabatan.idUangKinerja', '=', 'm_uang_kinerja.id')->get([
+    $data = json_decode(DB::table('v_m_daftar_jabatan')->join('m_kelas_jabatan', 'v_m_daftar_jabatan.idKelasJabatan', '=', 'm_kelas_jabatan.id')->join('m_uang_kinerja', 'm_kelas_jabatan.idUangKinerja', '=', 'm_uang_kinerja.id')->orderBy('v_m_daftar_jabatan.nama', 'asc')->get([
       'v_m_daftar_jabatan.id as id',
       'v_m_daftar_jabatan.nama as nama',
       'v_m_daftar_jabatan.kebutuhan as kebutuhan',
       'v_m_daftar_jabatan.kodeKomponen as kodeKomponen',
       'v_m_daftar_jabatan.terisi as jabatanTerisi',
     ])->toJson(), true);
-    $jabatanGroup = json_decode(DB::table('v_m_daftar_jabatan')->join('m_kelas_jabatan', 'v_m_daftar_jabatan.idKelasJabatan', '=', 'm_kelas_jabatan.id')->join('m_uang_kinerja', 'm_kelas_jabatan.idUangKinerja', '=', 'm_uang_kinerja.id')->where([
-      ['v_m_daftar_jabatan.terisi', '>', 0]
-    ])->orWhere([
-      ['v_m_daftar_jabatan.kebutuhan', '>', -1]
-    ])->groupBy('v_m_daftar_jabatan.nama')->get([
-      'v_m_daftar_jabatan.id as id',
-      'v_m_daftar_jabatan.nama as nama',
-      'v_m_daftar_jabatan.kodeKomponen as kodeKomponen',
-    ])->toJson(), true);
-    for($i=0; $i<count($jabatanGroup); $i++) {
-      $jabatanGroup[$i]['kebutuhan'] = -1;
-      $jabatanGroup[$i]['jabatanTerisi'] = 0;
-      $jabatanGroup[$i]['nama'] = $jabatanGroup[$i]['nama']." (Tidak ada di dalam Peta Jabatan Unit Organisasi)";
-      array_push($data, $jabatanGroup[$i]);
-    }
     return [
-      'jabatan' => $data,
-      'jabatanGroup' => $jabatanGroup
+      'jabatan' => $data
     ];
   }
 
