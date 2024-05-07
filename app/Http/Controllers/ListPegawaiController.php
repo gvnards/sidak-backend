@@ -50,20 +50,16 @@ class ListPegawaiController extends Controller
       $kdExplode = explode(".", $value['kodeKomponen']);
       $countKdExplode = count($kdExplode);
       for ($i = 0; $i < $countKdExplode; $i++) {
-        if (count($listKodeKomponen) === 0) {
-          array_push($listKodeKomponen, implode(".", $kdExplode));
-        } else {
-          if (count($kdExplode) === 0) break;
-          $kdImplode = implode(".", $kdExplode);
-          $isHasKd = false;
-          foreach ($listKodeKomponen as $listKd) {
-            if ($kdImplode === $listKd) $isHasKd = true;
-          }
-          if (!$isHasKd) {
-            array_push($listKodeKomponen, $kdImplode);
-          }
-          array_pop($kdExplode);
+        if (count($kdExplode) === 0) break;
+        $kdImplode = implode(".", $kdExplode);
+        $isHasKd = false;
+        foreach ($listKodeKomponen as $listKd) {
+          if ($kdImplode === $listKd) $isHasKd = true;
         }
+        if (!$isHasKd) {
+          $listKodeKomponen[] = $kdImplode;
+        }
+        array_pop($kdExplode);
       }
     }
     $allUnors = (new DataJabatanController)->getAllUnor(DB::table('m_unit_organisasi')->whereIn('kodeKomponen', $listKodeKomponen)->where([
