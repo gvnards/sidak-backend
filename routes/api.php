@@ -112,6 +112,7 @@ Route::get('data-hukdis/{idPegawai}', 'DataHukumanDisiplinController@getDataHukd
 Route::get('data-hukdis/{idPegawai}/{id}', 'DataHukumanDisiplinController@getDataHukdis');
 Route::get('data-jabatan/created', 'DataJabatanController@getDataJabatanCreated');
 Route::get('data-jabatan/detail/{idPegawai}/{id}', 'DataJabatanController@getDataJabatanDetail');
+Route::delete('data-jabatan/delete/{id}', 'DataJabatanController@deleteDataJabatan');
 Route::get('data-jabatan/{idPegawai}', 'DataJabatanController@getDataJabatan');
 Route::get('usulan/{idUsulanStatus}', 'UsulanController@getUsulan');
 Route::get('usulan/{idUsulanStatus}/{idPegawai}', 'UsulanController@getUsulan');

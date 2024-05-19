@@ -436,4 +436,21 @@ class DataJabatanController extends Controller
       'status' => $data == 1 ? 2 : 3
     ];
   }
+
+  public function deleteDataJabatan(Request $request, $idDataJabatan) {
+    $dataJabatan = json_decode(DB::table('m_data_jabatan')->where([
+      ['id', '=', $idDataJabatan]
+    ])->get(), true);
+    if (count($dataJabatan) === 0) {
+      return [
+        'message' => 'Data Jabatan tidak ditemukan.',
+        'status' => 3
+      ];
+    }
+    $deleteJabatan = (new ApiSiasnController)->deleteRiwayatJabatan($dataJabatan[0]['idBkn']);
+    return [
+      'message' => ($deleteJabatan['success'] || $deleteJabatan['message'] === 'success') ? 'Data Jabatan berhasil dihapus.' : 'Data Jabatan gagal dihapus.',
+      'status' => ($deleteJabatan['success'] || $deleteJabatan['message'] === "success") ? 2 : 3
+    ];
+  }
 }

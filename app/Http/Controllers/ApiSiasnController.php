@@ -241,6 +241,13 @@ class ApiSiasnController extends Controller
     ]);
   }
   // JABATAN --
+  function deleteRiwayatJabatan($idRiwayatJabatan) {
+    $token = $this->getAllToken();
+    // format url --> /jabatan/pns/{nipBaru}
+    $url = $this->initialUrl() . "/jabatan/delete/$idRiwayatJabatan";
+    $response = Http::withHeaders($token)->delete($url, []);
+    return json_decode($response, true);
+  }
   function getRiwayatJabatanASNDetail(Request $request, $idRiwayatJabatan) {
     $authenticated = $this->isAuth($request)['authenticated'];
     $username = $this->isAuth($request)['username'];
