@@ -265,8 +265,11 @@ class ApiSiasnSyncController extends ApiSiasnController
       }
     }
 
+    $getDataAngkaKredit = (new DataAngkaKreditController)->getListDataAngkaKredit($request, $idPegawai);
+
     $callback = [
       'message' => "Data angka kredit sudah berhasil disinkronisasi dari MySAPK.\nJika setelah sinkronisasi tidak ada angka kredit yang muncul, silahkan tambahkan angka kredit sesuai dengan dasar Sertifikat yang dimiliki.\n Dan jika terdapat ketidaksesuaian angka kredit, dapat menghubungi Admin BKPSDM.",
+      'data' => $getDataAngkaKredit['message']['dataAngkaKredit'],
       'status' => 2
     ];
     return $callback;
@@ -518,8 +521,11 @@ class ApiSiasnSyncController extends ApiSiasnController
       }
     }
 
+    $getDataJabatan = (new DataJabatanController)->getDataJabatan($request, $idPegawai);
+
     $callback = [
       'message' => "Data jabatan sudah berhasil disinkronisasi dari MySAPK.\nData yang dapat disinkronisasi adalah data sesuai dengan SOTK dan Peta Jabatan saat ini.\nJika setelah sinkronisasi tidak ada jabatan yang muncul, silahkan tambahkan jabatan sesuai dengan dasar SK Jabatan Definitif Terakhir.\n Dan jika terdapat ketidaksesuaian jabatan, dapat menghubungi Admin BKPSDM.",
+      'data' => $getDataJabatan['message'],
       'status' => 2
     ];
     return $callback;
@@ -690,8 +696,11 @@ class ApiSiasnSyncController extends ApiSiasnController
       ]);
     }
 
+    $getDataDiklat = (new DataDiklatController)->getDataDiklat($request, $idPegawai);
+
     $callback = [
       'message' => "Data diklat/kursus sudah berhasil disinkronisasi dari MySAPK.\nJika setelah sinkronisasi tidak ada diklat/kursus yang muncul, silahkan tambahkan diklat/kursus sesuai dengan dasar Sertifikat yang dimiliki.\n Dan jika terdapat ketidaksesuaian diklat/kursus, dapat menghubungi Admin BKPSDM.",
+      'data' => $getDataDiklat['message'],
       'status' => 2
     ];
     return $callback;
@@ -851,8 +860,11 @@ class ApiSiasnSyncController extends ApiSiasnController
       ]);
     }
 
+    $getDataPangkat = (new DataGolonganPangkatController)->getDataGolPang($request, $idPegawai);
+
     $callback = [
       'message' => "Data pangkat/golongan sudah berhasil disinkronisasi dari MySAPK.\nJika terdapat ketidaksesuaian pangkat/golongan, dapat menghubungi Admin BKPSDM.",
+      'data' => $getDataPangkat['message'],
       'status' => 2
     ];
     return $callback;
@@ -1031,8 +1043,11 @@ class ApiSiasnSyncController extends ApiSiasnController
       ]);
     }
 
+    $getDataPendidikan = (new DataPendidikanController)->getDataPendidikan($request, $idPegawai);
+
     $callback = [
       'message' => "Data pendidikan sudah berhasil disinkronisasi dari MySAPK.\nJika terdapat ketidaksesuaian pendidikan, dapat menghubungi Admin BKPSDM.",
+      'data' => $getDataPendidikan['message'],
       'status' => 2
     ];
     return $callback;
@@ -1155,8 +1170,11 @@ class ApiSiasnSyncController extends ApiSiasnController
       ]);
     }
 
+    $getDataHukdis = (new DataHukumanDisiplinController)->getDataHukdis($idPegawai, null, $request);
+
     $callback = [
       'message' => "Data hukuman disiplin sudah berhasil disinkronisasi dari MySAPK.\nJika terdapat ketidaksesuaian data, dapat menghubungi Admin BKPSDM.",
+      'data' => $getDataHukdis['message'],
       'status' => 2
     ];
     return $callback;
@@ -1254,8 +1272,11 @@ class ApiSiasnSyncController extends ApiSiasnController
       ]);
     }
 
+    $getDataPenghargaan = (new DataPenghargaanController)->getDataPenghargaan($request, $idPegawai);
+
     $callback = [
       'message' => "Data hukuman disiplin sudah berhasil disinkronisasi dari MySAPK.\nJika terdapat ketidaksesuaian data, dapat menghubungi Admin BKPSDM.",
+      'data' => $getDataPenghargaan['message'],
       'status' => 2
     ];
     return $callback;
@@ -1533,8 +1554,11 @@ class ApiSiasnSyncController extends ApiSiasnController
       }
     }
 
+    $getDataSkp = (new DataSkpController)->getDataSkp($request, $idPegawai);
+
     $callback = [
       'message' => "Data SKP sudah berhasil disinkronisasi dari MySAPK.\nJika terdapat ketidaksesuaian data, dapat menghubungi Admin BKPSDM.",
+      'data' => $getDataSkp['message'],
       'status' => 2
     ];
     return $callback;
