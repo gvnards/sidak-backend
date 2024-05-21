@@ -393,6 +393,12 @@ class ApiSiasnController extends Controller
   // }
 
   // ANGKA KREDIT
+  function deleteRiwayatAngkaKredit($idRiwayatAngkaKredit) {
+    $token = $this->getAllToken();
+    $url = $this->initialUrl() . "/angkakredit/delete/$idRiwayatAngkaKredit";
+    $response = Http::withHeaders($token)->delete($url, []);
+    return json_decode($response, true);
+  }
   function getRiwayatAngkaKreditASN(Request $request, $nipBaru) {
     // $authenticated = $this->isAuth($request)['authenticated'];
     // $username = $this->isAuth($request)['username'];

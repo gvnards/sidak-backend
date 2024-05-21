@@ -364,4 +364,27 @@ class DataAngkaKreditController extends Controller
       'status' => $data == 1 ? 2 : 3
     ];
   }
+
+  public function deleteDataJabatan(Request $request, $idDataAngkaKredit) {
+    $authenticated = $this->isAuth($request)['authenticated'];
+    $username = $this->isAuth($request)['username'];
+    if(!$authenticated) return [
+      'message' => $authenticated == true ? 'Authorized' : 'Not Authorized',
+      'status' => $authenticated === true ? 1 : 0
+    ];
+    $dataAngkaKredit = json_decode(DB::table('m_data_angka_kredit')->where([
+      ['id', '=', $idDataAngkaKredit]
+    ])->get(), true);
+    if (count($dataAngkaKredit) === 0) {
+      return [
+        'message' => 'Data Angka Kredit tidak ditemukan.',
+        'status' => 3
+      ];
+    }
+    $deleteAngkaKredit = (new ApiSiasnController)->deleteRiwayatAngkaKredit($dataAngkaKredit[0]['idBkn']);
+    return [
+      'message' => ($deleteAngkaKredit['success'] || $deleteAngkaKredit['message'] === 'success') ? 'Data Angka Kredit berhasil dihapus.' : 'Data Angka Kredit gagal dihapus.',
+      'status' => ($deleteAngkaKredit['success'] || $deleteAngkaKredit['message'] === "success") ? 2 : 3
+    ];
+  }
 }

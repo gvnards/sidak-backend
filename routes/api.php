@@ -130,6 +130,7 @@ Route::get('data-penghargaan/detail/{idPegawai}/{idUsulan}', 'DataPenghargaanCon
 Route::get('angka-kredit/created/{idPegawai}', 'DataAngkaKreditController@getDataCreated');
 Route::get('angka-kredit/updated/{idPegawai}/{idUsulan}', 'DataAngkaKreditController@getDataUpdated');
 Route::get('angka-kredit/list/{idPegawai}', 'DataAngkaKreditController@getListDataAngkaKredit');
+Route::delete('angka-kredit/delete/{id}', 'DataAngkaKreditController@deleteDataJabatan');
 Route::get('dokumen-elektronik/list/{idPegawai}', 'DataDokumenElektronikController@getDataCreated');
 Route::get('dokumen-elektronik/detail/{idPegawai}/{idDaftarDokumen}', 'DataDokumenElektronikController@getDataDokumenElektronikDetail');
 
