@@ -438,6 +438,12 @@ class DataJabatanController extends Controller
   }
 
   public function deleteDataJabatan(Request $request, $idDataJabatan) {
+    $authenticated = $this->isAuth($request)['authenticated'];
+    $username = $this->isAuth($request)['username'];
+    if(!$authenticated) return [
+      'message' => $authenticated == true ? 'Authorized' : 'Not Authorized',
+      'status' => $authenticated === true ? 1 : 0
+    ];
     $dataJabatan = json_decode(DB::table('m_data_jabatan')->where([
       ['id', '=', $idDataJabatan]
     ])->get(), true);
