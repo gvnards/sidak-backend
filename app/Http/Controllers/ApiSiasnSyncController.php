@@ -933,7 +933,12 @@ class ApiSiasnSyncController extends ApiSiasnController
     ///// cek apakah pendidikan yang dari siasn sudah ada di sidak, jika belum, kumpulkan ke dalam variabel newPendidikanFromSiasn
     $newPendidikanFromSiasn = [];
     $updatePendidikanFromSiasn = [];
+    $pendidikanPertamaSaatPns = null;
     for($i=0; $i<count($pendidikanFromSiasn); $i++) {
+      /// cek data pendidikan pertama kali saat diangkat pns
+      if (intval($pendidikanFromSiasn[$i]['isPendidikanPertama']) === 1) {
+        $pendidikanPertamaSaatPns = $pendidikanFromSiasn[$i]['tkPendidikanId'];
+      }
       $isFind = false;
       for($j=0; $j<count($pendidikanFromSidak); $j++) {
         // cek
@@ -953,22 +958,13 @@ class ApiSiasnSyncController extends ApiSiasnController
       }
     }
 
-    ///// loop cek data pendidikan pertama kali saat diangkat pns
-    $pendidikanPertamaSaatPns = null;
-    for($i=0; $i<count($newPendidikanFromSiasn); $i++) {
-      if (intval($newPendidikanFromSiasn[$i]['isPendidikanPertama']) == 1) {
-        $pendidikanPertamaSaatPns = $newPendidikanFromSiasn[$i]['tkPendidikanId'];
-      }
-    }
-
     ///// loop update jika ada tingkat pendidikan dari sidak yg tidak sama dengan siasn
     $affected = '';
     for($i=0; $i<count($updatePendidikanFromSiasn); $i++) {
       $idJenisPendidikan = 1;
       if ($pendidikanPertamaSaatPns != null) {
-        if (intval($pendidikanPertamaSaatPns) <= intval($updatePendidikanFromSiasn[$i]['tkPendidikanId'])) {
-          $idJenisPendidikan = 3;
-        }
+        if (intval($pendidikanPertamaSaatPns) > intval($tingkatPendidikan['id'])) $idJenisPendidikan = 3;
+        else if (intval($pendidikanPertamaSaatPns) === intval($tingkatPendidikan['id'])) $idJenisPendidikan = 2;
       }
       $tingkatPendidikan = null;
       foreach ($daftarTingkatPendidikan as $tkPendidikan) {
@@ -1005,9 +1001,8 @@ class ApiSiasnSyncController extends ApiSiasnController
     for($i=0; $i<count($newPendidikanFromSiasn); $i++) {
       $idJenisPendidikan = 1;
       if ($pendidikanPertamaSaatPns != null) {
-        if (intval($pendidikanPertamaSaatPns) <= intval($newPendidikanFromSiasn[$i]['tkPendidikanId'])) {
-          $idJenisPendidikan = 3;
-        }
+        if (intval($pendidikanPertamaSaatPns) > intval($tingkatPendidikan['id'])) $idJenisPendidikan = 3;
+        else if (intval($pendidikanPertamaSaatPns) === intval($tingkatPendidikan['id'])) $idJenisPendidikan = 2;
       }
       $tingkatPendidikan = null;
       foreach ($daftarTingkatPendidikan as $tkPendidikan) {
