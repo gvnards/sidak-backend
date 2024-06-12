@@ -426,16 +426,14 @@ class ApiSiasnSyncController extends ApiSiasnController
     }
 
     ///// loop insert jabatan dari siasn, tetapi cek terlebih dahulu, idUnor dan idJabatan ada tidak dalam peta jabatan saat ini
-    $affected = '';
     for($i=0; $i<count($newJabatanFromSiasn); $i++) {
-      $unorSidak = json_decode(DB::table('m_unit_organisasi')->where([
-        ['idBkn', '=', $newJabatanFromSiasn[$i]['unorId']]
-      ])->get()->toJson(), true);
+      $unorSidak = json_decode(DB::table('m_unit_organisasi')->where(
+        $newJabatanFromSiasn[$i]['unorId'] === '' ? [['idBkn', '=', $newJabatanFromSiasn[$i]['unorId']],['nama', '=', $newJabatanFromSiasn[$i]['namaUnor']]] : [['idBkn', '=', $newJabatanFromSiasn[$i]['unorId']]])->get()->toJson(), true);
       // cek unorId ada dalam SOTK sekarang atau tidak
       if (count($unorSidak) === 0) {
         $newId = DB::table('m_unit_organisasi')->insertGetId([
           'id' => NULL,
-          'nama' => $newJabatanFromSiasn[$i]['unorNama'],
+          'nama' => $newJabatanFromSiasn[$i]['unorNama'] === '' ? $newJabatanFromSiasn[$i]['namaUnor'] : $newJabatanFromSiasn[$i]['unorNama'],
           'kodeKomponen' => '',
           'digunakanSotkSekarang' => 0,
           'created_at' => Carbon::now()->format('Y-m-d H:i:s'),
@@ -446,19 +444,22 @@ class ApiSiasnSyncController extends ApiSiasnController
         DB::table('m_unit_organisasi')->where([
           ['id', '=', $newId]
         ])->update([
-          'kodeKomponen' => '-'.$newId
+          'kodeKomponen' => '-'.$newId,
         ]);
         $unorSidak = json_decode(DB::table('m_unit_organisasi')->where([
-          ['idBkn', '=', $newJabatanFromSiasn[$i]['unorId']]
+          ['id', '=', $newId]
         ])->get()->toJson(), true);
       }
-      else {
-        $jabatanId = '';
+        $jabatanId = null;
         switch (intval($newJabatanFromSiasn[$i]['jenisJabatan'])) {
           case 1:
             $idJenisJabatan = 1;
             $jabatanId = $newJabatanFromSiasn[$i]['unorId'];
-            $jabatanNama = $newJabatanFromSiasn[$i]['namaJabatan'] ?? 'Kepala '.$newJabatanFromSiasn[$i]['unorNama'];
+            if ($newJabatanFromSiasn[$i]['namaJabatan'] !== null && $newJabatanFromSiasn[$i]['namaJabatan'] !== '') {
+              $jabatanNama = $newJabatanFromSiasn[$i]['namaJabatan'];
+            } else {
+              $jabatanNama = 'Kepala '.($newJabatanFromSiasn[$i]['unorNama'] === '' ? $newJabatanFromSiasn[$i]['namaUnor'] : $newJabatanFromSiasn[$i]['unorNama']);
+            }
             break;
           case 2:
             $idJenisJabatan = 2;
@@ -473,11 +474,11 @@ class ApiSiasnSyncController extends ApiSiasnController
           default:
             break;
         }
-        if ($jabatanId == '') continue;
-        $jabatanSidak = json_decode(DB::table('m_jabatan')->where([
-          ['kodeKomponen', '=', $unorSidak[0]['kodeKomponen']],
-          ['idBkn', '=', $jabatanId]
-        ])->get()->toJson(), true);
+        if ($jabatanId === null) continue;
+        $jabatanSidak = json_decode(DB::table('m_jabatan')->where(
+          $jabatanId !== null && $jabatanId !== '' ?
+          [['kodeKomponen', '=', $unorSidak[0]['kodeKomponen']],['idBkn', '=', $jabatanId]]
+          : [['kodeKomponen', '=', $unorSidak[0]['kodeKomponen']],['nama', '=', $jabatanNama]])->get()->toJson(), true);
 
         // cek jabatanId ada dalam Peta Jabatan sekarang atau tidak
         $idJabatan = 0;
@@ -518,7 +519,6 @@ class ApiSiasnSyncController extends ApiSiasnController
           'updated_at' => Carbon::now()->format('Y-m-d H:i:s'),
           'idBkn' => $newJabatanFromSiasn[$i]['id'],
         ]);
-      }
     }
 
     $getDataJabatan = (new DataJabatanController)->getDataJabatan($request, $idPegawai);
