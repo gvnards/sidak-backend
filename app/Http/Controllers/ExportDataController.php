@@ -16,94 +16,67 @@ class ExportDataController extends Controller
       if (intval($status) === 1) $isTerverifikasi = true;
     }
     $dataAnak = DB::table('m_pegawai')->join('m_data_pribadi', 'm_pegawai.id', '=', 'm_data_pribadi.idPegawai')->join('m_data_anak', 'm_pegawai.id', '=', 'm_data_anak.idPegawai')->join('m_usulan', 'm_data_anak.idUsulan', '=', 'm_usulan.id')
-    ->where(function ($query) use ($message, $isTerverifikasi) {
-      $query->whereIn('idUsulanHasil', $isTerverifikasi ? [1,2] : [])
-      ->whereBetween('m_data_anak.updated_at', [$message['startDate'].' 00:00:00', $message['endDate'].' 23:59:59']);
+    ->where(function ($query) use ($message, $isTerverifikasi, $isBelumTerverifikasi) {
+      if ($isTerverifikasi) return $query->whereIn('idUsulanHasil', [1,2])->whereBetween('m_data_anak.updated_at', [$message['startDate'].' 00:00:00', $message['endDate'].' 23:59:59'])->where('m_data_anak.keteranganUsulan', '!=', 'Data sinkron dengan SIASN/MySAPK');
+      if ($isBelumTerverifikasi) return $query->whereIn('idUsulanHasil', [3])->whereBetween('m_data_anak.created_at', [$message['startDate'].' 00:00:00', $message['endDate'].' 23:59:59'])->where('m_data_anak.keteranganUsulan', '!=', 'Data sinkron dengan SIASN/MySAPK');
     })
-    ->orWhere(function ($query) use ($message, $isBelumTerverifikasi) {
-      $query->whereIn('idUsulanHasil', $isBelumTerverifikasi ? [3] : [])
-      ->whereBetween('m_data_anak.created_at', [$message['startDate'].' 00:00:00', $message['endDate'].' 23:59:59']);
-    })
+    ->groupBy(['m_pegawai.nip', 'm_data_anak.created_at', 'm_data_anak.updated_at'])
     ->select(DB::raw("2 as daftarUsulan, 'Data Anak' as usulanKriteria, m_pegawai.nip as nip, m_data_pribadi.nama as nama, m_data_anak.id as id, m_data_anak.created_at as created_at, m_data_anak.updated_at as updated_at, m_data_anak.idUsulanHasil as idUsulanHasil, m_usulan.nama as usulan, m_data_anak.idUsulan as idUsulan, m_data_anak.idUsulanStatus as idUsulanStatus"));
     $dataDiklat = DB::table('m_pegawai')->join('m_data_pribadi', 'm_pegawai.id', '=', 'm_data_pribadi.idPegawai')->join('m_data_diklat', 'm_pegawai.id', '=', 'm_data_diklat.idPegawai')->join('m_usulan', 'm_data_diklat.idUsulan', '=', 'm_usulan.id')
-    ->where(function ($query) use ($message, $isTerverifikasi) {
-      $query->whereIn('idUsulanHasil', $isTerverifikasi ? [1,2] : [])
-      ->whereBetween('m_data_diklat.updated_at', [$message['startDate'].' 00:00:00', $message['endDate'].' 23:59:59']);
+    ->where(function ($query) use ($message, $isTerverifikasi, $isBelumTerverifikasi) {
+      if ($isTerverifikasi) return $query->whereIn('idUsulanHasil', [1,2])->whereBetween('m_data_diklat.updated_at', [$message['startDate'].' 00:00:00', $message['endDate'].' 23:59:59'])->where('m_data_diklat.keteranganUsulan', '!=', 'Data sinkron dengan SIASN/MySAPK');
+      if ($isBelumTerverifikasi) return $query->whereIn('idUsulanHasil', [3])->whereBetween('m_data_diklat.created_at', [$message['startDate'].' 00:00:00', $message['endDate'].' 23:59:59'])->where('m_data_diklat.keteranganUsulan', '!=', 'Data sinkron dengan SIASN/MySAPK');
     })
-    ->orWhere(function ($query) use ($message, $isBelumTerverifikasi) {
-      $query->whereIn('idUsulanHasil', $isBelumTerverifikasi ? [3] : [])
-      ->whereBetween('m_data_diklat.created_at', [$message['startDate'].' 00:00:00', $message['endDate'].' 23:59:59']);
-    })
+    ->groupBy(['m_pegawai.nip', 'm_data_diklat.created_at', 'm_data_diklat.updated_at'])
     ->select(DB::raw("8 as daftarUsulan, 'Data Diklat' as usulanKriteria, m_pegawai.nip as nip, m_data_pribadi.nama as nama, m_data_diklat.id as id, m_data_diklat.created_at as created_at, m_data_diklat.updated_at as updated_at, m_data_diklat.idUsulanHasil as idUsulanHasil, m_usulan.nama as usulan, m_data_diklat.idUsulan as idUsulan, m_data_diklat.idUsulanStatus as idUsulanStatus"));
     $dataPangkat = DB::table('m_pegawai')->join('m_data_pribadi', 'm_pegawai.id', '=', 'm_data_pribadi.idPegawai')->join('m_data_pangkat', 'm_pegawai.id', '=', 'm_data_pangkat.idPegawai')->join('m_usulan', 'm_data_pangkat.idUsulan', '=', 'm_usulan.id')
-    ->where(function ($query) use ($message, $isTerverifikasi) {
-      $query->whereIn('idUsulanHasil', $isTerverifikasi ? [1,2] : [])
-      ->whereBetween('m_data_pangkat.updated_at', [$message['startDate'].' 00:00:00', $message['endDate'].' 23:59:59']);
+    ->where(function ($query) use ($message, $isTerverifikasi, $isBelumTerverifikasi) {
+      if ($isTerverifikasi) return $query->whereIn('idUsulanHasil', [1,2])->whereBetween('m_data_pangkat.updated_at', [$message['startDate'].' 00:00:00', $message['endDate'].' 23:59:59'])->where('m_data_pangkat.keteranganUsulan', '!=', 'Data sinkron dengan SIASN/MySAPK');
+      if ($isBelumTerverifikasi) return $query->whereIn('idUsulanHasil', [3])->whereBetween('m_data_pangkat.created_at', [$message['startDate'].' 00:00:00', $message['endDate'].' 23:59:59'])->where('m_data_pangkat.keteranganUsulan', '!=', 'Data sinkron dengan SIASN/MySAPK');
     })
-    ->orWhere(function ($query) use ($message, $isBelumTerverifikasi) {
-      $query->whereIn('idUsulanHasil', $isBelumTerverifikasi ? [3] : [])
-      ->whereBetween('m_data_pangkat.created_at', [$message['startDate'].' 00:00:00', $message['endDate'].' 23:59:59']);
-    })
+    ->groupBy(['m_pegawai.nip', 'm_data_pangkat.created_at', 'm_data_pangkat.updated_at'])
     ->select(DB::raw("5 as daftarUsulan, 'Data Pangkat' as usulanKriteria, m_pegawai.nip as nip, m_data_pribadi.nama as nama, m_data_pangkat.id as id, m_data_pangkat.created_at as created_at, m_data_pangkat.updated_at as updated_at, m_data_pangkat.idUsulanHasil as idUsulanHasil, m_usulan.nama as usulan, m_data_pangkat.idUsulan as idUsulan, m_data_pangkat.idUsulanStatus as idUsulanStatus"));
     $dataPasangan = DB::table('m_pegawai')->join('m_data_pribadi', 'm_pegawai.id', '=', 'm_data_pribadi.idPegawai')->join('m_data_pasangan', 'm_pegawai.id', '=', 'm_data_pasangan.idPegawai')->join('m_usulan', 'm_data_pasangan.idUsulan', '=', 'm_usulan.id')
-    ->where(function ($query) use ($message, $isTerverifikasi) {
-      $query->whereIn('idUsulanHasil', $isTerverifikasi ? [1,2] : [])
-      ->whereBetween('m_data_pasangan.updated_at', [$message['startDate'].' 00:00:00', $message['endDate'].' 23:59:59']);
+    ->where(function ($query) use ($message, $isTerverifikasi, $isBelumTerverifikasi) {
+      if ($isTerverifikasi) return $query->whereIn('idUsulanHasil', [1,2])->whereBetween('m_data_pasangan.updated_at', [$message['startDate'].' 00:00:00', $message['endDate'].' 23:59:59'])->where('m_data_pasangan.keteranganUsulan', '!=', 'Data sinkron dengan SIASN/MySAPK');
+      if ($isBelumTerverifikasi) return $query->whereIn('idUsulanHasil', [3])->whereBetween('m_data_pasangan.created_at', [$message['startDate'].' 00:00:00', $message['endDate'].' 23:59:59'])->where('m_data_pasangan.keteranganUsulan', '!=', 'Data sinkron dengan SIASN/MySAPK');
     })
-    ->orWhere(function ($query) use ($message, $isBelumTerverifikasi) {
-      $query->whereIn('idUsulanHasil', $isBelumTerverifikasi ? [3] : [])
-      ->whereBetween('m_data_pasangan.created_at', [$message['startDate'].' 00:00:00', $message['endDate'].' 23:59:59']);
-    })
+    ->groupBy(['m_pegawai.nip', 'm_data_pasangan.created_at', 'm_data_pasangan.updated_at'])
     ->select(DB::raw("2 as daftarUsulan, 'Data Pasangan' as usulanKriteria, m_pegawai.nip as nip, m_data_pribadi.nama as nama, m_data_pasangan.id as id, m_data_pasangan.created_at as created_at, m_data_pasangan.updated_at as updated_at, m_data_pasangan.idUsulanHasil as idUsulanHasil, m_usulan.nama as usulan, m_data_pasangan.idUsulan as idUsulan, m_data_pasangan.idUsulanStatus as idUsulanStatus"));
     $dataPendidikan = DB::table('m_pegawai')->join('m_data_pribadi', 'm_pegawai.id', '=', 'm_data_pribadi.idPegawai')->join('m_data_pendidikan', 'm_pegawai.id', '=', 'm_data_pendidikan.idPegawai')->join('m_usulan', 'm_data_pendidikan.idUsulan', '=', 'm_usulan.id')
-    ->where(function ($query) use ($message, $isTerverifikasi) {
-      $query->whereIn('idUsulanHasil', $isTerverifikasi ? [1,2] : [])
-      ->whereBetween('m_data_pendidikan.updated_at', [$message['startDate'].' 00:00:00', $message['endDate'].' 23:59:59']);
+    ->where(function ($query) use ($message, $isTerverifikasi, $isBelumTerverifikasi) {
+      if ($isTerverifikasi) return $query->whereIn('idUsulanHasil', [1,2])->whereBetween('m_data_pendidikan.updated_at', [$message['startDate'].' 00:00:00', $message['endDate'].' 23:59:59'])->where('m_data_pendidikan.keteranganUsulan', '!=', 'Data sinkron dengan SIASN/MySAPK');
+      if ($isBelumTerverifikasi) return $query->whereIn('idUsulanHasil', [3])->whereBetween('m_data_pendidikan.created_at', [$message['startDate'].' 00:00:00', $message['endDate'].' 23:59:59'])->where('m_data_pendidikan.keteranganUsulan', '!=', 'Data sinkron dengan SIASN/MySAPK');
     })
-    ->orWhere(function ($query) use ($message, $isBelumTerverifikasi) {
-      $query->whereIn('idUsulanHasil', $isBelumTerverifikasi ? [3] : [])
-      ->whereBetween('m_data_pendidikan.created_at', [$message['startDate'].' 00:00:00', $message['endDate'].' 23:59:59']);
-    })
+    ->groupBy(['m_pegawai.nip', 'm_data_pendidikan.created_at', 'm_data_pendidikan.updated_at'])
     ->select(DB::raw("3 as daftarUsulan, 'Data Pendidikan' as usulanKriteria, m_pegawai.nip as nip, m_data_pribadi.nama as nama, m_data_pendidikan.id as id, m_data_pendidikan.created_at as created_at, m_data_pendidikan.updated_at as updated_at, m_data_pendidikan.idUsulanHasil as idUsulanHasil, m_usulan.nama as usulan, m_data_pendidikan.idUsulan as idUsulan, m_data_pendidikan.idUsulanStatus as idUsulanStatus"));
     $dataJabatan = DB::table('m_pegawai')->join('m_data_pribadi', 'm_pegawai.id', '=', 'm_data_pribadi.idPegawai')->join('m_data_jabatan', 'm_pegawai.id', '=', 'm_data_jabatan.idPegawai')->join('m_usulan', 'm_data_jabatan.idUsulan', '=', 'm_usulan.id')
-    ->where(function ($query) use ($message, $isTerverifikasi) {
-      $query->whereIn('idUsulanHasil', $isTerverifikasi ? [1,2] : [])
-      ->whereBetween('m_data_jabatan.updated_at', [$message['startDate'].' 00:00:00', $message['endDate'].' 23:59:59']);
+    ->where(function ($query) use ($message, $isTerverifikasi, $isBelumTerverifikasi) {
+      if ($isTerverifikasi) return $query->whereIn('idUsulanHasil', [1,2])->whereBetween('m_data_jabatan.updated_at', [$message['startDate'].' 00:00:00', $message['endDate'].' 23:59:59'])->where('m_data_jabatan.keteranganUsulan', '!=', 'Data sinkron dengan SIASN/MySAPK');
+      if ($isBelumTerverifikasi) return $query->whereIn('idUsulanHasil', [3])->whereBetween('m_data_jabatan.created_at', [$message['startDate'].' 00:00:00', $message['endDate'].' 23:59:59'])->where('m_data_jabatan.keteranganUsulan', '!=', 'Data sinkron dengan SIASN/MySAPK');
     })
-    ->orWhere(function ($query) use ($message, $isBelumTerverifikasi) {
-      $query->whereIn('idUsulanHasil', $isBelumTerverifikasi ? [3] : [])
-      ->whereBetween('m_data_jabatan.created_at', [$message['startDate'].' 00:00:00', $message['endDate'].' 23:59:59']);
-    })
+    ->groupBy(['m_pegawai.nip', 'm_data_jabatan.created_at', 'm_data_jabatan.updated_at'])
     ->select(DB::raw("6 as daftarUsulan, 'Data Jabatan' as usulanKriteria, m_pegawai.nip as nip, m_data_pribadi.nama as nama, m_data_jabatan.id as id, m_data_jabatan.created_at as created_at, m_data_jabatan.updated_at as updated_at, m_data_jabatan.idUsulanHasil as idUsulanHasil, m_usulan.nama as usulan, m_data_jabatan.idUsulan as idUsulan, m_data_jabatan.idUsulanStatus as idUsulanStatus"));
     $dataSkp = DB::table('m_pegawai')->join('m_data_pribadi', 'm_pegawai.id', '=', 'm_data_pribadi.idPegawai')->join('m_data_skp', 'm_pegawai.id', '=', 'm_data_skp.idPegawai')->join('m_usulan', 'm_data_skp.idUsulan', '=', 'm_usulan.id')
-    ->where(function ($query) use ($message, $isTerverifikasi) {
-      $query->whereIn('idUsulanHasil', $isTerverifikasi ? [1,2] : [])
-      ->whereBetween('m_data_skp.updated_at', [$message['startDate'].' 00:00:00', $message['endDate'].' 23:59:59']);
+    ->where(function ($query) use ($message, $isTerverifikasi, $isBelumTerverifikasi) {
+      if ($isTerverifikasi) return $query->whereIn('idUsulanHasil', [1,2])->whereBetween('m_data_skp.updated_at', [$message['startDate'].' 00:00:00', $message['endDate'].' 23:59:59'])->where('m_data_skp.keteranganUsulan', '!=', 'Data sinkron dengan SIASN/MySAPK');
+      if ($isBelumTerverifikasi) return $query->whereIn('idUsulanHasil', [3])->whereBetween('m_data_skp.created_at', [$message['startDate'].' 00:00:00', $message['endDate'].' 23:59:59'])->where('m_data_skp.keteranganUsulan', '!=', 'Data sinkron dengan SIASN/MySAPK');
     })
-    ->orWhere(function ($query) use ($message, $isBelumTerverifikasi) {
-      $query->whereIn('idUsulanHasil', $isBelumTerverifikasi ? [3] : [])
-      ->whereBetween('m_data_skp.created_at', [$message['startDate'].' 00:00:00', $message['endDate'].' 23:59:59']);
-    })
+    ->groupBy(['m_pegawai.nip', 'm_data_skp.created_at', 'm_data_skp.updated_at'])
     ->select(DB::raw("7 as daftarUsulan, 'Data SKP' as usulanKriteria, m_pegawai.nip as nip, m_data_pribadi.nama as nama, m_data_skp.id as id, m_data_skp.created_at as created_at, m_data_skp.updated_at as updated_at, m_data_skp.idUsulanHasil as idUsulanHasil, m_usulan.nama as usulan, m_data_skp.idUsulan as idUsulan, m_data_skp.idUsulanStatus as idUsulanStatus"));
     $dataPenghargaan = DB::table('m_pegawai')->join('m_data_pribadi', 'm_pegawai.id', '=', 'm_data_pribadi.idPegawai')->join('m_data_penghargaan', 'm_pegawai.id', '=', 'm_data_penghargaan.idPegawai')->join('m_usulan', 'm_data_penghargaan.idUsulan', '=', 'm_usulan.id')
-    ->where(function ($query) use ($message, $isTerverifikasi) {
-      $query->whereIn('idUsulanHasil', $isTerverifikasi ? [1,2] : [])
-      ->whereBetween('m_data_penghargaan.updated_at', [$message['startDate'].' 00:00:00', $message['endDate'].' 23:59:59']);
+    ->where(function ($query) use ($message, $isTerverifikasi, $isBelumTerverifikasi) {
+      if ($isTerverifikasi) return $query->whereIn('idUsulanHasil', [1,2])->whereBetween('m_data_penghargaan.updated_at', [$message['startDate'].' 00:00:00', $message['endDate'].' 23:59:59'])->where('m_data_penghargaan.keteranganUsulan', '!=', 'Data sinkron dengan SIASN/MySAPK');
+      if ($isBelumTerverifikasi) return $query->whereIn('idUsulanHasil', [3])->whereBetween('m_data_penghargaan.created_at', [$message['startDate'].' 00:00:00', $message['endDate'].' 23:59:59'])->where('m_data_penghargaan.keteranganUsulan', '!=', 'Data sinkron dengan SIASN/MySAPK');
     })
-    ->orWhere(function ($query) use ($message, $isBelumTerverifikasi) {
-      $query->whereIn('idUsulanHasil', $isBelumTerverifikasi ? [3] : [])
-      ->whereBetween('m_data_penghargaan.created_at', [$message['startDate'].' 00:00:00', $message['endDate'].' 23:59:59']);
-    })
+    ->groupBy(['m_pegawai.nip', 'm_data_penghargaan.created_at', 'm_data_penghargaan.updated_at'])
     ->select(DB::raw("11 as daftarUsulan, 'Data Penghargaan' as usulanKriteria, m_pegawai.nip as nip, m_data_pribadi.nama as nama, m_data_penghargaan.id as id, m_data_penghargaan.created_at as created_at, m_data_penghargaan.updated_at as updated_at, m_data_penghargaan.idUsulanHasil as idUsulanHasil, m_usulan.nama as usulan, m_data_penghargaan.idUsulan as idUsulan, m_data_penghargaan.idUsulanStatus as idUsulanStatus"));
     $dataAngkaKredit = DB::table('m_pegawai')->join('m_data_pribadi', 'm_pegawai.id', '=', 'm_data_pribadi.idPegawai')->join('m_data_angka_kredit', 'm_pegawai.id', '=', 'm_data_angka_kredit.idPegawai')->join('m_usulan', 'm_data_angka_kredit.idUsulan', '=', 'm_usulan.id')
-    ->where(function ($query) use ($message, $isTerverifikasi) {
-      $query->whereIn('idUsulanHasil', $isTerverifikasi ? [1,2] : [])
-      ->whereBetween('m_data_angka_kredit.updated_at', [$message['startDate'].' 00:00:00', $message['endDate'].' 23:59:59']);
+    ->where(function ($query) use ($message, $isTerverifikasi, $isBelumTerverifikasi) {
+      if ($isTerverifikasi) return $query->whereIn('idUsulanHasil', [1,2])->whereBetween('m_data_angka_kredit.updated_at', [$message['startDate'].' 00:00:00', $message['endDate'].' 23:59:59'])->where('m_data_angka_kredit.keteranganUsulan', '!=', 'Data sinkron dengan SIASN/MySAPK');
+      if ($isBelumTerverifikasi) return $query->whereIn('idUsulanHasil', [3])->whereBetween('m_data_angka_kredit.created_at', [$message['startDate'].' 00:00:00', $message['endDate'].' 23:59:59'])->where('m_data_angka_kredit.keteranganUsulan', '!=', 'Data sinkron dengan SIASN/MySAPK');
     })
-    ->orWhere(function ($query) use ($message, $isBelumTerverifikasi) {
-      $query->whereIn('idUsulanHasil', $isBelumTerverifikasi ? [3] : [])
-      ->whereBetween('m_data_angka_kredit.created_at', [$message['startDate'].' 00:00:00', $message['endDate'].' 23:59:59']);
-    })
+    ->groupBy(['m_pegawai.nip', 'm_data_angka_kredit.created_at', 'm_data_angka_kredit.updated_at'])
     ->select(DB::raw("12 as daftarUsulan, 'Data Angka Kredit' as usulanKriteria, m_pegawai.nip as nip, m_data_pribadi.nama as nama, m_data_angka_kredit.id as id, m_data_angka_kredit.created_at as created_at, m_data_angka_kredit.updated_at as updated_at, m_data_angka_kredit.idUsulanHasil as idUsulanHasil, m_usulan.nama as usulan, m_data_angka_kredit.idUsulan as idUsulan, m_data_angka_kredit.idUsulanStatus as idUsulanStatus"))->union($dataAnak)->union($dataDiklat)->union($dataPangkat)->union($dataPasangan)->union($dataPendidikan)->union($dataJabatan)->union($dataSkp)->union($dataPenghargaan);
 
     $dataTemp = json_decode(DB::table($dataAngkaKredit)->orderBy('updated_at', 'asc')->get(), true);
