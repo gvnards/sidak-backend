@@ -273,12 +273,13 @@ class DataJabatanController extends Controller
     //   'v_m_daftar_jabatan.kodeKomponen as kodeKomponen',
     //   'v_m_daftar_jabatan.terisi as jabatanTerisi',
     // ])->toJson(), true);
-    $data = json_decode(DB::table('v_m_daftar_jabatan')->orderBy('v_m_daftar_jabatan.nama', 'asc')->get([
+    $data = json_decode(DB::table('v_m_daftar_jabatan')->join('m_jenis_jabatan', 'v_m_daftar_jabatan.idJenisJabatan', '=', 'm_jenis_jabatan.id')->orderBy('v_m_daftar_jabatan.nama', 'asc')->get([
       'v_m_daftar_jabatan.id as id',
       'v_m_daftar_jabatan.nama as nama',
       'v_m_daftar_jabatan.kebutuhan as kebutuhan',
       'v_m_daftar_jabatan.kodeKomponen as kodeKomponen',
       'v_m_daftar_jabatan.terisi as jabatanTerisi',
+      'm_jenis_jabatan.nama as jenisJabatan'
     ])->toJson(), true);
     return [
       'jabatan' => $data
