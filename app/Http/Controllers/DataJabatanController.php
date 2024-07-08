@@ -149,6 +149,78 @@ class DataJabatanController extends Controller
     return $callback;
   }
 
+  private function dataMutasiUnor($listMutasiUnor=[], $idDataJabatan, $idJabatan, $nip, $date) {
+		$listKodeKomponen = [];
+    foreach ($listMutasiUnor as $dataMutasi) {
+			$isKodeKomponenFind = false;
+			foreach ($listKodeKomponen as $kodeKomponen) {
+				if ($dataMutasi['kodeKomponen'] === $kodeKomponen) $isKodeKomponenFind = true;
+			}
+			if (!$isKodeKomponenFind) array_push($listKodeKomponen, $dataMutasi['kodeKomponen']);
+    }
+		/// dapatkan idBkn jabatannya dulu
+		$jabatanDariDataJabatan = json_decode(DB::table('m_jabatan')->where([
+			['id', '=', $idJabatan]
+		])->get(), true);
+		/// cek apakah idBkn secara jabatan ada di list, kalo kosong, tambah jabatan
+		$listJabatan = json_decode(DB::table('v_m_daftar_jabatan')->where([
+			['idBkn', '=', $jabatanDariDataJabatan[0]['idBkn']]
+		])->whereIn('kodeKomponen', $listKodeKomponen)->get(), true);
+		$listJabatanNew = [];
+		foreach ($listKodeKomponen as $kd) {
+			$isFind = false;
+			foreach ($listJabatan as $jbtn) {
+				if ($kd === $jbtn['kodeKomponen']) $isFind = true;
+			}
+			if (!$isFind) array_push($listJabatanNew, [
+				'id' => NULL,
+				'nama' => $jabatanDariDataJabatan[0]['nama'],
+				'kebutuhan' => $jabatanDariDataJabatan[0]['kebutuhan'],
+				'idKelasJabatan' => $jabatanDariDataJabatan[0]['idKelasJabatan'],
+				'target' => $jabatanDariDataJabatan[0]['target'],
+				'kodeKomponen' => $kd,
+				'idJenisJabatan' => $jabatanDariDataJabatan[0]['idJenisJabatan'],
+				'idEselon' => $jabatanDariDataJabatan[0]['idEselon'],
+        'created_at' => Carbon::now()->format('Y-m-d H:i:s'),
+        'updated_at' => Carbon::now()->format('Y-m-d H:i:s'),
+				'idBkn' => $jabatanDariDataJabatan[0]['idBkn'],
+			]);
+		}
+		if (count($listJabatanNew) > 0) {
+			DB::table('m_jabatan')->insert($listJabatanNew);
+			$listJabatan = json_decode(DB::table('v_m_daftar_jabatan')->where([
+				['idBkn', '=', $jabatanDariDataJabatan[0]['idBkn']]
+			])->whereIn('kodeKomponen', $listKodeKomponen)->get(), true);
+		}
+		$dataMutasiUnor = [];
+		for ($i=0; $i<count($listMutasiUnor); $i++) {
+			for ($j=0; $j<count($listJabatan); $j++) {
+				if ($listMutasiUnor[$i]['kodeKomponen'] === $listJabatan[$j]['kodeKomponen']) {
+					$dokumen = DB::table('m_dokumen')->insertGetId([
+						'id' => NULL,
+						'nama' => "DOK_SK_JABATAN_MUTASI_".$listMutasiUnor[$i]['id']."_".$nip."_".$date,
+						'created_at' => Carbon::now()->format('Y-m-d H:i:s'),
+						'updated_at' => Carbon::now()->format('Y-m-d H:i:s')
+					]);
+					$this->uploadDokumen("DOK_SK_JABATAN_MUTASI_".$listMutasiUnor[$i]['id']."_".$nip."_".$date,$listMutasiUnor[$i]['dokumen'], 'pdf', 'jabatan');
+
+					array_push($dataMutasiUnor, [
+						'id' => NULL,
+						'idDataJabatan' => $idDataJabatan,
+						'idJabatan' => $listJabatan[$j]['id'],
+						'tmt' => $listMutasiUnor[$i]['tmt'],
+						'spmt' => $listMutasiUnor[$i]['spmt'],
+						'tanggalDokumen' => $listMutasiUnor[$i]['tanggalDokumen'],
+						'nomorDokumen' => $listMutasiUnor[$i]['nomorDokumen'],
+						'tmt' => $listMutasiUnor[$i]['tmt'],
+						'idDokumen' => $dokumen
+					]);
+					break;
+				}
+			}
+		}
+  }
+
   public function insertDataJabatan($id=NULL, Request $request) {
     $authenticated = $this->isAuth($request)['authenticated'];
     $username = $this->isAuth($request)['username'];
@@ -157,6 +229,11 @@ class DataJabatanController extends Controller
       'status' => $authenticated === true ? 1 : 0
     ];
     $message = json_decode($this->decrypt($username, $request->message), true);
+
+    return [
+      'message' => $message,
+      'status' => 2
+    ];
 
     /// ** START CHECK --> cek apakah data yang akan diusulkan itu sudah pernah diusulkan sebelumnya atau belum
     if ($id === NULL) {
@@ -273,12 +350,15 @@ class DataJabatanController extends Controller
     //   'v_m_daftar_jabatan.kodeKomponen as kodeKomponen',
     //   'v_m_daftar_jabatan.terisi as jabatanTerisi',
     // ])->toJson(), true);
-    $data = json_decode(DB::table('v_m_daftar_jabatan')->join('m_jenis_jabatan', 'v_m_daftar_jabatan.idJenisJabatan', '=', 'm_jenis_jabatan.id')->orderBy('v_m_daftar_jabatan.nama', 'asc')->get([
+    $data = json_decode(DB::table('v_m_daftar_jabatan')->join('m_jenis_jabatan', 'v_m_daftar_jabatan.idJenisJabatan', '=', 'm_jenis_jabatan.id')->where([
+			['v_m_daftar_jabatan.idBkn', '!=', '']
+		])->orderBy('v_m_daftar_jabatan.nama', 'asc')->get([
       'v_m_daftar_jabatan.id as id',
       'v_m_daftar_jabatan.nama as nama',
       'v_m_daftar_jabatan.kebutuhan as kebutuhan',
       'v_m_daftar_jabatan.kodeKomponen as kodeKomponen',
       'v_m_daftar_jabatan.terisi as jabatanTerisi',
+			'v_m_daftar_jabatan.idBkn',
       'm_jenis_jabatan.nama as jenisJabatan'
     ])->toJson(), true);
     return [
