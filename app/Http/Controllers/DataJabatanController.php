@@ -230,11 +230,6 @@ class DataJabatanController extends Controller
     ];
     $message = json_decode($this->decrypt($username, $request->message), true);
 
-    return [
-      'message' => $message,
-      'status' => 2
-    ];
-
     /// ** START CHECK --> cek apakah data yang akan diusulkan itu sudah pernah diusulkan sebelumnya atau belum
     if ($id === NULL) {
       $checkData = json_decode(DB::table('m_data_jabatan')->where([
