@@ -1437,7 +1437,7 @@ class ApiSiasnSyncController extends ApiSiasnController
         }
         if ($isSkpFound) {
           (new DataSkpController)->updateDataSkp([
-            'idJenisJabatan'=>intval($idJenisJabatan),
+            'idJenisJabatan'=>$idJenisJabatan === NULL ? $idJenisJabatan : intval($idJenisJabatan),
             'tahun'=>$skp['tahun'],
             'idJenisPeraturanKinerja'=>intval($idJenisPeraturanKinerja),
             'nilaiSkp'=>$skp['nilaiSkp'],
@@ -1473,7 +1473,7 @@ class ApiSiasnSyncController extends ApiSiasnController
           ]);
         } else {
           (new DataSkpController)->insertDataSkp($request, NULL, [
-            'idJenisJabatan'=>intval($idJenisJabatan),
+            'idJenisJabatan'=>$idJenisJabatan === NULL ? $idJenisJabatan : intval($idJenisJabatan),
             'tahun'=>$skp['tahun'],
             'idJenisPeraturanKinerja'=>intval($idJenisPeraturanKinerja),
             'nilaiSkp'=>$skp['nilaiSkp'],

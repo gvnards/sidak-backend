@@ -55,7 +55,7 @@ class DataSkpController extends Controller
       $data[0]['dokumen'] = '';
       return $data;
     } else {
-      $data = json_decode(DB::table('m_data_skp')->leftJoin('m_dokumen', 'm_data_skp.idDokumen', '=', 'm_dokumen.id')->where([
+      $data = json_decode(DB::table('m_data_skp')->where([
         ['m_data_skp.id', '=', $idDataSkp],
       ])->get(), true);
       // $data[0]['dokumen'] = $this->getBlobDokumen($data[0]['idDokumen'], 'skp', 'pdf');
@@ -143,6 +143,10 @@ class DataSkpController extends Controller
       'idDokumen' => $dokumen,
       'updated_at' => Carbon::now()->format('Y-m-d H:i:s')
     ]);
+		// upload Dokumen
+		if ($dataSkp[0]['idBkn'] !== '') {
+			(new ApiSiasnController)->insertDokumenRiwayat($dataSkp[0]['idBkn'], 891, 'skp', 'DOK_SKP_'.$tahun.'_'.$asn[0]['nip'].'_'.$message['date'], 'pdf');
+		}
     return [
       'message' => 'Dokumen SKP telah berhasil diupload.',
       'status' => 2
