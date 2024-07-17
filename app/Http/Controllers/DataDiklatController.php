@@ -251,6 +251,17 @@ class DataDiklatController extends Controller
             'idDokumen' => $value['idDokumen'],
             'updated_at' => Carbon::now()->format('Y-m-d H:i:s'),
           ]);
+          $d = json_decode(DB::table('m_data_diklat')->where([
+            ['id', '=', $idUpdate]
+          ])->get([
+            'idJenisDiklat',
+            'idDokumen',
+            'idBkn'
+          ]), true)[0];
+          $dok = json_decode(DB::table('m_dokumen')->where([
+            ['id', '=', $d['idDokumen']]
+          ])->get(['nama']), true)[0];
+          (new ApiSiasnController)->insertDokumenRiwayat($d['idBkn'], intval($d['idJenisDiklat']) === 1 ? 874 : 881, 'diklat', $dok['nama'], 'pdf');
         }
         DB::table('m_data_diklat')->where('id', '=', $idUsulan)->update([
           'idDokumen' => 1
