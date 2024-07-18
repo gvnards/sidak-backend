@@ -349,14 +349,14 @@ class DataAngkaKreditController extends Controller
           'idDokumen' => 1
         ]);
         if ($oldData['idDokumen'] !== null) {
-          $this->deleteDokumen($oldData['idDokumen'], 'penghargaan', 'pdf');
+          $this->deleteDokumen($oldData['idDokumen'], 'pak', 'pdf');
         }
       } else {
         $getData = $newData[0];
         DB::table('m_data_angka_kredit')->where('id', '=', $idUsulan)->update([
           'idDokumen' => 1
         ]);
-        $this->deleteDokumen($getData['idDokumen'], 'penghargaan', 'pdf');
+        $this->deleteDokumen($getData['idDokumen'], 'pak', 'pdf');
       }
     }
     return [
