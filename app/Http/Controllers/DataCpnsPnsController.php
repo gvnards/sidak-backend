@@ -20,6 +20,14 @@ class DataCpnsPnsController extends Controller
     ])->get([
       'm_data_cpns_pns.*'
     ]), true);
+    if (count($data) === 0) {
+      (new ApiSiasnSyncController)->syncDataCpnsPns($request, $idPegawai);
+      $data = json_decode(DB::table('m_pegawai')->join('m_data_cpns_pns', 'm_pegawai.id', '=', 'm_data_cpns_pns.idPegawai')->where([
+        ['m_pegawai.id', '=', $idPegawai]
+      ])->get([
+        'm_data_cpns_pns.*'
+      ]), true);
+    }
     $data[0]['dokumenSkCpns'] = $this->getBlobDokumen($data[0]['idDokumenSkCpns'], 'cpns', 'pdf');
     $data[0]['dokumenSkPns'] = $this->getBlobDokumen($data[0]['idDokumenSkPns'], 'pns', 'pdf');
     $dokumenKategori = (new DokumenController)->getDocumentCategory('cpns');
