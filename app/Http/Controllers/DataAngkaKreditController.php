@@ -74,6 +74,16 @@ class DataAngkaKreditController extends Controller
     return $data;
   }
 
+  private function hasIntegrasi($idPegawai) {
+    $integrasi = json_decode(DB::table('m_data_angka_kredit')->where([
+      ['idPegawai', '=', $idPegawai],
+      ['idDaftarJenisAngkaKredit', '=', 2],
+      ['idUsulan', '=', 1],
+      ['idUsulanHasil', '=', 1]
+    ])->get(), true);
+    return count($integrasi) > 0;
+  }
+
   public function getDataCreated(Request $request, $idPegawai) {
     $authenticated = $this->isAuth($request)['authenticated'];
     $username = $this->isAuth($request)['username'];
@@ -85,9 +95,11 @@ class DataAngkaKreditController extends Controller
     $jenisAngkaKredit = $this->getDaftarJenisAngkaKredit();
     $jabatan = $this->getDataJabatanFungsional($idPegawai);
     $dokumenKategori = (new DokumenController)->getDocumentCategory('angka kredit');
+    $hasIntegrasi = $this->hasIntegrasi($idPegawai);
 
     $callback = [
       'message' => [
+        'hasIntegrasi' => $hasIntegrasi,
         'jenisAngkaKredit' => $jenisAngkaKredit,
         'jabatan' => $jabatan,
         'dokumenKategori' => $dokumenKategori
