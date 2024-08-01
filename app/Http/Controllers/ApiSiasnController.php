@@ -286,28 +286,40 @@ class ApiSiasnController extends Controller
     // "id" dan "path", tidak perlu diisi dulu tidak masalah
     // untuk "path", itu harus upload dokumen terlebih dahulu, nanti kita dapat callback dari dokumennya,
     // lalu dari callback dokumen, nanti ditaruh di path
-    $url = $this->initialUrl() . "/jabatan/save";
+    // $url = $this->initialUrl() . "/jabatan/save";
+    $url = $this->initialUrl() . "/jabatan/unorjabatan/save";
     $response = Http::withHeaders($token)->post($url, [
+      // 'eselonId' => $data['eselonId'],
+      // 'instansiId' => 'A5EB03E23CD4F6A0E040640A040252AD',
+      // 'jabatanFungsionalId' => $data['jenisJabatan'] == '2' ? $data['jabatanId'] : '',
+      // 'jabatanFungsionalUmumId' => $data['jenisJabatan'] == '4' ? $data['jabatanId'] : '',
+      // 'jenisJabatan' => $data['jenisJabatan'],
+      // 'nomorSk' => $data['nomorSk'],
+      // 'pnsId' => $data['pnsId'],
+      // 'satuanKerjaId' => 'A5EB03E2421DF6A0E040640A040252AD',
+      // 'tanggalSk' => $data['tanggalSk'],
+      // 'tmtJabatan' => $data['tmtJabatan'],
+      // 'tmtPelantikan' => $data['tmtPelantikan'],
+      // 'unorId' => $data['unorId']
       'eselonId' => $data['eselonId'],
-      // 'id' => '',
       'instansiId' => 'A5EB03E23CD4F6A0E040640A040252AD',
+      'instansiIndukId' => 'A5EB03E23CD4F6A0E040640A040252AD',
       'jabatanFungsionalId' => $data['jenisJabatan'] == '2' ? $data['jabatanId'] : '',
       'jabatanFungsionalUmumId' => $data['jenisJabatan'] == '4' ? $data['jabatanId'] : '',
       'jenisJabatan' => $data['jenisJabatan'],
       'nomorSk' => $data['nomorSk'],
-      // 'path' => [
-      //   'dok_id' => '',
-      //   'dok_nama' => '',
-      //   'dok_uri' => '',
-      //   'object' => '',
-      //   'slug' => ''
-      // ],
       'pnsId' => $data['pnsId'],
       'satuanKerjaId' => 'A5EB03E2421DF6A0E040640A040252AD',
       'tanggalSk' => $data['tanggalSk'],
       'tmtJabatan' => $data['tmtJabatan'],
       'tmtPelantikan' => $data['tmtPelantikan'],
-      'unorId' => $data['unorId']
+      'unorId' => $data['unorId'],
+      'subJabatanId' => '0',
+
+      /// CHECK ULANG, INI MASIH DEFAULT
+      'jenisMutasiId' => 'MJ',
+      'jenisPenugasanId' => $data['jenisJabatan'] == '1' ? 'D' : '',
+      'tmtMutasi' => '',
     ]);
     return json_decode($response, true);
 
