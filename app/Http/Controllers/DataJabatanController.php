@@ -53,6 +53,34 @@ class DataJabatanController extends Controller
     return $unor;
   }
 
+  public function getJabatanByKodeKomponen(Request $request, $kodeKomponen) {
+    $authenticated = $this->isAuth($request)['authenticated'];
+    $username = $this->isAuth($request)['username'];
+    if(!$authenticated) return [
+      'message' => $authenticated == true ? 'Authorized' : 'Not Authorized',
+      'status' => $authenticated === true ? 1 : 0
+    ];
+    $data = json_decode(DB::table('v_m_daftar_jabatan')->join('m_jenis_jabatan', 'v_m_daftar_jabatan.idJenisJabatan', '=', 'm_jenis_jabatan.id')->where([
+			['v_m_daftar_jabatan.idBkn', '!=', ''],
+      ['v_m_daftar_jabatan.kodeKomponen', '=', $kodeKomponen]
+		])->orderBy('v_m_daftar_jabatan.nama', 'asc')->get([
+      'v_m_daftar_jabatan.id as id',
+      'v_m_daftar_jabatan.nama as nama',
+      'v_m_daftar_jabatan.kebutuhan as kebutuhan',
+      'v_m_daftar_jabatan.kodeKomponen as kodeKomponen',
+      'v_m_daftar_jabatan.terisi as jabatanTerisi',
+			'v_m_daftar_jabatan.idBkn',
+      'm_jenis_jabatan.nama as jenisJabatan'
+    ])->toJson(), true);
+    $callback = [
+      'message' => [
+        'jabatan' => $data,
+      ],
+      'status' => 2
+    ];
+    return $callback;
+  }
+
   public function getAllUnor($customQueryUnor=null) {
     $unor = $customQueryUnor ?? DB::table('m_unit_organisasi')->where('kodeKomponen', 'NOT LIKE', '-%')->get();
     $unor = json_decode($unor, true);
@@ -361,6 +389,21 @@ class DataJabatanController extends Controller
     ];
   }
 
+  private function getAllJabatanGroup() {
+    $data = json_decode(DB::table('v_m_daftar_jabatan')->join('m_jenis_jabatan', 'v_m_daftar_jabatan.idJenisJabatan', '=', 'm_jenis_jabatan.id')->where([
+			['v_m_daftar_jabatan.idBkn', '!=', '']
+		])->groupBy('v_m_daftar_jabatan.idBkn')->orderBy('v_m_daftar_jabatan.nama', 'asc')->get([
+      'v_m_daftar_jabatan.id as id',
+      'v_m_daftar_jabatan.nama as nama',
+      'v_m_daftar_jabatan.kebutuhan as kebutuhan',
+      'v_m_daftar_jabatan.kodeKomponen as kodeKomponen',
+      'v_m_daftar_jabatan.terisi as jabatanTerisi',
+			'v_m_daftar_jabatan.idBkn',
+      'm_jenis_jabatan.nama as jenisJabatan'
+    ])->toJson(), true);
+    return $data;
+  }
+
   private function getAllUnitOrganisasi() {
     $data = json_decode(DB::table('m_unit_organisasi')->get(), true);
     return $data;
@@ -377,7 +420,8 @@ class DataJabatanController extends Controller
       'message' => $authenticated == true ? 'Authorized' : 'Not Authorized',
       'status' => $authenticated === true ? 1 : 0
     ];
-    $jabatan = $this->getAllJabatan();
+    // $jabatan = $this->getAllJabatan();
+    $jabatan = $this->getAllJabatanGroup();
     $unitOrganisasi = $this->getAllUnor();
     $tugasTambahan = $this->getAllTugasTambahan();
     $dokumenKategori = (new DokumenController)->getDocumentCategory('jabatan');
@@ -400,11 +444,14 @@ class DataJabatanController extends Controller
       'message' => $authenticated == true ? 'Authorized' : 'Not Authorized',
       'status' => $authenticated === true ? 1 : 0
     ];
-    $jabatan = $this->getAllJabatan();
+    // $jabatan = $this->getAllJabatan();
+    $jabatan = $this->getAllJabatanGroup();
+    $unitOrganisasi = $this->getAllUnor();
     $unitOrganisasi = $this->getAllUnor();
     $tugasTambahan = $this->getAllTugasTambahan();
     $dataJabatanUnitOrganisasi = $this->getDataJabatan($request, $idPegawai, $idDataJabatan);
     $dokumenKategori = (new DokumenController)->getDocumentCategory('jabatan');
+    // $jabatanByKodeKomponen = $this->getJabatanByKodeKomponen($request, $dataJabatanUnitOrganisasi[0]['kodeKomponen']);
     $callback = [
       'message' => [
         'jabatan' => $jabatan,
