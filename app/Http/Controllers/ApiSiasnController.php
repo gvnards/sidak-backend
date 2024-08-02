@@ -314,7 +314,7 @@ class ApiSiasnController extends Controller
       'tmtJabatan' => $data['tmtJabatan'],
       'tmtPelantikan' => $data['tmtPelantikan'],
       'unorId' => $data['unorId'],
-      'subJabatanId' => '0',
+      'subJabatanId' => $data['subJabatanId'],
 
       /// CHECK ULANG, INI MASIH DEFAULT
       'jenisMutasiId' => 'MJ',

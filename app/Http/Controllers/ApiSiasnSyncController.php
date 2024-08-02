@@ -566,6 +566,12 @@ class ApiSiasnSyncController extends ApiSiasnController
     $unor = json_decode(DB::table('m_unit_organisasi')->where([
       ['kodeKomponen', '=', $jabatan['kodeKomponen']]
     ])->get()->toJson(), true)[0];
+    $subJabatanId = '0';
+    if (str_contains(strtolower($jabatan['nama']), 'guru'))  {
+      $subJabatanId = '127';
+    } else if (str_contains(strtolower($jabatan['nama']), 'dokter')) {
+      $subJabatanId = '1';
+    }
     $data = [
       'eselonId' => $eselon['idBkn'],
       'jabatanId' => $jabatan['idBkn'],
@@ -575,7 +581,8 @@ class ApiSiasnSyncController extends ApiSiasnController
       'tanggalSk' => date('d-m-Y', strtotime($usulan['tanggalDokumen'])),
       'tmtJabatan' => date('d-m-Y', strtotime($usulan['tmt'])),
       'tmtPelantikan' => date('d-m-Y', strtotime($usulan['tmt'])),
-      'unorId' => $unor['idBkn']
+      'unorId' => $unor['idBkn'],
+      'subJabatanId' => $subJabatanId,
     ];
     $response = $this->insertRiwayatJabatanASN($data);
     return $response;
