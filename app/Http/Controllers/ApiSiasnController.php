@@ -541,7 +541,7 @@ class ApiSiasnController extends Controller
       'skp2022' => $skp2022
     ];
   }
-  function updateDataUtamaASN($data=NULL) {
+  function updateDataUtamaASN($data) {
     $token = $this->getAllToken();
     $url = $this->initialUrl() . "/pns/data-utama-update";
     $response = Http::withHeaders($token)->post($url, [
