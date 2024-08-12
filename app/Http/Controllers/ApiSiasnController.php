@@ -16,7 +16,7 @@ class ApiSiasnController extends Controller
     return json_decode($response, true);
   }
 
-  function getAuthToken($username='199706172020121007', $password='Alhamdulillah17!@') {
+  function getAuthToken($username='199706172020121007', $password='Alhamdulillah1728!@') {
     $response = Http::asForm()->post('https://sso-siasn.bkn.go.id/auth/realms/public-siasn/protocol/openid-connect/token', [
       'client_id' => 'situbndoservice',
       'grant_type' => 'password',
@@ -540,5 +540,30 @@ class ApiSiasnController extends Controller
       'skp' => $skp,
       'skp2022' => $skp2022
     ];
+  }
+  function updateDataUtamaASN($data=NULL) {
+    $token = $this->getAllToken();
+    $url = $this->initialUrl() . "/pns/data-utama-update";
+    $response = Http::withHeaders($token)->post($url, [
+      // 'agama_id' => $data['agama_id'],
+      // 'email_gov' => $data['email_gov'],
+      // 'kabupaten_id' => $data['kabupaten_id'],
+      // 'karis_karsu' => $data['karis_karsu'],
+      // 'kelas_jabatan' => $data['kelas_jabatan'],
+      // 'kpkn_id' => $data['kpkn_id'],
+      // 'lokasi_kerja_id' => $data['lokasi_kerja_id'],
+      // 'nomor_telpon' => $data['nomor_telpon'],
+      // 'npwp_tanggal' => $data['npwp_tanggal'],
+      // 'tanggal_taspen' => $data['tanggal_taspen'],
+      // 'tapera_nomor' => $data['tapera_nomor'],
+      // 'taspen_nomor' => $data['taspen_nomor'],
+      'pns_orang_id' => $data['pns_orang_id'],
+      'email' => $data['email'],
+      'alamat' => $data['alamat'],
+      'nomor_hp' => $data['nomor_hp'],
+      'npwp_nomor' => $data['npwp_nomor'],
+      'nomor_bpjs' => $data['nomor_bpjs'],
+    ]);
+    return json_decode($response, true);
   }
 }
