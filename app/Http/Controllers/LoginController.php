@@ -53,6 +53,15 @@ class LoginController extends ApiSiasnController
           'created_at' => Carbon::now()->format('Y-m-d H:i:s'),
           'updated_at' => Carbon::now()->format('Y-m-d H:i:s'),
         ]);
+        $tempNip = "".$username[12].$username[13];
+        DB::table('m_data_status_kepegawaian')->insert([
+          'id' => NULL,
+          'idPegawai' => $idPegawai,
+          'idDaftarStatusKepegawaian' => (intval($tempNip) === 21) ? 15 : 4,
+          'tmt' => Carbon::now()->format('Y-m-d'),
+          'created_at' => Carbon::now()->format('Y-m-d H:i:s'),
+          'updated_at' => Carbon::now()->format('Y-m-d H:i:s'),
+        ]);
         $usersTemp = json_decode(DB::table('m_pegawai')->where([
           ['nip', '=', $username]
         ])->get()->toJson(), true);
