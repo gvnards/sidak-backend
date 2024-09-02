@@ -86,7 +86,7 @@ class Controller extends BaseController
     $password = $message['password'];
     $authenticated = [];
     if(!str_contains($username, 'admin')) {
-      $authenticated = DB::table('m_pegawai')->where([
+      $authenticated = DB::table('m_pegawai')->join('m_data_status_kepegawaian', 'm_pegawai.id', '=', 'm_data_status_kepegawaian.idPegawai')->whereNotIn('m_data_status_kepegawaian.idDaftarStatusKepegawaian', [8,9,10,11,12,13,14,18])->where([
         ['nip', '=', $username,],
         ['password', '=', $password]
       ])->get();

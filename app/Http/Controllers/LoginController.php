@@ -20,8 +20,20 @@ class LoginController extends ApiSiasnController
         ['nip', '=', $username]
       ])->get()->toJson(), true);
       if (count($usersTemp) === 0) {
+        $responseGetAuth = $this->getAuthToken($username, $password);
+        if(!isset($responseGetAuth['access_token'])) {
+          return [
+            'message' => 'Username / password salah!',
+            'status' => 3
+          ];
+        }
         $response = $this->getDataUtamaASN($request, $username);
         if ($response['data'] === 'Data tidak ditemukan') {
+          return [
+            'message' => 'Username / password salah!',
+            'status' => 3
+          ];
+        } else if ($response['data']['tmtPensiun'] != null) {
           return [
             'message' => 'Username / password salah!',
             'status' => 3
