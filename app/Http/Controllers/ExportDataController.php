@@ -2,10 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Support\Facades\Response;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Exception;
 
 class ExportDataController extends Controller
 {
@@ -161,39 +159,4 @@ class ExportDataController extends Controller
       ]
     ];
   }
-	private function getImageBlob($namaFolder,$namaFileDenganEkstensi) {
-		$path = storage_path("app/".$namaFolder."/".$namaFileDenganEkstensi);
-    try {
-      $mimeType = mime_content_type($path);
-      $getImageFromServerFolder = base64_encode(file_get_contents($path));
-      // $blob = 'data:'.$mimeType.';base64,'.$getImageFromServerFolder;
-			$blob = $getImageFromServerFolder;
-    } catch (Exception $ex) {
-      $blob = '';
-    }
-		return $blob;
-	}
-	public function getIdCard() {
-		$bgDepan = $this->getImageBlob('idcard/background', 'background-depan.jpeg');
-		$bgBelakang = $this->getImageBlob('idcard/background', 'background-belakang.jpeg');
-		$logo = $this->getImageBlob('idcard/component', 'logo-situbondo.png');
-
-		return [
-			'message' => [
-        'template' => [
-          'background' => [
-            'depan' => $bgDepan,
-            'belakang' => $bgBelakang
-          ],
-          'components' => [
-            'logo' => $logo,
-            'ttd' => '',
-            'stempel' => ''
-          ],
-        ],
-				'data' => []
-			],
-			'status' => 2
-		];
-	}
 }
