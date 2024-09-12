@@ -168,6 +168,8 @@ Route::post('rekap-sinkron/sync/{idPegawai}', 'RekapSinkronController@onSync');
 Route::get('export/created', 'ExportDataController@created');
 Route::get('export/data-usulan/created', 'ExportDataController@dataUsulanCreated');
 Route::get('export/{kriteria}', 'ExportDataController@exportData');
+Route::get('idcard/created', 'IdCardController@getListPegawai');
+Route::post('idcard/make-pdf', 'IdCardController@getIdCard');
 
 // API SIASN MASTER
 /// DOKUMEN
