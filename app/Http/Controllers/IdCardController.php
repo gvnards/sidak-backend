@@ -36,7 +36,7 @@ class IdCardController extends Controller
     ]));
     $message = json_decode($this->decrypt($username, $request->message), true);
     $listFoto = [];
-    foreach (['199601162019031001','199603072019032011'] as $nip) {
+    foreach ($message['listNip'] as $nip) {
       $foto = $this->getImageBlob('foto', $nip);
       array_push($listFoto, [$nip => [
         'foto' => $foto['blob'],
@@ -63,7 +63,7 @@ class IdCardController extends Controller
             'stempel' => ''
           ],
         ],
-				'foto' => json_encode($listFoto[0])
+				'foto' => json_encode($listFoto)
 			],
 			'status' => 2
 		];
