@@ -8,24 +8,46 @@ use Illuminate\Support\Facades\DB;
 
 class IdCardController extends Controller
 {
-	private function getImageBlob($namaFolder,$namaFileDenganEkstensi) {
-		$path = storage_path("app/".$namaFolder."/".$namaFileDenganEkstensi);
-    try {
-      $mimeType = mime_content_type($path);
-      $getImageFromServerFolder = base64_encode(file_get_contents($path));
-      // $blob = 'data:'.$mimeType.';base64,'.$getImageFromServerFolder;
-			$blob = $getImageFromServerFolder;
-    } catch (Exception $ex) {
-      $blob = '';
+	private function getImageBlob($namaFolder,$namaFoto) {
+    $blob = '';
+    $extension = '';
+    $listExtensi = ['jpg', 'jpeg', 'png'];
+    foreach ($listExtensi as $ekstensi) {
+      try {
+        $path = storage_path("app/".$namaFolder."/".$namaFoto.".".$ekstensi);
+        $mimeType = mime_content_type($path);
+        $getImageFromServerFolder = base64_encode(file_get_contents($path));
+        // $blob = 'data:'.$mimeType.';base64,'.$getImageFromServerFolder;
+        $blob = $getImageFromServerFolder;
+        $extension = $ekstensi;
+      } catch (Exception $ex) {}
     }
-		return $blob;
+		return [
+      'blob' => $blob,
+      'ekstensi' => $extension
+    ];
 	}
-	public function getIdCard() {
-		$bgDepan = $this->getImageBlob('idcard/background', 'background-depan.jpeg');
-		$bgBelakang = $this->getImageBlob('idcard/background', 'background-belakang.jpeg');
-		$logo = $this->getImageBlob('idcard/component', 'logo-situbondo.png');
-		$line = $this->getImageBlob('idcard/component', 'line.jpeg');
-    $foto = $this->getImageBlob('foto', '199601162019031001.jpg');
+	public function getIdCard(Request $request) {
+    $authenticated = $this->isAuth($request)['authenticated'];
+    $username = $this->isAuth($request)['username'];
+    if(!$authenticated) return $this->encrypt($username, json_encode([
+      'message' => $authenticated == true ? 'Authorized' : 'Not Authorized',
+      'status' => $authenticated === true ? 1 : 0
+    ]));
+    $message = json_decode($this->decrypt($username, $request->message), true);
+    $listFoto = [];
+    foreach (['199601162019031001','199603072019032011'] as $nip) {
+      $foto = $this->getImageBlob('foto', $nip);
+      array_push($listFoto, [$nip => [
+        'foto' => $foto['blob'],
+        'ekstensi' => $foto['ekstensi']
+        ]]);
+    }
+		$bgDepan = $this->getImageBlob('idcard/background', 'background-depan')['blob'];
+		$bgBelakang = $this->getImageBlob('idcard/background', 'background-belakang')['blob'];
+		$logo = $this->getImageBlob('idcard/component', 'logo-situbondo')['blob'];
+		$line = $this->getImageBlob('idcard/component', 'line')['blob'];
+
 
 		return [
 			'message' => [
@@ -41,9 +63,7 @@ class IdCardController extends Controller
             'stempel' => ''
           ],
         ],
-				'data' => [
-          ['foto' => $foto]
-        ]
+				'foto' => json_encode($listFoto[0])
 			],
 			'status' => 2
 		];
@@ -89,9 +109,11 @@ class IdCardController extends Controller
         $data[$i]['unitOrganisasi'] = "(Unit organisasi tidak ada di dalam database. Silahkan update atau konsultasi dengan BKPSDM.)";
         continue;
       }
+      $data[$i]['hasPhoto'] = $this->getImageBlob('foto', $data[$i]['nip'])['blob'] !== '';
       for ($j = 0; $j < count($allUnors); $j++) {
         if ($data[$i]['kodeKomponen'] === $allUnors[$j]['kodeKomponen']) {
-          $data[$i]['unitOrganisasi'] = $allUnors[$j]['nama'];
+          $unorTemp = explode(' pada ', $allUnors[$j]['nama']);
+          $data[$i]['unitOrganisasi'] = $unorTemp[count($unorTemp)-1];
           break;
         }
       }
