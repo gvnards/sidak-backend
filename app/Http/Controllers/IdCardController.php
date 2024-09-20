@@ -34,19 +34,12 @@ class IdCardController extends Controller
       'message' => $authenticated == true ? 'Authorized' : 'Not Authorized',
       'status' => $authenticated === true ? 1 : 0
     ]));
-    $message = json_decode($this->decrypt($username, $request->message), true);
-    $listFoto = [];
-    foreach ($message['listNip'] as $nip) {
-      $foto = $this->getImageBlob('foto', $nip);
-      array_push($listFoto, [$nip => [
-        'foto' => $foto['blob'],
-        'ekstensi' => $foto['ekstensi']
-        ]]);
-    }
 		$bgDepan = $this->getImageBlob('idcard/background', 'background-depan')['blob'];
 		$bgBelakang = $this->getImageBlob('idcard/background', 'background-belakang')['blob'];
 		$logo = $this->getImageBlob('idcard/component', 'logo-situbondo')['blob'];
 		$line = $this->getImageBlob('idcard/component', 'line')['blob'];
+		$stempel = $this->getImageBlob('idcard/component', 'stempel')['blob'];
+		$ttd = $this->getImageBlob('idcard/component', 'ttd')['blob'];
 
 
 		return [
@@ -59,11 +52,10 @@ class IdCardController extends Controller
           'components' => [
             'line' => $line,
             'logo' => $logo,
-            'ttd' => '',
-            'stempel' => ''
+            'ttd' => $ttd,
+            'stempel' => $stempel
           ],
         ],
-				'foto' => json_encode($listFoto)
 			],
 			'status' => 2
 		];
@@ -126,5 +118,14 @@ class IdCardController extends Controller
       'status' => 2
     ];
     return $callback;
+  }
+  public function getFotoPegawai(Request $request, $nip) {
+    $authenticated = $this->isAuth($request)['authenticated'];
+    $username = $this->isAuth($request)['username'];
+    if(!$authenticated) return $this->encrypt($username, json_encode([
+      'message' => $authenticated == true ? 'Authorized' : 'Not Authorized',
+      'status' => $authenticated === true ? 1 : 0
+    ]));
+    return $this->getImageBlob('foto', $nip);
   }
 }

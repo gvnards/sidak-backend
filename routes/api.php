@@ -169,7 +169,8 @@ Route::get('export/created', 'ExportDataController@created');
 Route::get('export/data-usulan/created', 'ExportDataController@dataUsulanCreated');
 Route::get('export/{kriteria}', 'ExportDataController@exportData');
 Route::get('idcard/created', 'IdCardController@getListPegawai');
-Route::post('idcard/make-pdf', 'IdCardController@getIdCard');
+Route::post('idcard/pdf', 'IdCardController@getIdCard');
+Route::get('idcard/photo/{nip}', 'IdCardController@getFotoPegawai');
 
 // API SIASN MASTER
 /// DOKUMEN
