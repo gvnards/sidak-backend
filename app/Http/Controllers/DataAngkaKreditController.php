@@ -64,9 +64,15 @@ class DataAngkaKreditController extends Controller
         $data[$i]['jabatan'] =  "(".$data[$i]['jenisPAK'].") | ".$data[$i]['jabatan'];
       }
     } else {
-      $data = json_decode(DB::table('m_data_angka_kredit')->where([
-        ['id', '=', $idUsulan]
-      ])->get(), true);
+      $data = json_decode(DB::table('m_data_angka_kredit')->leftJoin('m_data_jabatan', 'm_data_angka_kredit.idDataJabatan', '=', 'm_data_jabatan.id')->where([
+        ['m_data_angka_kredit.id', '=', $idUsulan]
+      ])->get([
+        'm_data_angka_kredit.*',
+        'm_data_jabatan.id AS idJbtn'
+      ]), true);
+      if ($data[0]['idJbtn'] === null) {
+        $data[0]['idDataJabatan'] = 0;
+      }
       // $data[0]['dokumen'] = $this->getBlobDokumen($data[0]['idDokumen'], 'pak', 'pdf');
       $data[0]['dokumen'] = '';
     }
