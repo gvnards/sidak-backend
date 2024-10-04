@@ -46,4 +46,33 @@ class DataPegawaiController extends Controller
     ];
     return $this->encrypt($username, json_encode($callback));
   }
+  public function addPegawai(Request $request) {
+    $authenticated = $this->isAuth($request)['authenticated'];
+    $username = $this->isAuth($request)['username'];
+    $message = json_decode($this->decrypt($username, $request->message), true);
+    if(!$authenticated) return [
+      'message' => $authenticated == true ? 'Authorized' : 'Not Authorized',
+      'status' => $authenticated === true ? 1 : 0
+    ];
+    $nips = json_decode(DB::table('m_pegawai')->get([
+      'nip'
+    ]), true);
+    $nipTidakAda = []; //// KUMPULAN NIP DARI SIASN YG BELUM ADA DI SIDAK
+    for ($i=0; $i < count($message); $i++) { //// LOOP FOR NIP SIASN
+      $isAny = false;
+      for ($j=0; $j < count($nips); $j++) { //// LOOP FOR NIP SIDAK
+        if ($message[$i] == $nips[$j]['nip']) {
+          $isAny = true;
+          break;
+        }
+      }
+      if (!$isAny) {
+        array_push($nipTidakAda, $message[$i]);
+      }
+    }
+    return [
+      'status' => 2,
+      'message' => $nipTidakAda
+    ];
+  }
 }
