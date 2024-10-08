@@ -473,7 +473,7 @@ class ApiSiasnController extends Controller
   }
 
   // DATA UTAMA
-  function getDataUtamaASN($nipBaru) {
+  function getDataUtamaASN(Request $request, $nipBaru) {
     $token = $this->getAllToken();
     // format url --> /pns/data-utama/{nipBaru}
     $url = $this->initialUrl() . "/pns/data-utama/$nipBaru";
