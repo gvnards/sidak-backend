@@ -1007,13 +1007,13 @@ class ApiSiasnSyncController extends ApiSiasnController
     $affected = '';
     for($i=0; $i<count($newPendidikanFromSiasn); $i++) {
       $idJenisPendidikan = 1;
-      if ($pendidikanPertamaSaatPns != null) {
-        if (intval($pendidikanPertamaSaatPns) > intval($tingkatPendidikan['id'])) $idJenisPendidikan = 3;
-        else if (intval($pendidikanPertamaSaatPns) === intval($tingkatPendidikan['id'])) $idJenisPendidikan = 2;
-      }
       $tingkatPendidikan = null;
       foreach ($daftarTingkatPendidikan as $tkPendidikan) {
         if ($tkPendidikan['idBkn'] == $newPendidikanFromSiasn[$i]['tkPendidikanId']) $tingkatPendidikan = $tkPendidikan;
+      }
+      if ($pendidikanPertamaSaatPns != null) {
+        if (intval($pendidikanPertamaSaatPns) > intval($tingkatPendidikan['id'])) $idJenisPendidikan = 3;
+        else if (intval($pendidikanPertamaSaatPns) === intval($tingkatPendidikan['id'])) $idJenisPendidikan = 2;
       }
       $pendidikan = null;
       foreach ($daftarPendidikan as $pddkn) {
