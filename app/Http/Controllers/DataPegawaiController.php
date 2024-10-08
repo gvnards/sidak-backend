@@ -46,6 +46,45 @@ class DataPegawaiController extends Controller
     ];
     return $this->encrypt($username, json_encode($callback));
   }
+  public function checkPegawai($allNip) {
+    $nips = json_decode(DB::table('m_pegawai')->get([
+      'nip'
+    ]), true);
+    $nipTidakAda = []; //// KUMPULAN NIP DARI SIASN YG BELUM ADA DI SIDAK
+    for ($i=0; $i < count($allNip); $i++) { //// LOOP FOR NIP SIASN
+      $isAny = false;
+      for ($j=0; $j < count($nips); $j++) { //// LOOP FOR NIP SIDAK
+        if ($allNip[$i] == $nips[$j]['nip']) {
+          $isAny = true;
+          break;
+        }
+      }
+      if (!$isAny) {
+        // array_push($nipTidakAda, $message[$i]);
+        array_push($nipTidakAda, [
+          'nip' => $allNip[$i],
+          'status' => $i%2==0 ? 2 : 3
+        ]);
+      }
+    }
+    return $nipTidakAda;
+  }
+  private function add() {
+    $pwd = password_hash('12344321', PASSWORD_DEFAULT);
+    $response = $this->getDataUtamaASN($request, $username);
+    if ($response['data'] === 'Data tidak ditemukan') {
+      return [
+        'message' => 'Username / password salah!',
+        'status' => 3
+      ];
+    } else if ($response['data']['tmtPensiun'] != null) {
+      return [
+        'message' => 'Username / password salah!',
+        'status' => 3
+      ];
+    }
+    $response = $response['data'];
+  }
   public function addPegawai(Request $request) {
     $authenticated = $this->isAuth($request)['authenticated'];
     $username = $this->isAuth($request)['username'];
@@ -54,22 +93,7 @@ class DataPegawaiController extends Controller
       'message' => $authenticated == true ? 'Authorized' : 'Not Authorized',
       'status' => $authenticated === true ? 1 : 0
     ];
-    $nips = json_decode(DB::table('m_pegawai')->get([
-      'nip'
-    ]), true);
-    $nipTidakAda = []; //// KUMPULAN NIP DARI SIASN YG BELUM ADA DI SIDAK
-    for ($i=0; $i < count($message); $i++) { //// LOOP FOR NIP SIASN
-      $isAny = false;
-      for ($j=0; $j < count($nips); $j++) { //// LOOP FOR NIP SIDAK
-        if ($message[$i] == $nips[$j]['nip']) {
-          $isAny = true;
-          break;
-        }
-      }
-      if (!$isAny) {
-        array_push($nipTidakAda, $message[$i]);
-      }
-    }
+    $nipTidakAda = $this->checkPegawai($message);
     return [
       'status' => 2,
       'message' => $nipTidakAda
