@@ -134,6 +134,7 @@ Route::get('angka-kredit/list/{idPegawai}', 'DataAngkaKreditController@getListDa
 Route::delete('angka-kredit/delete/{id}', 'DataAngkaKreditController@deleteDataJabatan');
 Route::get('dokumen-elektronik/list/{idPegawai}', 'DataDokumenElektronikController@getDataCreated');
 Route::get('dokumen-elektronik/detail/{idPegawai}/{idDaftarDokumen}', 'DataDokumenElektronikController@getDataDokumenElektronikDetail');
+Route::post('check-pegawai', 'DataPegawaiController@checkPegawai');
 Route::post('add-pegawai', 'DataPegawaiController@addPegawai');
 
 // FOTO
