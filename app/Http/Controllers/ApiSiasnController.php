@@ -35,7 +35,7 @@ class ApiSiasnController extends Controller
       $auth = $currentToken[0]['auth'];
       $authorization = $currentToken[0]['authorization'];
       $currentTime = strtotime(date('H:i:s'));
-      $existTime = strtotime(date($currentToken[0]['created_at']));
+      $existTime = strtotime(date($currentToken[0]['updated_at']));
       if ((round(abs($existTime - $currentTime))/60) < 30) {
         return [
           'Auth' => 'bearer '.$auth,
@@ -44,15 +44,15 @@ class ApiSiasnController extends Controller
       }
     }
     $authorization = $this->getAuthorizationToken()['access_token'];
-    $auth = $this->getAuthToken()['access_token'];
     if (count($currentToken) > 0) {
       DB::table('api_siasn_token')->update([
-        'auth' => $auth,
+        // 'auth' => $auth,
         'authorization' => $authorization,
-        'created_at' => Carbon::now()->format('Y-m-d H:i:s'),
+        // 'created_at' => Carbon::now()->format('Y-m-d H:i:s'),
         'updated_at' => Carbon::now()->format('Y-m-d H:i:s')
       ]);
     } else {
+      $auth = $this->getAuthToken()['access_token'];
       DB::table('api_siasn_token')->insert([
         'auth' => $auth,
         'authorization' => $authorization,
